@@ -8,3 +8,5 @@ dist
 coverage
 .vite
 .cursor/mcp.json
+cube/.cubestore/
+*.tsbuildinfo
