@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>AI-инсайты — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="insights"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><div class="mobile-header__title">AI-инсайты</div></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:refresh-cw"></iconify-icon> Проверить</button>
+            <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+          </div>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span>
+                <h1 class="doc-title">AI-инсайты</h1>
+              </div>
+              <p class="doc-lead">Проактивные оценки: что произошло, почему и что делать дальше</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Компания</span> Acme Analytics</span>
+              <span class="doc-prop"><span class="doc-prop__label">Новых</span> 2</span>
+              <span class="doc-prop"><span class="doc-prop__label">AI-кредиты</span> 47 / 100</span>
+              <span class="doc-prop"><span class="doc-prop__label">Последняя проверка</span> 14 июн, 09:42</span>
+            </div>
+
+            <div class="callout callout--compact" style="margin-bottom:20px">
+              <span>AI-инсайты включены в тариф Pro. Осталось <strong>53 кредита</strong> до 1 июл. <a href="settings-billing.html">Биллинг →</a></span>
+            </div>
+
+            <section class="doc-block">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px">
+                <h2 class="doc-h2" style="margin:0">Лента</h2>
+                <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:refresh-cw"></iconify-icon> Проверить аномалии</button>
+              </div>
+
+              <div class="insight-feed">
+                <article class="insight-item insight-item--warn">
+                  <div>
+                    <h3 class="insight-item__title">Рост выручки на 18% за неделю</h3>
+                    <p class="insight-item__meta">14 июн 2026, 09:42 · Средняя значимость</p>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-self:start">
+                    <span class="db-tag db-tag--orange">Средняя</span>
+                    <span class="db-tag db-tag--green">↑ +18%</span>
+                  </div>
+                  <p class="insight-item__body">Выручка выросла быстрее обычного темпа. Основной вклад — completed-заказы в MSK.</p>
+                  <div class="insight-item__tags">
+                    <span class="db-tag db-tag--gray">completed · 62%</span>
+                    <span class="db-tag db-tag--gray">MSK · 41%</span>
+                  </div>
+                </article>
+
+                <article class="insight-item insight-item--info">
+                  <div>
+                    <h3 class="insight-item__title">Падение числа заказов</h3>
+                    <p class="insight-item__meta">12 июн 2026 · Низкая значимость</p>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-self:start">
+                    <span class="db-tag db-tag--blue">Низкая</span>
+                    <span class="db-tag db-tag--red">↓ −6%</span>
+                  </div>
+                  <p class="insight-item__body">Небольшое снижение на фоне сезонности — мониторинг без срочных действий.</p>
+                </article>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="insights"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

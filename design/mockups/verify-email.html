@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Email — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/verify-email</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+    <div class="auth-frame">
+      <aside class="auth-brand-panel"><div><h2>Почти готово</h2><p>Подтверждение email защищает ваш аккаунт и компанию.</p></div></aside>
+      <div class="auth-form-panel">
+        <header class="auth-topbar"><span class="brand__mark">u</span><button class="btn btn--ghost btn--icon" type="button" data-theme-toggle aria-label="Тема"></button></header>
+        <main class="auth-main">
+          <div class="auth-panel">
+            <div class="auth-panel__head">
+              <h1>Подтвердите email</h1>
+              <p>Письмо отправлено на <strong>founder@acme.ru</strong></p>
+            </div>
+            <div class="auth-panel__card">
+              <p class="text-sm text-secondary" style="margin: 0">После подтверждения и входа компания создастся автоматически.</p>
+              <div class="form-actions form-actions--tight">
+                <button class="btn btn--block" type="button">Отправить письмо снова</button>
+                <button class="btn btn--secondary btn--block" type="button">Я подтвердил — обновить</button>
+                <button class="btn btn--outline btn--block" type="button">На главную</button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

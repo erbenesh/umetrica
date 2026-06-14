@@ -1,6 +1,7 @@
 import { Loader2, Mail, UserMinus, Users } from 'lucide-react';
 import { useState } from 'react';
 
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -72,16 +73,12 @@ export function TeamPage() {
   const incomingInvites = (userInvitations ?? []).filter((item) => item.status === 'pending');
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Users className="text-insight-info" />
-        <div>
-          <h1 className="text-2xl font-bold">Команда</h1>
-          <p className="text-sm text-muted-foreground">
-            {me?.organization?.name ?? 'Компания'} · ваша роль: {roleLabel(me?.role ?? '')}
-          </p>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title="Команда"
+        description={`${me?.organization?.name ?? 'Компания'} · ваша роль: ${roleLabel(me?.role ?? '')}`}
+        icon={Users}
+      />
 
       {statusMessage && (
         <Card>

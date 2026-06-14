@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Биллинг — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/settings/billing</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Биллинг</div>
+            <div class="text-xs text-muted">Acme Analytics · Владелец</div>
+          </div>
+          <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:credit-card"></iconify-icon></span>
+                <h1 class="doc-title">Биллинг</h1>
+              </div>
+              <p class="doc-lead">Подписка, оплата, счета и AI-кредиты компании</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Тариф</span> Pro</span>
+              <span class="doc-prop"><span class="doc-prop__label">След. списание</span> 1 июл 2026</span>
+              <span class="doc-prop"><span class="doc-prop__label">AI-кредиты</span> 47 / 100</span>
+            </div>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">Подписка</h2>
+                <a class="btn btn--ghost btn--sm" href="billing-plans.html">Сменить тариф</a>
+              </div>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Pro <span class="badge badge--success" style="margin-left:8px;vertical-align:1px">Активна</span></div>
+                    <div class="settings-row__hint">12 900 ₽ / мес · 15 участников · 3 источника данных · 100 AI-инсайтов</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="modal-billing-upgrade.html">Апгрейд</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">Оплата</h2>
+                <a class="btn btn--ghost btn--sm" href="billing-payment.html">Изменить</a>
+              </div>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Visa ·••• 4242</div>
+                    <div class="settings-row__hint">Автоплатёж включён · списание 1-го числа</div>
+                  </div>
+                  <span class="badge badge--success">По умолчанию</span>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">ООО «Acme Analytics»</div>
+                    <div class="settings-row__hint">ИНН 7701234567 · счёт на email founder@acme.ru</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">AI-инсайты <span class="doc-h2__hint">· этот месяц</span></h2>
+                <a class="btn btn--sm" href="modal-billing-credits.html"><iconify-icon icon="lucide:zap"></iconify-icon> Купить пакет</a>
+              </div>
+              <div style="height:8px;border-radius:999px;background:color-mix(in srgb,var(--muted-foreground) 18%,transparent);overflow:hidden;margin-bottom:8px">
+                <div style="width:47%;height:100%;border-radius:999px;background:var(--primary)"></div>
+              </div>
+              <p class="text-sm text-muted" style="margin:0">47 из 100 кредитов · сброс 1 июл. LLM-генерация = 1 кредит, простые алерты — бесплатно.</p>
+            </section>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">Счета</h2>
+                <a class="btn btn--ghost btn--sm" href="billing-invoices.html">Все счета</a>
+              </div>
+              <div class="db">
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>Дата</th>
+                      <th>Описание</th>
+                      <th style="width: 120px">Сумма</th>
+                      <th style="width: 120px">Статус</th>
+                      <th style="width: 56px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="db-cell text-tabular">1 июн 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Pro · июнь 2026</span></div></td>
+                      <td><div class="db-cell text-tabular">12 900 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Скачать"><iconify-icon icon="lucide:download"></iconify-icon></button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">12 июн 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Пакет AI +50</span></div></td>
+                      <td><div class="db-cell text-tabular">1 990 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Скачать"><iconify-icon icon="lucide:download"></iconify-icon></button></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">1 июл 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Pro · июль 2026</span></div></td>
+                      <td><div class="db-cell text-tabular">12 900 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--info">Запланирован</span></div></td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Enterprise <span class="doc-h2__hint">· расширенные настройки</span></h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Свой LLM-провайдер</div>
+                    <div class="settings-row__hint">BYOK для compliance — отключает квоту платформы</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="settings-enterprise-llm.html">Настроить</a>
+                </div>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Тарифы — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/settings/billing/plans</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Тарифы</div>
+            <div class="text-xs text-muted">Acme Analytics</div>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="settings-billing.html">Назад</a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:layers"></iconify-icon></span>
+                <h1 class="doc-title">Выберите тариф</h1>
+              </div>
+              <p class="doc-lead">Оплата за компанию — все участники делят лимиты тарифа</p>
+            </div>
+
+            <section class="doc-block">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+                <div class="segmented" role="group" aria-label="Период оплаты">
+                  <button class="segmented__btn is-active" type="button">Ежемесячно</button>
+                  <button class="segmented__btn" type="button">Ежегодно −15%</button>
+                </div>
+                <span class="text-sm text-muted">Сейчас: <strong>Pro</strong></span>
+              </div>
+
+              <div class="plan-grid">
+                <article class="plan-card">
+                  <div class="plan-card__head">
+                    <h3 class="plan-card__name">Starter</h3>
+                  </div>
+                  <p class="plan-card__price">4 900 ₽</p>
+                  <p class="plan-card__price-note">в месяц</p>
+                  <ul class="plan-card__features">
+                    <li>3 участника</li>
+                    <li>1 источник данных</li>
+                    <li>20 AI-инсайтов / мес</li>
+                    <li>Базовая поддержка</li>
+                  </ul>
+                  <div class="plan-card__cta">
+                    <button class="btn btn--outline btn--block" type="button">Перейти на Starter</button>
+                  </div>
+                </article>
+
+                <article class="plan-card plan-card--active">
+                  <div class="plan-card__head">
+                    <h3 class="plan-card__name">Pro</h3>
+                    <span class="badge badge--success">Текущий</span>
+                  </div>
+                  <p class="plan-card__price">12 900 ₽</p>
+                  <p class="plan-card__price-note">в месяц</p>
+                  <ul class="plan-card__features">
+                    <li>15 участников</li>
+                    <li>3 источника данных</li>
+                    <li>100 AI-инсайтов / мес</li>
+                    <li>Автопроверки до 3 / день</li>
+                  </ul>
+                  <div class="plan-card__cta">
+                    <button class="btn btn--block" type="button" disabled>Активен</button>
+                  </div>
+                </article>
+
+                <article class="plan-card">
+                  <div class="plan-card__head">
+                    <h3 class="plan-card__name">Enterprise</h3>
+                  </div>
+                  <p class="plan-card__price">от 49 000 ₽</p>
+                  <p class="plan-card__price-note">в месяц · договор</p>
+                  <ul class="plan-card__features">
+                    <li>Безлимит участников</li>
+                    <li>Безлимит источников</li>
+                    <li>Безлимит AI-инсайтов</li>
+                    <li>BYOK LLM · SLA · SSO</li>
+                  </ul>
+                  <div class="plan-card__cta">
+                    <a class="btn btn--block" href="modal-billing-upgrade.html">Связаться с нами</a>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <div class="callout callout--info callout--compact">
+                <span>При понижении тарифа изменения вступают в силу со следующего периода. Неиспользованные AI-кредиты не переносятся.</span>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

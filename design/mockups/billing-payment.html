@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Оплата — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/settings/billing/payment</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Оплата</div>
+            <div class="text-xs text-muted">Acme Analytics</div>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="settings-billing.html">Назад</a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:wallet"></iconify-icon></span>
+                <h1 class="doc-title">Способ оплаты</h1>
+              </div>
+              <p class="doc-lead">Карта для автоплатежа и реквизиты для счетов и актов</p>
+            </div>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">Карта</h2>
+                <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:plus"></iconify-icon> Добавить</button>
+              </div>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label"><iconify-icon icon="lucide:credit-card" style="vertical-align:-2px;margin-right:6px"></iconify-icon> Visa ·••• 4242</div>
+                    <div class="settings-row__hint">Истекает 08/28 · основной способ оплаты</div>
+                  </div>
+                  <button class="btn btn--ghost btn--sm" type="button">Изменить</button>
+                </div>
+              </div>
+              <label class="checkbox-row" style="margin-top:12px">
+                <input type="checkbox" checked />
+                <span>Автоплатёж подписки 1-го числа каждого месяца</span>
+              </label>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Плательщик <span class="doc-h2__hint">· для счетов</span></h2>
+              <form class="form-fields" action="#">
+                <div class="field">
+                  <label for="payer-type">Тип</label>
+                  <select class="input" id="payer-type">
+                    <option selected>Юридическое лицо (РФ)</option>
+                    <option>ИП</option>
+                    <option>Физическое лицо</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="payer-name">Название</label>
+                  <input class="input" id="payer-name" type="text" value="ООО «Acme Analytics»" />
+                </div>
+                <div class="form-grid form-grid--2">
+                  <div class="field">
+                    <label for="payer-inn">ИНН</label>
+                    <input class="input" id="payer-inn" type="text" value="7701234567" />
+                  </div>
+                  <div class="field">
+                    <label for="payer-kpp">КПП</label>
+                    <input class="input" id="payer-kpp" type="text" value="770101001" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="payer-email">Email для счетов</label>
+                  <input class="input" id="payer-email" type="email" value="founder@acme.ru" />
+                </div>
+                <div class="field">
+                  <label for="payer-address">Юридический адрес</label>
+                  <textarea class="input" id="payer-address" rows="2" style="height:auto;padding:12px 14px;min-height:72px">127015, г. Москва, ул. Примерная, д. 1</textarea>
+                </div>
+              </form>
+            </section>
+
+            <section class="doc-block">
+              <div class="callout callout--compact">
+                <span>Оплата по счёту (без карты) доступна на Enterprise. Закрывающие документы отправляются на email плательщика.</span>
+              </div>
+              <div class="form-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                <button class="btn" type="button">Сохранить</button>
+                <a class="btn btn--ghost" href="settings-billing.html">Отмена</a>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

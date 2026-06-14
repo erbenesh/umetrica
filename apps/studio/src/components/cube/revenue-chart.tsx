@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -6,11 +7,12 @@ import {
   BarElement,
   Tooltip,
 } from 'chart.js';
-import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { useCubeQuery } from '@cubejs-client/react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from '@/components/theme-provider';
+import { readCssVar } from '@/lib/theme';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -23,9 +25,12 @@ const REVENUE_BY_STATUS_QUERY = {
 };
 
 export function RevenueByStatusChart() {
+  const { theme } = useTheme();
   const { isLoading, error, resultSet } = useCubeQuery(REVENUE_BY_STATUS_QUERY);
 
   const chartData = useMemo(() => {
+    void theme;
+
     if (!resultSet) return null;
 
     const rows = resultSet.tablePivot();
@@ -42,15 +47,22 @@ export function RevenueByStatusChart() {
         {
           label: 'Выручка',
           data: values,
-          backgroundColor: ['#3b82f6', '#38bdf8', '#f97316'],
-          borderRadius: 8,
+          backgroundColor: [
+            readCssVar('--chart-1'),
+            readCssVar('--chart-2'),
+            readCssVar('--chart-3'),
+          ],
+          borderRadius: 4,
         },
       ],
     };
-  }, [resultSet]);
+  }, [resultSet, theme]);
 
   const options = useMemo(
-    () => ({
+    () => {
+      void theme;
+
+      return {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -59,23 +71,26 @@ export function RevenueByStatusChart() {
       scales: {
         y: {
           ticks: {
-            color: '#94a3b8',
+            color: readCssVar('--chart-tick'),
+            font: { size: 11 },
           },
           grid: {
-            color: '#334155',
+            color: readCssVar('--chart-grid'),
           },
         },
         x: {
           ticks: {
-            color: '#94a3b8',
+            color: readCssVar('--chart-tick'),
+            font: { size: 11 },
           },
           grid: {
             display: false,
           },
         },
       },
-    }),
-    []
+    };
+    },
+    [theme]
   );
 
   return (
@@ -84,14 +99,14 @@ export function RevenueByStatusChart() {
         <CardTitle>Выручка по статусам</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading && <div className="h-64 text-sm text-muted-foreground">Загрузка...</div>}
+        {isLoading && <div className="h-52 text-xs text-muted-foreground">Загрузка...</div>}
         {error && (
-          <div className="h-64 text-sm text-insight-warning">
+          <div className="h-52 text-xs text-insight-warning">
             Не удалось загрузить график из Cube.js
           </div>
         )}
         {!isLoading && !error && chartData && (
-          <div className="h-64">
+          <div className="h-52">
             <Bar data={chartData} options={options} />
           </div>
         )}

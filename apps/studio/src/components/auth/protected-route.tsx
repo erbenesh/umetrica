@@ -7,7 +7,7 @@ export function ProtectedRoute() {
 
   if (isPending || isRefetching) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+      <div className="flex min-h-screen items-center justify-center text-xs text-muted-foreground">
         Загрузка...
       </div>
     );

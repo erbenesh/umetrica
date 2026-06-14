@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Дашборд — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/dashboards/:id</span></div>
+      <div class="mockup-bar__actions">
+        <a class="btn btn--ghost btn--sm" href="widget-editor.html">Виджет</a>
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="dashboards"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <a href="dashboards-list.html" class="text-xs text-muted">← Дашборды</a>
+            <div class="mobile-header__title">Операционный обзор</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn btn--sm" href="widget-editor.html"><iconify-icon icon="lucide:plus"></iconify-icon></a>
+            <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+          </div>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <p class="page-header__eyebrow"><a href="dashboards-list.html" class="text-muted">← Дашборды</a></p>
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:bar-chart-3"></iconify-icon></span>
+                <h1 class="doc-title">Операционный обзор</h1>
+              </div>
+              <p class="doc-lead">Ежедневный мониторинг KPI</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Виджетов</span> 6</span>
+              <span class="doc-prop"><span class="doc-prop__label">Обновлён</span> 14 июн, 10:20</span>
+              <span class="doc-prop"><span class="doc-prop__label">Период</span> 7 дней</span>
+            </div>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">Метрики</h2>
+                <div class="dropdown">
+                  <button class="btn btn--sm" type="button" data-dropdown-toggle aria-expanded="false">
+                    <iconify-icon icon="lucide:plus"></iconify-icon> Добавить
+                  </button>
+                  <div class="dropdown__menu dropdown__menu--align-end" role="menu">
+                    <a class="menu-item" href="widget-editor.html?kind=chart" role="menuitem"><iconify-icon icon="lucide:bar-chart-3"></iconify-icon> График</a>
+                    <a class="menu-item" href="widget-editor.html?kind=filter" role="menuitem"><iconify-icon icon="lucide:filter"></iconify-icon> Фильтр</a>
+                    <a class="menu-item" href="widget-editor.html?kind=time" role="menuitem"><iconify-icon icon="lucide:calendar-clock"></iconify-icon> Детализация</a>
+                    <a class="menu-item" href="widget-editor.html?kind=text" role="menuitem"><iconify-icon icon="lucide:type"></iconify-icon> Текст</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dashboard-toolbar" role="toolbar" aria-label="Фильтры дашборда">
+                <div class="dashboard-toolbar__group">
+                  <label class="dashboard-toolbar__label" for="ctrl-region">
+                    <iconify-icon icon="lucide:map-pin"></iconify-icon>
+                    Регион
+                  </label>
+                  <select class="input input--dense dashboard-toolbar__control" id="ctrl-region">
+                    <option>Все регионы</option>
+                    <option selected>MSK</option>
+                    <option>SPB</option>
+                  </select>
+                </div>
+                <div class="dashboard-toolbar__divider" aria-hidden="true"></div>
+                <div class="dashboard-toolbar__group">
+                  <span class="dashboard-toolbar__label">
+                    <iconify-icon icon="lucide:calendar-clock"></iconify-icon>
+                    Детализация
+                  </span>
+                  <div class="segmented segmented--dense" role="group" aria-label="Детализация времени">
+                    <button class="segmented__btn is-active" type="button">День</button>
+                    <button class="segmented__btn" type="button">Неделя</button>
+                    <button class="segmented__btn" type="button">Месяц</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="canvas-grid">
+                <div class="canvas-cell canvas-cell--span-3"><p class="kpi__label">Выручка (7д)</p><p class="kpi__value">1,24 млн ₽</p></div>
+                <div class="canvas-cell canvas-cell--span-3"><p class="kpi__label">Заказы (7д)</p><p class="kpi__value">318</p></div>
+                <div class="canvas-cell canvas-cell--span-3"><p class="kpi__label">Средний чек</p><p class="kpi__value">3 899 ₽</p></div>
+                <div class="canvas-cell canvas-cell--span-3"><p class="kpi__label">Конверсия</p><p class="kpi__value">2,4%</p></div>
+                <div class="canvas-cell canvas-cell--span-6">
+                  <p class="kpi__label">Выручка по дням</p>
+                  <div class="chart-bars" style="height:140px;margin-top:12px">
+                    <div class="chart-bar" style="height:45%"></div><div class="chart-bar" style="height:62%"></div>
+                    <div class="chart-bar" style="height:58%"></div><div class="chart-bar" style="height:72%"></div>
+                    <div class="chart-bar" style="height:80%"></div><div class="chart-bar" style="height:66%"></div>
+                    <div class="chart-bar" style="height:91%"></div>
+                  </div>
+                </div>
+                <div class="canvas-cell canvas-cell--span-6">
+                  <p class="kpi__label">Статусы заказов</p>
+                  <div class="chart-bars" style="height:140px;margin-top:12px">
+                    <div class="chart-bar" style="height:85%;background:var(--chart-2)"></div>
+                    <div class="chart-bar" style="height:55%;background:var(--chart-3)"></div>
+                    <div class="chart-bar" style="height:20%;background:var(--destructive)"></div>
+                  </div>
+                </div>
+                <div class="canvas-cell canvas-cell--span-12">
+                  <p class="kpi__label" style="margin-bottom:10px">Топ заказов</p>
+                  <table class="db-table" style="border:none;border-radius:0">
+                    <thead>
+                      <tr><th>ID</th><th>Статус</th><th>Регион</th><th style="text-align:right">Сумма</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><div class="db-cell text-tabular">#10482</div></td>
+                        <td><div class="db-cell"><span class="db-tag db-tag--green">completed</span></div></td>
+                        <td><div class="db-cell">MSK</div></td>
+                        <td><div class="db-cell db-cell--actions text-tabular">48 200 ₽</div></td>
+                      </tr>
+                      <tr>
+                        <td><div class="db-cell text-tabular">#10479</div></td>
+                        <td><div class="db-cell"><span class="db-tag db-tag--blue">processing</span></div></td>
+                        <td><div class="db-cell">SPB</div></td>
+                        <td><div class="db-cell db-cell--actions text-tabular">31 500 ₽</div></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="dashboards"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Настройки — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/settings</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Настройки</div>
+            <div class="text-xs text-muted">Acme Analytics</div>
+          </div>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:settings"></iconify-icon></span>
+                <h1 class="doc-title">Настройки</h1>
+              </div>
+              <p class="doc-lead">Профиль, компания, биллинг, данные и оформление</p>
+            </div>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Профиль</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Егор</div>
+                    <div class="settings-row__hint">founder@acme.ru · Владелец</div>
+                  </div>
+                  <button class="btn btn--ghost btn--sm" type="button">Изменить</button>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Пароль</div>
+                    <div class="settings-row__hint">Последнее изменение 3 мая 2026</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="forgot-password.html">Сменить</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Компания</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Acme Analytics</div>
+                    <div class="settings-row__hint">4 участника</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="team.html">Команда</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Биллинг</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Подписка и оплата</div>
+                    <div class="settings-row__hint">Pro · Visa •••• 4242 · следующее списание 1 июл</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="settings-billing.html">Открыть</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Данные</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Источники данных</div>
+                    <div class="settings-row__hint">PostgreSQL и другие БД для Cube.js</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="connections.html">Настроить</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Оформление</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Тема интерфейса</div>
+                    <div class="settings-row__hint">Светлая или тёмная — применяется ко всему приложению</div>
+                  </div>
+                  <div class="segmented" role="group" aria-label="Тема">
+                    <button class="segmented__btn" type="button" data-theme-set="light">Светлая</button>
+                    <button class="segmented__btn" type="button" data-theme-set="dark">Тёмная</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

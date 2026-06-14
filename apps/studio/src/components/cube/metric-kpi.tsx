@@ -34,9 +34,9 @@ export function MetricKpi({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-1">
         <CardDescription>{title}</CardDescription>
-        <CardTitle className="text-3xl">
+        <CardTitle className="text-xl tabular-nums">
           {isLoading
             ? '...'
             : error
@@ -46,11 +46,9 @@ export function MetricKpi({
                 : value.toLocaleString('ru-RU')}
         </CardTitle>
       </CardHeader>
-      {description && <CardContent className="text-sm text-muted-foreground">{description}</CardContent>}
+      {description && <CardContent className="text-xs text-muted-foreground">{description}</CardContent>}
       {error && (
-        <CardContent className="text-sm text-insight-warning">
-          Ошибка загрузки метрики
-        </CardContent>
+        <CardContent className="text-xs text-insight-warning">Ошибка загрузки метрики</CardContent>
       )}
     </Card>
   );

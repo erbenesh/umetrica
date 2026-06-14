@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Создать дашборд — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">modal</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame app-frame--blurred">
+      <div data-app-sidebar="home"></div>
+      <div class="app-main"><main class="app-scroll"><p class="text-muted">Background</p></main></div>
+    </div>
+
+    <div class="modal-backdrop" role="presentation">
+      <div class="modal" role="dialog" aria-labelledby="m-title">
+        <div class="modal__grab" aria-hidden="true"></div>
+        <div class="modal__header">
+          <h2 id="m-title">Создать дашборд</h2>
+          <p class="card__desc">Название видят все участники компании</p>
+        </div>
+        <div class="modal__body">
+          <div class="form-fields">
+            <div class="field"><label for="n">Название</label><input class="input" id="n" type="text" value="Операционный обзор" /></div>
+            <div class="field"><label for="d">Описание</label><textarea class="input" id="d" rows="3" style="height:auto;padding:12px 14px;min-height:88px">KPI выручки и заказов</textarea></div>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <a class="btn btn--outline" href="dashboards-list.html">Отмена</a>
+          <a class="btn" href="dashboard-detail.html">Создать</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

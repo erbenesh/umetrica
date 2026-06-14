@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Главная — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/ · главная</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle>
+          <span data-theme-label>Тёмная</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="home"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Главная</div>
+            <div class="text-xs text-muted">Acme Analytics</div>
+          </div>
+          <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:line-chart"></iconify-icon></span>
+                <h1 class="doc-title">Привет, Егор</h1>
+              </div>
+              <p class="doc-lead">Ключевые метрики за последние 30 дней из Cube.js</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Компания</span> Acme Analytics</span>
+              <span class="doc-prop"><span class="doc-prop__label">Период</span> 30 дней</span>
+              <span class="doc-prop"><span class="doc-prop__label">Обновлено</span> 14 июн, 10:42</span>
+            </div>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Сводка <span class="doc-h2__hint">· KPI</span></h2>
+              <div class="stat-strip">
+                <div class="stat-strip__item">
+                  <p class="stat-strip__label">Выручка (30д)</p>
+                  <p class="stat-strip__value">4,82 млн ₽</p>
+                </div>
+                <div class="stat-strip__item">
+                  <p class="stat-strip__label">Заказы (30д)</p>
+                  <p class="stat-strip__value">1 284</p>
+                </div>
+                <div class="stat-strip__item">
+                  <p class="stat-strip__label">Выручка (60д)</p>
+                  <p class="stat-strip__value">9,14 млн ₽</p>
+                  <p class="stat-strip__note">Расширенное окно сравнения</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Выручка по статусам</h2>
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active"><iconify-icon icon="lucide:table"></iconify-icon> Таблица</span>
+                  <span class="db-view"><iconify-icon icon="lucide:bar-chart-3"></iconify-icon> График</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <span class="text-xs text-muted">completed / processing / cancelled</span>
+                </div>
+                <div style="padding: 20px 16px 16px">
+                  <div class="chart-bars">
+                    <div class="chart-bar" style="height: 85%; background: var(--chart-1)"></div>
+                    <div class="chart-bar" style="height: 62%; background: var(--chart-2)"></div>
+                    <div class="chart-bar" style="height: 38%; background: var(--chart-3)"></div>
+                  </div>
+                  <div class="chart-labels">
+                    <span>completed</span>
+                    <span>processing</span>
+                    <span>cancelled</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Недавняя активность</h2>
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active">Все события</span>
+                  <span class="db-view">Дашборды</span>
+                  <span class="db-view">AI</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <button class="btn btn--ghost btn--sm" type="button">Фильтр</button>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 100px">Дата</th>
+                      <th>Событие</th>
+                      <th style="width: 120px">Источник</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="db-cell text-tabular">14 июн</div></td>
+                      <td><div class="db-cell"><span class="db-cell__icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span><span class="db-cell__title">Обновлён дашборд «Операционный обзор»</span></div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--gray">Егор</span></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">13 июн</div></td>
+                      <td><div class="db-cell"><span class="db-cell__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span><span class="db-cell__title">Сгенерирован AI-инсайт по выручке</span></div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--blue">System</span></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">12 июн</div></td>
+                      <td><div class="db-cell"><span class="db-cell__icon"><iconify-icon icon="lucide:user-plus"></iconify-icon></span><span class="db-cell__title">Приглашён участник anna@partner.ru</span></div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--gray">Егор</span></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="home"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

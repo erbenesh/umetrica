@@ -6,6 +6,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/app-layout';
 import { OrgGate } from '@/components/auth/org-gate';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { ThemeProvider } from '@/components/theme-provider';
 import { AcceptInvitationPage } from '@/pages/accept-invitation-page';
 import { AuthPage } from '@/pages/auth-page';
 import { DashboardDetailPage, DashboardsListPage } from '@/pages/dashboards-page';
@@ -24,7 +25,8 @@ const queryClient = new QueryClient();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -45,7 +47,8 @@ createRoot(document.getElementById('root')!).render(
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>
 );

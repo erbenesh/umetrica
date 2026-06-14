@@ -10,11 +10,11 @@ export function EmailVerificationBanner() {
   }
 
   return (
-    <div className="mb-4 rounded-lg border border-insight-warning/40 bg-insight-warning/10 px-4 py-3 text-sm">
-      <span className="text-foreground">
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-insight-warning/30 bg-insight-warning/8 px-3 py-2 text-xs">
+      <span>
         Подтвердите email ({me.user.email}), чтобы принимать приглашения и работать с командой.
-      </span>{' '}
-      <Link to="/verify-email" className="font-medium text-primary hover:underline">
+      </span>
+      <Link to="/verify-email" className="shrink-0 font-medium text-primary hover:underline">
         Подтвердить
       </Link>
     </div>

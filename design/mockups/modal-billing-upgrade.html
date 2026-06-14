@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Апгрейд тарифа — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">modal</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame app-frame--blurred">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main"><main class="app-scroll"><p class="text-muted">settings/billing</p></main></div>
+    </div>
+
+    <div class="modal-backdrop" role="presentation">
+      <div class="modal" role="dialog" aria-labelledby="m-title">
+        <div class="modal__grab" aria-hidden="true"></div>
+        <div class="modal__header">
+          <h2 id="m-title">Переход на Enterprise</h2>
+          <p class="card__desc">Pro → Enterprise · индивидуальные условия</p>
+        </div>
+        <div class="modal__body">
+          <div class="stat-strip" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+            <div class="stat-strip__item">
+              <p class="stat-strip__label">Сейчас</p>
+              <p class="stat-strip__value" style="font-size:20px">Pro</p>
+              <p class="stat-strip__note">12 900 ₽ / мес</p>
+            </div>
+            <div class="stat-strip__item">
+              <p class="stat-strip__label">Enterprise</p>
+              <p class="stat-strip__value" style="font-size:20px">от 49 000 ₽</p>
+              <p class="stat-strip__note">договор · счёт</p>
+            </div>
+          </div>
+          <ul class="plan-card__features" style="margin-bottom:16px">
+            <li>Безлимит AI-инсайтов и участников</li>
+            <li>SSO, SLA, выделенная поддержка</li>
+            <li>Опционально BYOK LLM</li>
+          </ul>
+          <div class="form-fields">
+            <div class="field">
+              <label for="contact">Контакт для связи</label>
+              <input class="input" id="contact" type="email" value="founder@acme.ru" />
+            </div>
+            <div class="field">
+              <label for="note">Комментарий</label>
+              <textarea class="input" id="note" rows="3" style="height:auto;padding:12px 14px;min-height:88px" placeholder="SSO через Google Workspace, ~30 пользователей…"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <a class="btn btn--outline" href="settings-billing.html">Отмена</a>
+          <a class="btn" href="settings-billing.html">Отправить заявку</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Счета — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/settings/billing/invoices</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Счета</div>
+            <div class="text-xs text-muted">Acme Analytics</div>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="settings-billing.html">Назад</a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:receipt"></iconify-icon></span>
+                <h1 class="doc-title">История счетов</h1>
+              </div>
+              <p class="doc-lead">Подписка, дополнения и закрывающие документы</p>
+            </div>
+
+            <section class="doc-block">
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active">Все</span>
+                  <span class="db-view">Оплаченные</span>
+                  <span class="db-view">Ожидают</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <span class="text-xs text-muted">6 записей</span>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>№</th>
+                      <th>Дата</th>
+                      <th>Описание</th>
+                      <th style="width: 120px">Сумма</th>
+                      <th style="width: 120px">Статус</th>
+                      <th style="width: 100px">Документы</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="db-cell text-tabular">INV-2026-006</div></td>
+                      <td><div class="db-cell text-tabular">1 июл 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Pro · июль 2026</span><div class="db-cell__sub">Автоплатёж Visa •••• 4242</div></div></td>
+                      <td><div class="db-cell text-tabular">12 900 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--info">Запланирован</span></div></td>
+                      <td><div class="db-cell text-muted">—</div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">INV-2026-005</div></td>
+                      <td><div class="db-cell text-tabular">12 июн 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Пакет AI +50</span></div></td>
+                      <td><div class="db-cell text-tabular">1 990 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><div class="db-cell"><button class="btn btn--ghost btn--sm" type="button">PDF</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">INV-2026-004</div></td>
+                      <td><div class="db-cell text-tabular">1 июн 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Pro · июнь 2026</span></div></td>
+                      <td><div class="db-cell text-tabular">12 900 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><div class="db-cell"><button class="btn btn--ghost btn--sm" type="button">PDF</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">INV-2026-003</div></td>
+                      <td><div class="db-cell text-tabular">1 мая 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Pro · май 2026</span></div></td>
+                      <td><div class="db-cell text-tabular">12 900 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><div class="db-cell"><button class="btn btn--ghost btn--sm" type="button">PDF</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">INV-2026-002</div></td>
+                      <td><div class="db-cell text-tabular">15 апр 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Апгрейд Starter → Pro</span><div class="db-cell__sub">Пропорциональный перерасчёт</div></div></td>
+                      <td><div class="db-cell text-tabular">6 450 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><div class="db-cell"><button class="btn btn--ghost btn--sm" type="button">PDF</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell text-tabular">INV-2026-001</div></td>
+                      <td><div class="db-cell text-tabular">1 апр 2026</div></td>
+                      <td><div class="db-cell"><span class="db-cell__title">Starter · апрель 2026</span></div></td>
+                      <td><div class="db-cell text-tabular">4 900 ₽</div></td>
+                      <td><div class="db-cell"><span class="badge badge--success">Оплачен</span></div></td>
+                      <td><div class="db-cell"><button class="btn btn--ghost btn--sm" type="button">PDF</button></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

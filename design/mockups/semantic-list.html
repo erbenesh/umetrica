@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Семантический слой — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/semantic</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="semantic"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><div class="mobile-header__title">Семантика</div></div>
+          <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:layers"></iconify-icon></span>
+                <h1 class="doc-title">Семантический слой</h1>
+              </div>
+              <p class="doc-lead">Кубы, меры и измерения — основа для дашбордов и AI-инсайтов</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Кубов</span> 1 активный</span>
+              <span class="doc-prop"><span class="doc-prop__label">Компания</span> Acme Analytics</span>
+              <span class="doc-prop"><span class="doc-prop__label">Источник</span> PostgreSQL</span>
+            </div>
+
+            <div class="callout callout--info">
+              <span>Редактирование доступно <strong>владельцу</strong> и <strong>администратору</strong>. Изменения применяются после публикации черновика.</span>
+              <a class="btn btn--ghost btn--sm" href="semantic-cube.html">Открыть Orders</a>
+            </div>
+
+            <section class="doc-block">
+              <div class="doc-block__head">
+                <h2 class="doc-h2">Кубы</h2>
+                <button class="btn btn--sm" type="button" disabled title="Следующая итерация">
+                  <iconify-icon icon="lucide:plus"></iconify-icon> Новый куб
+                </button>
+              </div>
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active"><iconify-icon icon="lucide:table"></iconify-icon> Таблица</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <button class="btn btn--ghost btn--sm" type="button">Сортировка</button>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>Куб</th>
+                      <th style="width: 100px">Меры</th>
+                      <th style="width: 120px">Измерения</th>
+                      <th style="width: 100px">Виджетов</th>
+                      <th style="width: 140px">Статус</th>
+                      <th style="width: 160px">Обновлён</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <a href="semantic-cube.html" style="display:block;color:inherit">
+                          <div class="db-cell">
+                            <span class="db-cell__icon"><iconify-icon icon="lucide:box"></iconify-icon></span>
+                            <div>
+                              <div class="db-cell__title">Orders</div>
+                              <div class="db-cell__sub">public.orders · Заказы компании</div>
+                            </div>
+                          </div>
+                        </a>
+                      </td>
+                      <td><div class="db-cell text-tabular">3</div></td>
+                      <td><div class="db-cell text-tabular">3</div></td>
+                      <td><div class="db-cell text-tabular">6</div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--green">Опубликован</span></div></td>
+                      <td><div class="db-cell text-muted text-tabular">14 июн, 09:40</div></td>
+                    </tr>
+                    <tr class="db-row--muted">
+                      <td>
+                        <div class="db-cell">
+                          <span class="db-cell__icon"><iconify-icon icon="lucide:box"></iconify-icon></span>
+                          <div>
+                            <div class="db-cell__title">Customers</div>
+                            <div class="db-cell__sub">Планируется · клиенты</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><div class="db-cell text-muted text-tabular">—</div></td>
+                      <td><div class="db-cell text-muted text-tabular">—</div></td>
+                      <td><div class="db-cell text-muted text-tabular">0</div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--gray">Скоро</span></div></td>
+                      <td><div class="db-cell text-muted text-tabular">—</div></td>
+                    </tr>
+                    <tr class="db-row--muted">
+                      <td>
+                        <div class="db-cell">
+                          <span class="db-cell__icon"><iconify-icon icon="lucide:box"></iconify-icon></span>
+                          <div>
+                            <div class="db-cell__title">Products</div>
+                            <div class="db-cell__sub">Планируется · каталог</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><div class="db-cell text-muted text-tabular">—</div></td>
+                      <td><div class="db-cell text-muted text-tabular">—</div></td>
+                      <td><div class="db-cell text-muted text-tabular">0</div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--gray">Скоро</span></div></td>
+                      <td><div class="db-cell text-muted text-tabular">—</div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="semantic"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 import { CubeApiProvider } from '@/components/cube/cube-provider';
 import { MetricKpi } from '@/components/cube/metric-kpi';
 import { RevenueByStatusChart } from '@/components/cube/revenue-chart';
+import { PageHeader } from '@/components/layout/page-header';
 import { useSession } from '@/lib/auth-client';
 
 const LAST_30_DAYS_QUERY = {
@@ -28,15 +29,13 @@ export function HomePage() {
 
   return (
     <CubeApiProvider>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Привет{session?.user?.name ? `, ${session.user.name}` : ''}
-          </h1>
-          <p className="text-muted-foreground">Данные из Cube.js за последние 30 дней</p>
-        </div>
+      <div className="space-y-4">
+        <PageHeader
+          title={`Привет${session?.user?.name ? `, ${session.user.name}` : ''}`}
+          description="Данные из Cube.js за последние 30 дней"
+        />
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           <MetricKpi
             query={LAST_30_DAYS_QUERY}
             title="Выручка (30д)"

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Приглашение — состояния</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">invite states</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+    <div class="states-grid">
+      <div class="state-preview"><div class="state-preview__label">Loading</div><div class="state-preview__body"><p class="text-muted">Загрузка приглашения…</p></div></div>
+      <div class="state-preview"><div class="state-preview__label">Not found</div><div class="state-preview__body"><div><h2 style="margin:0 0 6px;font-size:18px">Не найдено</h2><p class="text-sm text-muted" style="margin:0">Ссылка недействительна</p></div></div></div>
+      <div class="state-preview"><div class="state-preview__label">Expired</div><div class="state-preview__body"><p class="text-sm text-secondary" style="margin:0;text-align:center">Попросите новое приглашение у администратора Acme Analytics</p></div></div>
+      <div class="state-preview"><div class="state-preview__label">Joining</div><div class="state-preview__body"><p class="text-muted">Добавляем в компанию…</p></div></div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

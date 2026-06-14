@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f8fa" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>umetrica — макеты экранов</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <span class="mockup-bar__title">umetrica — HTML-макеты v3</span>
+        <span class="mockup-bar__meta">Document canvas · Notion-like DB views</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle>
+          <span data-theme-label>Тёмная</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <h1>Экраны Studio</h1>
+      <p>
+        Согласуйте визуал перед переносом в React. На iPhone проверяйте с «Добавить на экран Домой» или
+        в Safari — учтены safe area и Dynamic Island (<code>viewport-fit=cover</code>).
+      </p>
+
+      <div class="hig-note">
+        <strong>v3:</strong> document canvas, database views, Iconify, sidebar из JS.
+        Редактор виджетов: График · Фильтр · Детализация · Текст (<code>?kind=</code>).
+        Семантический слой: список кубов + редактор Orders.
+        Монетизация: биллинг, квота AI, BYOK только Enterprise.
+      </div>
+
+      <section class="gallery-section">
+        <h2>Публичные / auth</h2>
+        <div class="gallery-grid">
+          <a class="gallery-card" href="auth-login.html"><h2>Вход</h2><p>/auth</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="auth-register.html"><h2>Регистрация</h2><p>Основатель + компания</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="forgot-password.html"><h2>Сброс пароля</h2><p>/forgot-password</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="reset-password.html"><h2>Новый пароль</h2><p>/reset-password</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="verify-email.html"><h2>Email</h2><p>/verify-email</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="onboarding.html"><h2>Онбординг</h2><p>/onboarding</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="onboarding-connect.html"><h2>Данные</h2><p>Шаг 2 · БД или демо</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="accept-invitation.html"><h2>Приглашение</h2><p>Форма accept</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="accept-invitation-states.html"><h2>Приглашение</h2><p>Edge states</p><span class="gallery-card__tag">Auth</span></a>
+        </div>
+      </section>
+
+      <section class="gallery-section">
+        <h2>Приложение</h2>
+        <div class="gallery-grid">
+          <a class="gallery-card" href="home.html"><h2>Главная</h2><p>Doc + stat-strip + DB</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="insights.html"><h2>AI-инсайты</h2><p>Лента + квота</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="settings-billing.html"><h2>Биллинг</h2><p>Подписка, счета, AI</p><span class="gallery-card__tag">Billing</span></a>
+          <a class="gallery-card" href="billing-plans.html"><h2>Тарифы</h2><p>Starter · Pro · Enterprise</p><span class="gallery-card__tag">Billing</span></a>
+          <a class="gallery-card" href="billing-payment.html"><h2>Оплата</h2><p>Карта, ИНН, счета</p><span class="gallery-card__tag">Billing</span></a>
+          <a class="gallery-card" href="billing-invoices.html"><h2>Счета</h2><p>История платежей</p><span class="gallery-card__tag">Billing</span></a>
+          <a class="gallery-card" href="dashboards-list.html"><h2>Дашборды</h2><p>Database table</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="dashboard-detail.html"><h2>Дашборд</h2><p>Canvas grid</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="team.html"><h2>Команда</h2><p>DB участников</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="settings.html"><h2>Настройки</h2><p>Тема, профиль</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="connections.html"><h2>Источники данных</h2><p>Только БД</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="connections-add-db.html"><h2>Новая БД</h2><p>PostgreSQL, тест</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="settings-enterprise-llm.html"><h2>BYOK LLM</h2><p>Enterprise only</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="widget-editor.html?kind=chart"><h2>График</h2><p>Куб, запрос, предпросмотр</p><span class="gallery-card__tag">Editor</span></a>
+          <a class="gallery-card" href="widget-editor.html?kind=filter"><h2>Фильтр</h2><p>Глобальный фильтр и связи</p><span class="gallery-card__tag">Editor</span></a>
+          <a class="gallery-card" href="widget-editor.html?kind=time"><h2>Детализация</h2><p>Переключение шага времени</p><span class="gallery-card__tag">Editor</span></a>
+          <a class="gallery-card" href="widget-editor.html?kind=text"><h2>Текст</h2><p>Блок Markdown</p><span class="gallery-card__tag">Editor</span></a>
+          <a class="gallery-card" href="semantic-list.html"><h2>Семантика</h2><p>Список кубов</p><span class="gallery-card__tag">Semantic</span></a>
+          <a class="gallery-card" href="semantic-cube.html"><h2>Куб Orders</h2><p>Меры · измерения · preview</p><span class="gallery-card__tag">Semantic</span></a>
+        </div>
+      </section>
+
+      <section class="gallery-section">
+        <h2>Модалки</h2>
+        <div class="gallery-grid">
+          <a class="gallery-card" href="modal-create-dashboard.html"><h2>Создать дашборд</h2><p>Sheet / dialog</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-billing-credits.html"><h2>AI-кредиты</h2><p>Покупка пакета</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-billing-upgrade.html"><h2>Enterprise</h2><p>Заявка на апгрейд</p><span class="gallery-card__tag">Modal</span></a>
+        </div>
+      </section>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

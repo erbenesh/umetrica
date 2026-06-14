@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { AuthLayout } from '@/components/layout/auth-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMe } from '@/hooks/use-me';
 import { sendVerificationEmail } from '@/lib/auth-client';
 
@@ -42,48 +42,34 @@ export function VerifyEmailPage() {
 
   if (me?.user.emailVerified) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Email подтверждён</CardTitle>
-            <CardDescription>Можно продолжать работу в umetrica.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" onClick={() => navigate('/')}>
-              На главную
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout title="Email подтверждён" description="Можно продолжать работу в umetrica">
+        <Button className="w-full" onClick={() => navigate('/')}>
+          На главную
+        </Button>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Подтвердите email</CardTitle>
-          <CardDescription>
-            Мы отправили письмо на {me?.user.email ?? 'ваш адрес'}. Подтверждение нужно для входа в
-            компанию и приёма приглашений.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            В dev-режиме ссылка печатается в консоли API-сервера.
-          </p>
-          {status && <p className="text-sm text-insight-info">{status}</p>}
-          <Button className="w-full" disabled={isSending} onClick={handleResend}>
-            {isSending ? 'Отправка...' : 'Отправить письмо снова'}
-          </Button>
-          <Button variant="ghost" className="w-full" onClick={() => refetch()}>
-            Я подтвердил — обновить статус
-          </Button>
-          <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
-            На главную
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Подтвердите email"
+      description={`Мы отправили письмо на ${me?.user.email ?? 'ваш адрес'}. Подтверждение нужно для входа в компанию и приёма приглашений.`}
+    >
+      <div className="space-y-3">
+        <p className="text-xs text-muted-foreground">
+          В dev-режиме ссылка печатается в консоли API-сервера.
+        </p>
+        {status && <p className="text-xs text-insight-info">{status}</p>}
+        <Button className="w-full" disabled={isSending} onClick={handleResend}>
+          {isSending ? 'Отправка...' : 'Отправить письмо снова'}
+        </Button>
+        <Button variant="secondary" className="w-full" onClick={() => refetch()}>
+          Я подтвердил — обновить статус
+        </Button>
+        <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
+          На главную
+        </Button>
+      </div>
+    </AuthLayout>
   );
 }

@@ -6,15 +6,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { AuthLayout, AuthModeSwitch } from '@/components/layout/auth-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAcceptInvitation } from '@/hooks/use-team';
 import { useInvitationPreview } from '@/hooks/use-invitation-preview';
 import { signIn, signOut, signUp, useSession } from '@/lib/auth-client';
-import { isEmailVerificationError } from '@/lib/auth-helpers';
+import { isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpers';
 import { confirmInvitationSignupEmail, prepareInvitationAccept } from '@/lib/invitations-api';
-import { syncSessionAfterAuth } from '@/lib/auth-helpers';
 
 const schema = z.object({
   name: z.string().min(2).optional(),
@@ -32,6 +31,27 @@ const ROLE_LABELS: Record<string, string> = {
 
 function roleLabel(role: string) {
   return ROLE_LABELS[role] ?? role;
+}
+
+function AuthStatus({
+  title,
+  description,
+  loading = false,
+}: {
+  title: string;
+  description?: string;
+  loading?: boolean;
+}) {
+  return (
+    <AuthLayout title={title} description={description}>
+      {loading ? (
+        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+          <Loader2 className="mr-2 size-3.5 animate-spin" />
+          Подождите...
+        </div>
+      ) : null}
+    </AuthLayout>
+  );
 }
 
 export function AcceptInvitationPage() {
@@ -126,7 +146,6 @@ export function AcceptInvitationPage() {
 
         await confirmInvitationSignupEmail(invitationId, data.email);
 
-        // requireEmailVerification отключает auto sign-in после sign-up — входим явно
         const signInResult = await signIn.email({
           email: data.email,
           password: data.password,
@@ -144,119 +163,81 @@ export function AcceptInvitationPage() {
   };
 
   if (previewLoading || sessionPending) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        <Loader2 className="mr-2 size-4 animate-spin" />
-        Загрузка приглашения...
-      </div>
-    );
+    return <AuthStatus title="Загрузка приглашения" loading />;
   }
 
   if (previewError || !preview) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Приглашение не найдено</CardTitle>
-            <CardDescription>Ссылка недействительна или уже использована.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+      <AuthStatus
+        title="Приглашение не найдено"
+        description="Ссылка недействительна или уже использована."
+      />
     );
   }
 
   if (preview.expired) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Приглашение устарело</CardTitle>
-            <CardDescription>
-              Попросите администратора компании «{preview.organizationName}» отправить новое
-              приглашение.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+      <AuthStatus
+        title="Приглашение устарело"
+        description={`Попросите администратора компании «${preview.organizationName}» отправить новое приглашение.`}
+      />
     );
   }
 
   if (joining) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Присоединяем к «{preview.organizationName}»</CardTitle>
-            <CardDescription>Почти готово...</CardDescription>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center text-muted-foreground">
-            <Loader2 className="mr-2 size-4 animate-spin" />
-            Добавляем вас в компанию
-          </CardContent>
-        </Card>
-      </div>
+      <AuthStatus
+        title={`Присоединяем к «${preview.organizationName}»`}
+        description="Добавляем вас в компанию"
+        loading
+      />
     );
   }
 
   const showAuthForm = !session || !sessionEmailMatches;
 
   if (!showAuthForm) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        <Loader2 className="mr-2 size-4 animate-spin" />
-        Принимаем приглашение...
-      </div>
-    );
+    return <AuthStatus title="Принимаем приглашение" loading />;
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Приглашение в «{preview.organizationName}»</CardTitle>
-          <CardDescription>
-            Роль: {roleLabel(preview.role)}. Создайте аккаунт или войдите — вы сразу попадёте в
-            компанию.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {session && !sessionEmailMatches && (
-            <div className="mb-4 space-y-2 rounded-lg border border-border p-3 text-sm">
-              <p className="text-muted-foreground">
-                Вы вошли как <span className="text-foreground">{session.user.email}</span>. Для
-                приглашения нужен <span className="text-foreground">{preview.email}</span>.
-              </p>
-              <Button variant="outline" size="sm" onClick={() => signOut()}>
-                Выйти и войти другим аккаунтом
-              </Button>
-            </div>
-          )}
+    <AuthLayout
+      title={`Приглашение в «${preview.organizationName}»`}
+      description={`Роль: ${roleLabel(preview.role)}. Создайте аккаунт или войдите — вы сразу попадёте в компанию.`}
+      footer={
+        <AuthModeSwitch
+          label={mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
+          onClick={() => setMode((current) => (current === 'login' ? 'register' : 'login'))}
+        />
+      }
+    >
+      {session && !sessionEmailMatches && (
+        <div className="mb-3 space-y-2 rounded-md border border-border bg-muted/40 p-2.5 text-xs">
+          <p className="text-muted-foreground">
+            Вы вошли как <span className="text-foreground">{session.user.email}</span>. Для
+            приглашения нужен <span className="text-foreground">{preview.email}</span>.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => signOut()}>
+            Выйти и войти другим аккаунтом
+          </Button>
+        </div>
+      )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {mode === 'register' && <Input placeholder="Имя" {...register('name')} />}
-            <Input type="email" placeholder="Email" readOnly {...register('email')} />
-            <Input type="password" placeholder="Пароль" {...register('password')} />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        {mode === 'register' && <Input placeholder="Имя" {...register('name')} />}
+        <Input type="email" placeholder="Email" readOnly {...register('email')} />
+        <Input type="password" placeholder="Пароль" {...register('password')} />
 
-            {error && <p className="text-sm text-insight-warning">{error}</p>}
+        {error && <p className="text-xs text-insight-warning">{error}</p>}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting || joining}>
-              {isSubmitting
-                ? 'Загрузка...'
-                : mode === 'login'
-                  ? 'Войти и присоединиться'
-                  : 'Зарегистрироваться и присоединиться'}
-            </Button>
-          </form>
-
-          <button
-            type="button"
-            className="mt-4 w-full text-sm text-muted-foreground hover:text-foreground"
-            onClick={() => setMode((current) => (current === 'login' ? 'register' : 'login'))}
-          >
-            {mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
-          </button>
-        </CardContent>
-      </Card>
-    </div>
+        <Button type="submit" className="w-full" disabled={isSubmitting || joining}>
+          {isSubmitting
+            ? 'Загрузка...'
+            : mode === 'login'
+              ? 'Войти и присоединиться'
+              : 'Зарегистрироваться и присоединиться'}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

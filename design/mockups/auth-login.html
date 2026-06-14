@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Вход — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/auth · вход</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="auth-frame">
+      <aside class="auth-brand-panel">
+        <div>
+          <div class="brand" style="margin-bottom: 32px">
+            <span class="brand__mark">u</span>
+            <span><div class="brand__name">umetrica</div><div class="brand__tag">B2B-аналитика</div></span>
+          </div>
+          <h2>Данные, которые объясняют себя сами</h2>
+          <p>AI-инсайты, дашборды и командная работа в одном пространстве компании.</p>
+        </div>
+        <div class="auth-brand-panel__stats">
+          <div class="auth-stat"><strong>4,8×</strong><span>быстрее к решению</span></div>
+          <div class="auth-stat"><strong>99,9%</strong><span>uptime SLA</span></div>
+        </div>
+      </aside>
+
+      <div class="auth-form-panel">
+        <header class="auth-topbar">
+          <a href="auth-login.html" class="brand">
+            <span class="brand__mark">u</span>
+            <span><div class="brand__name">umetrica</div></span>
+          </a>
+          <button class="btn btn--ghost btn--icon" type="button" data-theme-toggle aria-label="Тема"></button>
+        </header>
+
+        <main class="auth-main">
+          <div class="auth-panel">
+            <div class="auth-panel__head">
+              <h1>Добро пожаловать</h1>
+              <p>Войдите в рабочее пространство компании</p>
+            </div>
+            <div class="auth-panel__card">
+              <div class="form-fields">
+                <div class="field">
+                  <label for="email">Email</label>
+                  <input class="input" id="email" type="email" autocomplete="email" value="founder@acme.ru" />
+                </div>
+                <div class="field">
+                  <label for="password">Пароль</label>
+                  <input class="input" id="password" type="password" autocomplete="current-password" value="password" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn--block" type="button">Войти</button>
+              </div>
+            </div>
+            <div class="auth-panel__footer">
+              <a href="forgot-password.html">Забыли пароль?</a>
+              <span>Нет аккаунта? <a href="auth-register.html">Регистрация</a></span>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

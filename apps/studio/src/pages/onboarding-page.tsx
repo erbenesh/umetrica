@@ -1,12 +1,12 @@
 import { Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
+import { AuthLayout } from '@/components/layout/auth-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useCreateOrganization } from '@/hooks/use-create-organization';
-import { useQueryClient } from '@tanstack/react-query';
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -29,37 +29,34 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="mb-2 flex items-center gap-2 text-insight-info">
-            <Building2 className="size-5" />
-            <CardTitle>Создайте компанию</CardTitle>
-          </div>
-          <CardDescription>
-            Компания — это рабочее пространство для дашбордов, аналитики и команды. Если вы
-            регистрировались как основатель, войдите снова — компания создастся автоматически.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            placeholder="Название компании"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          {error && <p className="text-sm text-insight-warning">{error}</p>}
-          <Button className="w-full" disabled={createOrg.isPending} onClick={handleCreate}>
-            {createOrg.isPending ? 'Создание...' : 'Создать компанию'}
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Если вас пригласили в компанию, перейдите в{' '}
-            <Link to="/team" className="text-foreground underline-offset-2 hover:underline">
-              Команда
-            </Link>{' '}
-            или откройте ссылку из письма.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthLayout
+      title="Создайте компанию"
+      description="Если вы регистрировались как основатель, войдите снова — компания создастся автоматически."
+      footer={
+        <p className="text-center text-[11px] text-muted-foreground">
+          Есть приглашение? Откройте{' '}
+          <Link to="/team" className="text-foreground hover:underline">
+            Команда
+          </Link>{' '}
+          или ссылку из письма.
+        </p>
+      }
+    >
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Building2 className="size-3.5 text-primary" />
+          Рабочее пространство для дашбордов и команды
+        </div>
+        <Input
+          placeholder="Название компании"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+        {error && <p className="text-xs text-insight-warning">{error}</p>}
+        <Button className="w-full" disabled={createOrg.isPending} onClick={handleCreate}>
+          {createOrg.isPending ? 'Создание...' : 'Создать компанию'}
+        </Button>
+      </div>
+    </AuthLayout>
   );
 }

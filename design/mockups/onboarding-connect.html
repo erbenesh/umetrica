@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Подключение данных — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/onboarding/connect</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+    <div class="auth-frame">
+      <aside class="auth-brand-panel"><div><h2>Шаг 2 из 2</h2><p>Подключите свою БД или начните с демо. AI-инсайты уже включены в тариф.</p></div></aside>
+      <div class="auth-form-panel">
+        <header class="auth-topbar"><span class="brand__mark">u</span><button class="btn btn--ghost btn--icon" type="button" data-theme-toggle aria-label="Тема"></button></header>
+        <main class="auth-main">
+          <div class="auth-panel">
+            <div class="auth-panel__head">
+              <h1>Откуда брать данные?</h1>
+              <p>Acme Analytics · для дашбордов и инсайтов</p>
+            </div>
+            <div class="auth-panel__card">
+              <div class="settings-group" style="margin-bottom:16px">
+                <a class="settings-row" href="connections-add-db.html" style="text-decoration:none;color:inherit">
+                  <div>
+                    <div class="settings-row__label"><iconify-icon icon="lucide:database" style="vertical-align:-2px;margin-right:6px"></iconify-icon> Подключить базу данных</div>
+                    <div class="settings-row__hint">PostgreSQL, MySQL, BigQuery — read-only пользователь</div>
+                  </div>
+                  <span class="btn btn--ghost btn--sm">Настроить</span>
+                </a>
+              </div>
+              <div class="form-actions">
+                <a class="btn btn--block" href="home.html">Начать с демо-данными</a>
+                <p class="text-xs text-muted" style="text-align:center;margin:12px 0 0">20 AI-инсайтов в месяц на тарифе Starter · демо-заказы уже загружены</p>
+              </div>
+            </div>
+            <div class="auth-panel__footer">Позже: <a href="connections.html">Настройки → Источники данных</a></div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Команда — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/team</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle>
+          <span data-theme-label>Тёмная</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="team"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Команда</div>
+            <div class="text-xs text-muted">Acme Analytics · Владелец</div>
+          </div>
+          <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="callout">
+              <span>Подтвердите email (founder@acme.ru), чтобы приглашать участников.</span>
+              <a href="verify-email.html">Подтвердить →</a>
+            </div>
+
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:users"></iconify-icon></span>
+                <h1 class="doc-title">Команда</h1>
+              </div>
+              <p class="doc-lead">Управление доступом к компании Acme Analytics</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Участников</span> 4</span>
+              <span class="doc-prop"><span class="doc-prop__label">Приглашений</span> 1</span>
+              <span class="doc-prop"><span class="doc-prop__label">Ваша роль</span> Владелец</span>
+            </div>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Пригласить <span class="doc-h2__hint">· новый участник</span></h2>
+              <form class="invite-form" action="#">
+                <div class="field">
+                  <label for="invite-email">Email</label>
+                  <input class="input" id="invite-email" type="email" placeholder="colleague@company.ru" value="new@partner.ru" />
+                </div>
+                <div class="field">
+                  <label for="invite-role">Роль</label>
+                  <select class="input" id="invite-role">
+                    <option>Наблюдатель</option>
+                    <option>Админ</option>
+                  </select>
+                </div>
+                <div class="invite-form__submit">
+                  <button class="btn" type="button">Пригласить</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Участники</h2>
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active">Все</span>
+                  <span class="db-view">Админы</span>
+                  <span class="db-view">Наблюдатели</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <span class="text-xs text-muted">4 записи</span>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>Имя</th>
+                      <th>Email</th>
+                      <th style="width: 160px">Роль</th>
+                      <th style="width: 56px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="db-cell"><span class="db-cell__avatar">Е</span><span class="db-cell__title">Егор</span></div></td>
+                      <td><div class="db-cell text-muted">founder@acme.ru</div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--orange">Владелец</span></div></td>
+                      <td><div class="db-cell db-cell--actions"></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell"><span class="db-cell__avatar">А</span><span class="db-cell__title">Анна</span></div></td>
+                      <td><div class="db-cell text-muted">anna@partner.ru</div></td>
+                      <td><div class="db-cell"><select class="db-select" aria-label="Роль Анны"><option>Наблюдатель</option><option selected>Админ</option></select></div></td>
+                      <td><div class="db-cell db-cell--actions"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Удалить">✕</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell"><span class="db-cell__avatar">И</span><span class="db-cell__title">Иван</span></div></td>
+                      <td><div class="db-cell text-muted">ivan@acme.ru</div></td>
+                      <td><div class="db-cell"><select class="db-select" aria-label="Роль Ивана"><option selected>Наблюдатель</option><option>Админ</option></select></div></td>
+                      <td><div class="db-cell db-cell--actions"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Удалить">✕</button></div></td>
+                    </tr>
+                    <tr>
+                      <td><div class="db-cell"><span class="db-cell__avatar">М</span><span class="db-cell__title">Мария</span></div></td>
+                      <td><div class="db-cell text-muted">maria@acme.ru</div></td>
+                      <td><div class="db-cell"><select class="db-select" aria-label="Роль Марии"><option selected>Наблюдатель</option><option>Админ</option></select></div></td>
+                      <td><div class="db-cell db-cell--actions"><button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Удалить">✕</button></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Ожидают ответа</h2>
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active">Активные</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <span class="text-xs text-muted">1 запись</span>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th style="width: 140px">Роль</th>
+                      <th style="width: 140px">Истекает</th>
+                      <th style="width: 100px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><div class="db-cell"><span class="db-cell__title">new@partner.ru</span></div></td>
+                      <td><div class="db-cell"><span class="db-tag db-tag--gray">Наблюдатель</span></div></td>
+                      <td><div class="db-cell text-muted text-tabular">21 июн 2026</div></td>
+                      <td><div class="db-cell db-cell--actions"><button class="btn btn--ghost btn--sm" type="button">Отменить</button></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="team"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

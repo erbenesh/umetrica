@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Дашборды — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/dashboards</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="dashboards"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><div class="mobile-header__title">Дашборды</div></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn btn--sm" href="modal-create-dashboard.html"><iconify-icon icon="lucide:plus"></iconify-icon></a>
+            <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+          </div>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span>
+                <h1 class="doc-title">Дашборды</h1>
+              </div>
+              <p class="doc-lead">Рабочие пространства с виджетами и метриками</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Всего</span> 3</span>
+              <span class="doc-prop"><span class="doc-prop__label">Компания</span> Acme Analytics</span>
+            </div>
+
+            <section class="doc-block">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+                <h2 class="doc-h2" style="margin:0">База дашбордов</h2>
+                <a class="btn btn--sm" href="modal-create-dashboard.html">+ Создать</a>
+              </div>
+              <div class="db">
+                <div class="db-toolbar">
+                  <span class="db-view is-active"><iconify-icon icon="lucide:table"></iconify-icon> Таблица</span>
+                  <span class="db-view"><iconify-icon icon="lucide:layout-grid"></iconify-icon> Галерея</span>
+                  <span class="db-toolbar__spacer"></span>
+                  <button class="btn btn--ghost btn--sm" type="button">Сортировка</button>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>Название</th>
+                      <th style="width: 140px">Виджетов</th>
+                      <th style="width: 180px">Обновлён</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <a href="dashboard-detail.html" style="display:block;color:inherit">
+                          <div class="db-cell">
+                            <span class="db-cell__icon"><iconify-icon icon="lucide:bar-chart-3"></iconify-icon></span>
+                            <div>
+                              <div class="db-cell__title">Операционный обзор</div>
+                              <div class="db-cell__sub">KPI выручки и заказов</div>
+                            </div>
+                          </div>
+                        </a>
+                      </td>
+                      <td><div class="db-cell text-tabular">6</div></td>
+                      <td><div class="db-cell text-muted text-tabular">14 июн, 10:20</div></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <a href="dashboard-detail.html" style="display:block;color:inherit">
+                          <div class="db-cell">
+                            <span class="db-cell__icon"><iconify-icon icon="lucide:map"></iconify-icon></span>
+                            <div>
+                              <div class="db-cell__title">Продажи по регионам</div>
+                              <div class="db-cell__sub">Графики и таблицы</div>
+                            </div>
+                          </div>
+                        </a>
+                      </td>
+                      <td><div class="db-cell text-tabular">4</div></td>
+                      <td><div class="db-cell text-muted text-tabular">11 июн, 16:05</div></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <a href="dashboard-detail.html" style="display:block;color:inherit">
+                          <div class="db-cell">
+                            <span class="db-cell__icon"><iconify-icon icon="lucide:clipboard-list"></iconify-icon></span>
+                            <div>
+                              <div class="db-cell__title">Executive summary</div>
+                              <div class="db-cell__sub">Сводка для руководства</div>
+                            </div>
+                          </div>
+                        </a>
+                      </td>
+                      <td><div class="db-cell text-tabular">8</div></td>
+                      <td><div class="db-cell text-muted text-tabular">8 июн</div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="dashboards"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

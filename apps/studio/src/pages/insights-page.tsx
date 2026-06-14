@@ -2,6 +2,7 @@ import { Lightbulb, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 import { InsightCard } from '@/components/insights/insight-card';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDeleteInsight, useGenerateInsight, useInsights } from '@/hooks/use-insights';
@@ -34,37 +35,33 @@ export function InsightsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="text-insight-info" />
-            <h1 className="text-2xl font-bold">AI-инсайты</h1>
-          </div>
-          <p className="text-muted-foreground">
-            Проактивные оценки: что произошло, почему и что делать.
-          </p>
-        </div>
-        <Button onClick={handleGenerate} disabled={generate.isPending}>
-          {generate.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <RefreshCw className="size-4" />
-          )}
-          Проверить аномалии
-        </Button>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title="AI-инсайты"
+        description="Проактивные оценки: что произошло, почему и что делать."
+        icon={Lightbulb}
+        actions={
+          <Button onClick={handleGenerate} disabled={generate.isPending}>
+            {generate.isPending ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="size-3.5" />
+            )}
+            Проверить аномалии
+          </Button>
+        }
+      />
 
       {statusMessage && (
         <Card>
-          <CardContent className="p-5 text-sm text-muted-foreground">{statusMessage}</CardContent>
+          <CardContent className="p-3 text-xs text-muted-foreground">{statusMessage}</CardContent>
         </Card>
       )}
 
       {isLoading && (
         <Card>
-          <CardContent className="flex items-center gap-2 p-5 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
+          <CardContent className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
+            <Loader2 className="size-3.5 animate-spin" />
             Загрузка инсайтов...
           </CardContent>
         </Card>
@@ -72,7 +69,7 @@ export function InsightsPage() {
 
       {error && (
         <Card>
-          <CardContent className="p-5 text-sm text-destructive">
+          <CardContent className="p-3 text-xs text-destructive">
             {error instanceof Error ? error.message : 'Ошибка загрузки'}
           </CardContent>
         </Card>
@@ -83,14 +80,14 @@ export function InsightsPage() {
           <CardHeader>
             <CardTitle>Пока пусто</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
+          <CardContent className="text-xs text-muted-foreground">
             Нажмите «Проверить аномалии» — система сравнит выручку и число заказов за 7 дней
             с предыдущим периодом, соберёт brief и оценит через AI.
           </CardContent>
         </Card>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {data?.items.map((insight) => (
           <InsightCard
             key={insight.id}

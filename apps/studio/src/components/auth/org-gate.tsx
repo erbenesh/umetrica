@@ -39,7 +39,7 @@ export function OrgGate() {
 
   if (!founderSetupReady || orgsLoading || invitesLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-muted-foreground">
+      <div className="flex items-center justify-center py-10 text-xs text-muted-foreground">
         <Loader2 className="mr-2 size-4 animate-spin" />
         Загрузка компании...
       </div>

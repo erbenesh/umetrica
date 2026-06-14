@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Источник данных — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/settings/connections/new-db</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <div class="mobile-header__title">Источник данных</div>
+            <div class="text-xs text-muted">Новое подключение</div>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="connections.html">Отмена</a>
+        </header>
+
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:database"></iconify-icon></span>
+                <h1 class="doc-title">Подключить базу данных</h1>
+              </div>
+              <p class="doc-lead">Cube.js будет читать данные только для запросов вашей компании</p>
+            </div>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Параметры</h2>
+              <form class="form-fields" action="#">
+                <div class="field">
+                  <label for="db-name">Название</label>
+                  <input class="input" id="db-name" type="text" placeholder="Production Postgres" value="Production Postgres" />
+                </div>
+                <div class="field">
+                  <label for="db-type">Тип</label>
+                  <select class="input" id="db-type">
+                    <option selected>PostgreSQL</option>
+                    <option>MySQL</option>
+                    <option>BigQuery</option>
+                    <option>ClickHouse</option>
+                  </select>
+                </div>
+                <div class="form-grid form-grid--2">
+                  <div class="field">
+                    <label for="db-host">Хост</label>
+                    <input class="input" id="db-host" type="text" placeholder="db.company.ru" value="db.acme.internal" />
+                  </div>
+                  <div class="field">
+                    <label for="db-port">Порт</label>
+                    <input class="input" id="db-port" type="text" placeholder="5432" value="5432" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="db-database">База данных</label>
+                  <input class="input" id="db-database" type="text" placeholder="analytics" value="analytics" />
+                </div>
+                <div class="form-grid form-grid--2">
+                  <div class="field">
+                    <label for="db-user">Пользователь</label>
+                    <input class="input" id="db-user" type="text" placeholder="readonly_user" value="umetrica_ro" />
+                  </div>
+                  <div class="field">
+                    <label for="db-pass">Пароль</label>
+                    <input class="input" id="db-pass" type="password" placeholder="••••••••" value="secret" />
+                  </div>
+                </div>
+                <label class="checkbox-row">
+                  <input type="checkbox" checked />
+                  <span>SSL (рекомендуется для production)</span>
+                </label>
+              </form>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Проверка</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Тестовое подключение</div>
+                    <div class="settings-row__hint">Проверим доступ и наличие схемы public</div>
+                  </div>
+                  <button class="btn btn--ghost btn--sm" type="button" data-connection-test>
+                    <iconify-icon icon="lucide:plug-zap"></iconify-icon> Проверить
+                  </button>
+                </div>
+              </div>
+              <div class="callout callout--info callout--compact" data-connection-result hidden>
+                <span><strong>Успешно.</strong> Найдено 42 таблицы. Рекомендуем пользователя с правами только SELECT.</span>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <div class="form-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn" type="button">Сохранить и подключить</button>
+                <a class="btn btn--ghost" href="connections.html">Отмена</a>
+              </div>
+            </section>
+          </article>
+        </main>
+
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

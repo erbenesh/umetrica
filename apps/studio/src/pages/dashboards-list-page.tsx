@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CreateDashboardDialog } from '@/components/dashboards/create-dashboard-dialog';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateDashboard, useDashboards, useDeleteDashboard } from '@/hooks/use-dashboards';
@@ -35,22 +36,18 @@ export function DashboardsListPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <LayoutDashboard />
-          <div>
-            <h1 className="text-2xl font-bold">Дашборды</h1>
-            <p className="text-sm text-muted-foreground">
-              {data ? `${data.total} дашборд(ов)` : 'Загрузка...'}
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setCreateOpen(true)} disabled={!canWrite}>
-          <Plus size={16} />
-          Создать дашборд
-        </Button>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title="Дашборды"
+        description={data ? `${data.total} дашборд(ов)` : 'Загрузка...'}
+        icon={LayoutDashboard}
+        actions={
+          <Button onClick={() => setCreateOpen(true)} disabled={!canWrite}>
+            <Plus size={14} />
+            Создать дашборд
+          </Button>
+        }
+      />
 
       {isLoading && (
         <div className="text-sm text-muted-foreground">Загрузка списка...</div>

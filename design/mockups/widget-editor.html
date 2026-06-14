@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Редактор виджета — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left">
+        <a href="index.html" class="mockup-bar__title">← Макеты</a>
+        <span class="mockup-bar__meta">/dashboards/:id/widget/new</span>
+      </div>
+      <div class="mockup-bar__actions">
+        <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
+      </div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="dashboards"></div>
+
+      <div class="app-main app-main--editor">
+        <header class="mobile-header">
+          <div>
+            <a href="dashboard-detail.html" class="text-xs text-muted">← Дашборд</a>
+            <div class="mobile-header__title">Новый виджет</div>
+          </div>
+          <a class="btn btn--sm" href="dashboard-detail.html">Сохранить</a>
+        </header>
+
+        <header class="editor-toolbar">
+          <div class="editor-toolbar__crumb">
+            <a href="dashboards-list.html">Дашборды</a>
+            <iconify-icon icon="lucide:chevron-right"></iconify-icon>
+            <a href="dashboard-detail.html">Операционный обзор</a>
+            <iconify-icon icon="lucide:chevron-right"></iconify-icon>
+            <span>Новый виджет</span>
+          </div>
+          <div class="editor-toolbar__actions">
+            <a class="btn btn--ghost btn--sm" href="dashboard-detail.html">Отмена</a>
+            <a class="btn btn--sm" href="dashboard-detail.html">Сохранить виджет</a>
+          </div>
+        </header>
+
+        <div class="widget-editor-page" data-widget-editor>
+          <div class="widget-editor widget-editor--page">
+            <div class="widget-editor__config">
+              <div class="widget-editor__intro">
+                <h1 class="widget-editor__title">Новый виджет</h1>
+                <p class="widget-editor__desc">Выберите тип, настройте параметры и проверьте предпросмотр справа</p>
+              </div>
+
+              <div class="editor-kind">
+                <span class="editor-kind__label">Тип виджета</span>
+                <div class="segmented segmented--kind" role="tablist" aria-label="Тип виджета">
+                  <button class="segmented__btn is-active" type="button" data-widget-kind="chart" role="tab">График</button>
+                  <button class="segmented__btn" type="button" data-widget-kind="filter" role="tab">Фильтр</button>
+                  <button class="segmented__btn" type="button" data-widget-kind="time" role="tab">Детализация</button>
+                  <button class="segmented__btn" type="button" data-widget-kind="text" role="tab">Текст</button>
+                </div>
+              </div>
+
+              <!-- ——— CHART ——— -->
+              <div class="editor-panel" data-widget-panel="chart">
+                <div class="form-fields">
+                  <div class="select-control">
+                    <label for="w-cube">Куб · источник данных</label>
+                    <select class="input" id="w-cube">
+                      <option selected>Orders</option>
+                      <option>Customers</option>
+                      <option>Products</option>
+                    </select>
+                    <p class="field__hint">Меры, измерения и сегменты — только из выбранного куба.</p>
+                  </div>
+                  <div class="form-grid form-grid--2">
+                    <div class="field">
+                      <label for="w-title">Заголовок</label>
+                      <input class="input" id="w-title" type="text" value="Выручка (7д)" />
+                    </div>
+                    <div class="select-control">
+                      <label for="w-chart-type">Тип визуализации</label>
+                      <select class="input" id="w-chart-type">
+                        <option selected>KPI</option>
+                        <option>Столбцы</option>
+                        <option>Линия</option>
+                        <option>Область</option>
+                        <option>Круг</option>
+                        <option>Кольцо</option>
+                        <option>Таблица</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="editor-section__title">Время</p>
+                  <div class="form-grid form-grid--3">
+                    <div class="select-control">
+                      <label for="w-range">Период</label>
+                      <select class="input" id="w-range">
+                        <option selected>Последние 7 дней</option>
+                        <option>Последние 30 дней</option>
+                        <option>Последние 90 дней</option>
+                        <option>Текущий месяц</option>
+                        <option>Прошлый месяц</option>
+                      </select>
+                    </div>
+                    <div class="select-control">
+                      <label for="w-time-dim">Временное измерение</label>
+                      <select class="input" id="w-time-dim">
+                        <option selected>Orders.createdAt</option>
+                        <option>Orders.completedAt</option>
+                      </select>
+                    </div>
+                    <div class="select-control">
+                      <label for="w-grain">Детализация</label>
+                      <select class="input" id="w-grain">
+                        <option selected>День</option>
+                        <option>Неделя</option>
+                        <option>Месяц</option>
+                      </select>
+                    </div>
+                  </div>
+                  <label class="checkbox-row">
+                    <input type="checkbox" checked />
+                    <span>Сравнить с прошлым периодом</span>
+                  </label>
+                </div>
+
+                <div>
+                  <p class="editor-section__title">Меры · Orders</p>
+                  <div class="dnd-list">
+                    <div class="dnd-item is-active">
+                      <span class="dnd-item__grip"><iconify-icon icon="lucide:grip-vertical"></iconify-icon></span>
+                      <span class="dnd-item__label">Orders.revenue</span>
+                      <span class="dnd-item__type">sum</span>
+                    </div>
+                  </div>
+                  <p class="editor-section__title editor-section__title--sub">Доступные меры</p>
+                  <div class="dnd-list dnd-list--pool">
+                    <div class="dnd-item"><span class="dnd-item__grip"><iconify-icon icon="lucide:grip-vertical"></iconify-icon></span><span class="dnd-item__label">Orders.count</span><span class="dnd-item__type">count</span></div>
+                    <div class="dnd-item"><span class="dnd-item__grip"><iconify-icon icon="lucide:grip-vertical"></iconify-icon></span><span class="dnd-item__label">Orders.avgCheck</span><span class="dnd-item__type">avg</span></div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="editor-section__title">Измерения · Orders</p>
+                  <div class="dnd-list">
+                    <p class="dnd-drop-hint">Пусто для KPI · добавьте для столбцов, линии или таблицы</p>
+                  </div>
+                  <p class="editor-section__title editor-section__title--sub">Доступные измерения</p>
+                  <div class="dnd-list dnd-list--pool">
+                    <div class="dnd-item"><span class="dnd-item__grip"><iconify-icon icon="lucide:grip-vertical"></iconify-icon></span><span class="dnd-item__label">Orders.status</span><span class="dnd-item__type">string</span></div>
+                    <div class="dnd-item is-dragging"><span class="dnd-item__grip"><iconify-icon icon="lucide:grip-vertical"></iconify-icon></span><span class="dnd-item__label">Orders.region</span><span class="dnd-item__type">string</span></div>
+                    <div class="dnd-item"><span class="dnd-item__grip"><iconify-icon icon="lucide:grip-vertical"></iconify-icon></span><span class="dnd-item__label">Orders.createdAt</span><span class="dnd-item__type">time</span></div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="editor-section__title">Сегменты</p>
+                  <div class="chip-list">
+                    <button class="chip" type="button">Только завершённые</button>
+                    <button class="chip" type="button">Регион MSK</button>
+                    <button class="chip chip--muted" type="button">+ из семантического слоя</button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="editor-section__head">
+                    <p class="editor-section__title">Фильтры запроса</p>
+                    <button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:plus"></iconify-icon> Добавить</button>
+                  </div>
+                  <div class="filter-rows">
+                    <div class="filter-row">
+                      <select class="input"><option>Orders.status</option><option>Orders.region</option></select>
+                      <select class="input filter-row__op"><option>равно</option><option>не равно</option><option>содержит</option><option>в списке</option></select>
+                      <input class="input" type="text" value="completed" placeholder="Значение" />
+                      <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Удалить"><iconify-icon icon="lucide:trash-2"></iconify-icon></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="editor-section__title">Сортировка и лимит</p>
+                  <div class="form-grid form-grid--2">
+                    <div class="select-control">
+                      <label for="w-order">Сортировка</label>
+                      <select class="input" id="w-order">
+                        <option selected>Orders.revenue ↓</option>
+                        <option>Orders.count ↑</option>
+                        <option>Orders.createdAt ↓</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="w-limit">Лимит строк</label>
+                      <input class="input" id="w-limit" type="number" value="100" min="1" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ——— FILTER CONTROL ——— -->
+              <div class="editor-panel" data-widget-panel="filter" hidden>
+                <div class="form-fields">
+                  <div class="field">
+                    <label for="f-title">Заголовок элемента</label>
+                    <input class="input" id="f-title" type="text" value="Регион" />
+                  </div>
+                  <div class="select-control">
+                    <label for="f-cube">Куб</label>
+                    <select class="input" id="f-cube"><option selected>Orders</option></select>
+                  </div>
+                  <div class="select-control">
+                    <label for="f-dimension">Измерение для фильтра</label>
+                    <select class="input" id="f-dimension">
+                      <option selected>Orders.region</option>
+                      <option>Orders.status</option>
+                    </select>
+                  </div>
+                  <div class="select-control">
+                    <label for="f-visibility">Видимость</label>
+                    <select class="input" id="f-visibility">
+                      <option selected>Видимый</option>
+                      <option>Скрытый</option>
+                      <option>Отключён</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="f-default">Значение по умолчанию</label>
+                    <input class="input" id="f-default" type="text" placeholder="MSK или пусто" />
+                  </div>
+                </div>
+                <div>
+                  <p class="editor-section__title">Связь с графиками</p>
+                  <p class="field__hint field__hint--tight">Автоматически, если измерение совпадает; иначе — ручная настройка в параметрах графика.</p>
+                  <div class="db">
+                    <table class="db-table">
+                      <thead>
+                        <tr><th>График</th><th>Измерение</th><th>Связь</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><div class="db-cell"><span class="db-cell__title">Выручка по дням</span></div></td>
+                          <td><div class="db-cell text-muted">Orders.region</div></td>
+                          <td><div class="db-cell"><span class="db-tag db-tag--green">Авто</span></div></td>
+                        </tr>
+                        <tr>
+                          <td><div class="db-cell"><span class="db-cell__title">Статусы заказов</span></div></td>
+                          <td><div class="db-cell text-muted">—</div></td>
+                          <td><div class="db-cell"><span class="db-tag db-tag--gray">Вручную</span></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ——— TIME GRAIN ——— -->
+              <div class="editor-panel" data-widget-panel="time" hidden>
+                <div class="form-fields">
+                  <div class="field">
+                    <label for="tg-title">Заголовок</label>
+                    <input class="input" id="tg-title" type="text" value="Детализация времени" />
+                  </div>
+                  <div class="select-control">
+                    <label for="tg-visibility">Видимость</label>
+                    <select class="input" id="tg-visibility">
+                      <option selected>Видимый</option>
+                      <option>Скрытый</option>
+                      <option>Отключён</option>
+                    </select>
+                  </div>
+                  <div class="select-control">
+                    <label for="tg-default">Детализация по умолчанию</label>
+                    <select class="input" id="tg-default">
+                      <option selected>День</option>
+                      <option>Неделя</option>
+                      <option>Месяц</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <p class="editor-section__title">Доступные шаги</p>
+                  <div class="chip-list">
+                    <button class="chip is-active" type="button">День</button>
+                    <button class="chip is-active" type="button">Неделя</button>
+                    <button class="chip is-active" type="button">Месяц</button>
+                    <button class="chip" type="button">Квартал</button>
+                  </div>
+                </div>
+                <div>
+                  <p class="editor-section__title">Временные измерения</p>
+                  <div class="chip-list">
+                    <button class="chip is-active" type="button">Orders.createdAt</button>
+                    <button class="chip is-active" type="button">Orders.completedAt</button>
+                  </div>
+                  <p class="field__hint">Переключатель применяется только к графикам с временным измерением.</p>
+                </div>
+              </div>
+
+              <!-- ——— TEXT ——— -->
+              <div class="editor-panel" data-widget-panel="text" hidden>
+                <div class="form-fields">
+                  <div class="field">
+                    <label for="t-title">Заголовок (опционально)</label>
+                    <input class="input" id="t-title" type="text" value="Описание дашборда" />
+                  </div>
+                  <div class="field">
+                    <label for="t-body">Текст (Markdown)</label>
+                    <textarea class="input textarea" id="t-body" rows="8">## Операционный обзор
+
+KPI за **7 дней** из куба `Orders`.
+
+- Выручка — завершённые заказы
+- Обновление каждые 15 мин</textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="widget-editor__preview">
+              <!-- Chart preview -->
+              <div class="widget-preview widget-preview--page" data-widget-preview="chart">
+                <div class="widget-preview__head">
+                  <span>Предпросмотр · График</span>
+                  <span class="db-tag db-tag--green">живой запрос</span>
+                </div>
+                <div class="widget-preview__body">
+                  <p class="widget-preview__title">Выручка (7д)</p>
+                  <p class="widget-preview__kpi">1,24 млн ₽</p>
+                  <p class="widget-preview__meta"><span class="db-tag db-tag--green">↑ 12%</span> к прошлому периоду</p>
+                  <div class="chart-bars widget-preview__chart">
+                    <div class="chart-bar" style="height:45%"></div><div class="chart-bar" style="height:62%"></div>
+                    <div class="chart-bar" style="height:58%"></div><div class="chart-bar" style="height:72%"></div>
+                    <div class="chart-bar" style="height:91%"></div>
+                  </div>
+                  <p class="widget-preview__footnote">Orders.revenue · 7 дней · день</p>
+                </div>
+              </div>
+
+              <!-- Filter preview -->
+              <div class="widget-preview widget-preview--page" data-widget-preview="filter" hidden>
+                <div class="widget-preview__head">
+                  <span>Предпросмотр · Фильтр</span>
+                  <span class="db-tag db-tag--blue">элемент управления</span>
+                </div>
+                <div class="widget-preview__body widget-preview__body--control">
+                  <div class="dashboard-toolbar dashboard-toolbar--preview">
+                    <div class="dashboard-toolbar__group">
+                      <label class="dashboard-toolbar__label" for="pv-region">Регион</label>
+                      <select class="input input--dense dashboard-toolbar__control" id="pv-region">
+                        <option>Все регионы</option>
+                        <option selected>MSK</option>
+                        <option>SPB</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="widget-preview__footnote preview-hint">Фильтрует 2 графика на дашборде</p>
+                </div>
+              </div>
+
+              <!-- Time grain preview -->
+              <div class="widget-preview widget-preview--page" data-widget-preview="time" hidden>
+                <div class="widget-preview__head">
+                  <span>Предпросмотр · Детализация</span>
+                  <span class="db-tag db-tag--blue">элемент управления</span>
+                </div>
+                <div class="widget-preview__body widget-preview__body--control">
+                  <div class="dashboard-toolbar dashboard-toolbar--preview">
+                    <div class="dashboard-toolbar__group">
+                      <span class="dashboard-toolbar__label">Детализация</span>
+                      <div class="segmented segmented--dense">
+                        <button class="segmented__btn is-active" type="button">День</button>
+                        <button class="segmented__btn" type="button">Неделя</button>
+                        <button class="segmented__btn" type="button">Месяц</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Text preview -->
+              <div class="widget-preview widget-preview--page" data-widget-preview="text" hidden>
+                <div class="widget-preview__head">
+                  <span>Предпросмотр · Текст</span>
+                  <span class="db-tag db-tag--gray">разметка</span>
+                </div>
+                <div class="widget-preview__body widget-preview__body--text widget-preview__markdown">
+                  <h2>Описание дашборда</h2>
+                  <p>KPI за <strong>7 дней</strong> из куба Orders.</p>
+                  <ul>
+                    <li>Выручка — завершённые заказы</li>
+                    <li>Обновление каждые 15 мин</li>
+                  </ul>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <div data-app-tabbar="dashboards"></div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

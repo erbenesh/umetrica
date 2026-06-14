@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Онбординг — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/onboarding</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+    <div class="auth-frame">
+      <aside class="auth-brand-panel"><div><h2>Создайте компанию</h2><p>Fallback, если автоматическое создание не сработало.</p></div></aside>
+      <div class="auth-form-panel">
+        <header class="auth-topbar"><span class="brand__mark">u</span><button class="btn btn--ghost btn--icon" type="button" data-theme-toggle aria-label="Тема"></button></header>
+        <main class="auth-main">
+          <div class="auth-panel">
+            <div class="auth-panel__head"><h1>Название компании</h1><p>Рабочее пространство для дашбордов и команды</p></div>
+            <div class="auth-panel__card">
+              <div class="form-fields">
+                <div class="field"><label for="c">Компания</label><input class="input" id="c" type="text" placeholder="Acme Analytics" /></div>
+              </div>
+              <div class="form-actions">
+                <a class="btn btn--block" href="onboarding-connect.html">Создать компанию</a>
+              </div>
+            </div>
+            <div class="auth-panel__footer">Есть приглашение? <a href="accept-invitation.html">Откройте ссылку</a> или <a href="team.html">Команда</a></div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

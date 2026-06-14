@@ -2,10 +2,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { AuthFooterLink, AuthLayout, AuthModeSwitch } from '@/components/layout/auth-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { signIn } from '@/lib/auth-client';
 import { ensureActiveOrganization, isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpers';
@@ -108,51 +108,42 @@ function AuthPageForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>umetrica</CardTitle>
-          <CardDescription>
-            {mode === 'login' ? 'Войдите в аналитику' : 'Создайте аккаунт и компанию'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {mode === 'register' && (
-              <>
-                <Input placeholder="Имя" {...register('name')} />
-                <Input placeholder="Название компании" {...register('companyName')} />
-              </>
-            )}
-            <Input type="email" placeholder="Email" {...register('email')} />
-            <Input type="password" placeholder="Пароль" {...register('password')} />
-
-            {info && <p className="text-sm text-insight-info">{info}</p>}
-            {error && <p className="text-sm text-insight-warning">{error}</p>}
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Загрузка...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-            </Button>
-          </form>
-
-          {mode === 'login' && (
-            <Link
-              to="/forgot-password"
-              className="mt-3 block text-center text-sm text-muted-foreground hover:text-foreground"
-            >
-              Забыли пароль?
-            </Link>
-          )}
-
-          <button
-            type="button"
-            className="mt-4 w-full text-sm text-muted-foreground hover:text-foreground"
+    <AuthLayout
+      title={mode === 'login' ? 'Вход' : 'Регистрация'}
+      description={
+        mode === 'login'
+          ? 'Войдите в рабочее пространство компании'
+          : 'Создайте аккаунт и укажите компанию'
+      }
+      footer={
+        <div className="space-y-2 pt-1">
+          {mode === 'login' ? (
+            <AuthFooterLink to="/forgot-password">Забыли пароль?</AuthFooterLink>
+          ) : null}
+          <AuthModeSwitch
+            label={mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
             onClick={() => setMode((current) => (current === 'login' ? 'register' : 'login'))}
-          >
-            {mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
-          </button>
-        </CardContent>
-      </Card>
-    </div>
+          />
+        </div>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        {mode === 'register' && (
+          <>
+            <Input placeholder="Имя" {...register('name')} />
+            <Input placeholder="Название компании" {...register('companyName')} />
+          </>
+        )}
+        <Input type="email" placeholder="Email" {...register('email')} />
+        <Input type="password" placeholder="Пароль" {...register('password')} />
+
+        {info && <p className="text-xs text-insight-info">{info}</p>}
+        {error && <p className="text-xs text-insight-warning">{error}</p>}
+
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? 'Загрузка...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }
