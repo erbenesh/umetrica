@@ -51,11 +51,14 @@
               <h2 class="doc-h2">Профиль</h2>
               <div class="settings-group">
                 <div class="settings-row">
-                  <div>
-                    <div class="settings-row__label">Егор</div>
-                    <div class="settings-row__hint">founder@acme.ru · Владелец</div>
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <span class="db-cell__avatar">Е</span>
+                    <div>
+                      <div class="settings-row__label">Егор</div>
+                      <div class="settings-row__hint">founder@acme.ru · Владелец</div>
+                    </div>
                   </div>
-                  <button class="btn btn--ghost btn--sm" type="button">Изменить</button>
+                  <a class="btn btn--ghost btn--sm" href="settings-profile.html">Изменить</a>
                 </div>
                 <div class="settings-row">
                   <div>
@@ -71,11 +74,34 @@
               <h2 class="doc-h2">Компания</h2>
               <div class="settings-group">
                 <div class="settings-row">
-                  <div>
-                    <div class="settings-row__label">Acme Analytics</div>
-                    <div class="settings-row__hint">4 участника</div>
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <span class="brand__mark" style="width:32px;height:32px;font-size:14px;flex-shrink:0">A</span>
+                    <div>
+                      <div class="settings-row__label">Acme Analytics</div>
+                      <div class="settings-row__hint">4 участника · логотип и название</div>
+                    </div>
                   </div>
-                  <a class="btn btn--ghost btn--sm" href="team.html">Команда</a>
+                  <a class="btn btn--ghost btn--sm" href="settings-company.html">Изменить</a>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Команда</div>
+                    <div class="settings-row__hint">Участники и роли</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="team.html">Открыть</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">AI-инсайты</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Расписание и метрики</div>
+                    <div class="settings-row__hint">Автопроверки · owner/admin</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="insights-settings.html">Настроить</a>
                 </div>
               </div>
             </section>

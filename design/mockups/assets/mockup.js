@@ -302,13 +302,21 @@
   }
 
   var SEMANTIC_PREVIEW = {
-    overview: {
+    'cube:orders': {
       member: 'Orders',
       type: 'куб · 3 меры · 3 измерения',
       sql: 'SELECT * FROM public.orders',
       sample: '—',
-      widgets: ['<li class="text-muted">Выберите member слева</li>'],
+      widgets: ['<li><a href="dashboard-detail.html">6 виджетов</a></li>'],
       query: '{\n  "meta": "cube Orders"\n}',
+    },
+    'source:orders': {
+      member: 'public.orders',
+      type: 'таблица · PostgreSQL',
+      sql: '6 колонок',
+      sample: '1 284 строк',
+      widgets: ['<li class="text-muted">Источник для куба Orders</li>'],
+      query: '{\n  "source": "Production Postgres"\n}',
     },
     'measure:revenue': {
       member: 'Orders.revenue',
@@ -382,43 +390,112 @@
     },
   };
 
+  var SEMANTIC_EDGES = [
+    { from: 'source:orders', fromPort: 'out', to: 'cube:orders', toPort: 'in' },
+    { from: 'cube:orders', fromPort: 'out', to: 'measure:revenue', toPort: 'in' },
+    { from: 'cube:orders', fromPort: 'out', to: 'measure:count', toPort: 'in' },
+    { from: 'cube:orders', fromPort: 'out', to: 'measure:avgOrder', toPort: 'in' },
+    { from: 'cube:orders', fromPort: 'out', to: 'dimension:status', toPort: 'in' },
+    { from: 'cube:orders', fromPort: 'out-bottom', to: 'dimension:createdAt', toPort: 'in' },
+    { from: 'source:orders', fromPort: 'out-bottom', to: 'dimension:tenantId', toPort: 'in', dashed: true },
+  ];
+
+  function layoutSemanticEdges(stage) {
+    if (!stage) return [];
+
+    var svg = stage.querySelector('.node-edges');
+    if (!svg) return [];
+
+    var w = stage.offsetWidth;
+    var h = stage.offsetHeight;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.innerHTML = '';
+
+    var stageRect = stage.getBoundingClientRect();
+    var paths = [];
+
+    function portPoint(nodeId, portName) {
+      var node = stage.querySelector('[data-semantic-node="' + nodeId + '"]');
+      if (!node) return null;
+      var port = node.querySelector('[data-port="' + portName + '"]');
+      if (!port) return null;
+      var rect = port.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2 - stageRect.left,
+        y: rect.top + rect.height / 2 - stageRect.top,
+      };
+    }
+
+    function edgePath(a, b) {
+      var mx = (a.x + b.x) / 2;
+      return 'M ' + a.x + ' ' + a.y + ' C ' + mx + ' ' + a.y + ', ' + mx + ' ' + b.y + ', ' + b.x + ' ' + b.y;
+    }
+
+    SEMANTIC_EDGES.forEach(function (edge, index) {
+      var from = portPoint(edge.from, edge.fromPort);
+      var to = portPoint(edge.to, edge.toPort);
+      if (!from || !to) return;
+
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', edgePath(from, to));
+      path.dataset.edgeTarget = edge.to;
+      if (edge.dashed) path.classList.add('is-dashed');
+      svg.appendChild(path);
+      paths.push({ el: path, target: edge.to, source: edge.from });
+    });
+
+    return paths;
+  }
+
   function initSemanticEditor() {
     var root = document.querySelector('[data-semantic-editor]');
     if (!root) return;
 
     var previewBody = root.querySelector('[data-semantic-preview-body]');
+    var stage = root.querySelector('.node-canvas__stage');
+    var edgePaths = [];
+    var selectedId = 'measure:revenue';
 
     function updatePreview(id) {
       if (!previewBody) return;
       var data = SEMANTIC_PREVIEW[id];
       if (!data) return;
       previewBody.innerHTML =
-        '<p class="semantic-preview__member">' +
+        '<p class="inspector-preview__member">' +
         data.member +
         '</p>' +
-        '<dl class="semantic-preview__meta-list"><div><dt>Тип</dt><dd>' +
+        '<div class="inspector-preview__grid">' +
+        '<span>Тип</span><span>' +
         data.type +
-        '</dd></div><div><dt>SQL</dt><dd><code>' +
+        '</span>' +
+        '<span>SQL</span><span><code>' +
         data.sql +
-        '</code></dd></div></dl>' +
-        '<p class="editor-section__title editor-section__title--sub">Пример значения</p>' +
-        '<p class="semantic-preview__sample">' +
+        '</code></span>' +
+        '<span>Пример</span><strong>' +
         data.sample +
-        '</p>' +
-        '<p class="editor-section__title editor-section__title--sub">Используется в виджетах</p>' +
-        '<ul class="semantic-preview__links">' +
+        '</strong></div>' +
+        '<ul class="inspector-preview__widgets">' +
         data.widgets.join('') +
         '</ul>' +
-        '<p class="editor-section__title editor-section__title--sub">Тестовый запрос</p>' +
-        '<pre class="code-block code-block--sm">' +
+        '<pre class="inspector-preview__query">' +
         data.query +
         '</pre>' +
-        '<button class="btn btn--ghost btn--sm semantic-preview__run" type="button">' +
+        '<button class="btn btn--ghost btn--sm inspector-preview__run" type="button">' +
         '<iconify-icon icon="lucide:play"></iconify-icon> Выполнить preview</button>';
       normalizeIcons(previewBody);
     }
 
+    function highlightEdges(id) {
+      edgePaths.forEach(function (item) {
+        var active = item.target === id || item.source === id;
+        item.el.classList.toggle('is-active', active);
+      });
+    }
+
     function show(id) {
+      selectedId = id;
       root.querySelectorAll('[data-semantic-panel]').forEach(function (panel) {
         panel.hidden = panel.getAttribute('data-semantic-panel') !== id;
       });
@@ -426,8 +503,24 @@
         if (btn.disabled) return;
         btn.classList.toggle('is-active', btn.getAttribute('data-semantic-select') === id);
       });
+      root.querySelectorAll('[data-semantic-node]').forEach(function (node) {
+        node.classList.toggle('is-selected', node.getAttribute('data-semantic-node') === id);
+      });
+      highlightEdges(id);
       updatePreview(id);
     }
+
+    root.querySelectorAll('[data-semantic-node]').forEach(function (node) {
+      node.addEventListener('click', function () {
+        show(node.getAttribute('data-semantic-node'));
+      });
+      node.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          show(node.getAttribute('data-semantic-node'));
+        }
+      });
+    });
 
     root.querySelectorAll('[data-semantic-select]').forEach(function (btn) {
       if (btn.disabled) return;
@@ -436,10 +529,18 @@
       });
     });
 
+    window.addEventListener('resize', function () {
+      edgePaths = layoutSemanticEdges(stage);
+      highlightEdges(selectedId);
+    });
+
     var params = new URLSearchParams(window.location.search);
     var select = params.get('member') || 'measure:revenue';
     if (!SEMANTIC_PREVIEW[select]) select = 'measure:revenue';
-    show(select);
+    requestAnimationFrame(function () {
+      edgePaths = layoutSemanticEdges(stage);
+      show(select);
+    });
   }
 
   function normalizeIcons(root) {

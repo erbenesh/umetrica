@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Главная — нет данных — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/ · empty</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="home"></div>
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><div class="mobile-header__title">Главная</div><div class="text-xs text-muted">Acme Analytics</div></div>
+        </header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:line-chart"></iconify-icon></span>
+                <h1 class="doc-title">Привет, Егор</h1>
+              </div>
+              <p class="doc-lead">Начните с подключения данных или демо-набора</p>
+            </div>
+
+            <section class="doc-block">
+              <div class="empty-state">
+                <span class="empty-state__icon"><iconify-icon icon="lucide:database"></iconify-icon></span>
+                <h2 class="empty-state__title">Нет метрик для отображения</h2>
+                <p class="empty-state__desc">Подключите базу данных и опубликуйте семантический слой — KPI появятся на главной автоматически.</p>
+                <div class="empty-state__actions">
+                  <a class="btn" href="onboarding-connect.html">Подключить данные</a>
+                  <a class="btn btn--outline" href="home.html">Демо-данные</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Следующие шаги</h2>
+              <div class="settings-group">
+                <a class="settings-row" href="connections.html" style="text-decoration:none;color:inherit">
+                  <div><div class="settings-row__label">1. Источник данных</div><div class="settings-row__hint">PostgreSQL read-only</div></div>
+                  <span class="btn btn--ghost btn--sm">Настроить</span>
+                </a>
+                <a class="settings-row" href="semantic-list.html" style="text-decoration:none;color:inherit">
+                  <div><div class="settings-row__label">2. Семантика</div><div class="settings-row__hint">Кубы, меры, измерения</div></div>
+                  <span class="btn btn--ghost btn--sm">Открыть</span>
+                </a>
+                <a class="settings-row" href="modal-create-dashboard.html" style="text-decoration:none;color:inherit">
+                  <div><div class="settings-row__label">3. Первый дашборд</div><div class="settings-row__hint">После публикации куба</div></div>
+                  <span class="btn btn--ghost btn--sm">Создать</span>
+                </a>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="home"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

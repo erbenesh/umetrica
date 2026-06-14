@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Инсайт — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights/:id</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="insights"></div>
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <a href="insights.html" class="text-xs text-muted">← AI-инсайты</a>
+            <div class="mobile-header__title">Инсайт</div>
+          </div>
+        </header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="insight-detail__hero">
+              <div class="insight-detail__badges">
+                <span class="db-tag db-tag--orange">Средняя значимость</span>
+                <span class="db-tag db-tag--green">↑ +18%</span>
+                <span class="db-tag db-tag--gray">Orders.revenue</span>
+              </div>
+              <h1 class="doc-title" style="margin:0 0 8px">Рост выручки на 18% за неделю</h1>
+              <p class="doc-lead" style="margin:0">14 июн 2026, 09:42 · Acme Analytics · 1 AI-кредит</p>
+            </div>
+
+            <section class="insight-detail__section">
+              <h2>Что произошло</h2>
+              <p>Выручка за 7 дней выросла на 18% относительно предыдущего окна (4,82 млн ₽ vs 4,09 млн ₽). Отклонение превышает типичную волатильность (+/−5%) для этого периода.</p>
+            </section>
+
+            <section class="insight-detail__section">
+              <h2>Почему</h2>
+              <p>Основной вклад — статус <code>completed</code> в регионе MSK (+62% к базе недели). Второй фактор — рост среднего чека на 4% без существенного падения числа заказов.</p>
+            </section>
+
+            <section class="insight-detail__section">
+              <h2>Что делать</h2>
+              <ul>
+                <li>Проверить промо-кампанию в MSK за 10–12 июня — возможен разовый эффект.</li>
+                <li>Сравнить конверсию <code>processing → completed</code> с прошлой неделей.</li>
+                <li>Если рост устойчив — обновить прогноз на главном дашборде.</li>
+              </ul>
+            </section>
+
+            <section class="insight-detail__section">
+              <h2>Связанные виджеты</h2>
+              <ul class="semantic-preview__links" style="list-style:none;padding:0;margin:0">
+                <li style="margin-bottom:6px"><a href="dashboard-detail.html">Выручка (7д) · Операционный обзор</a></li>
+                <li style="margin-bottom:6px"><a href="dashboard-detail.html">Выручка по дням</a></li>
+                <li><a href="home.html">KPI на главной</a></li>
+              </ul>
+            </section>
+
+            <div class="insight-detail__actions">
+              <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:thumbs-up"></iconify-icon> Полезно</button>
+              <button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:thumbs-down"></iconify-icon> Не актуально</button>
+              <button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:archive"></iconify-icon> В архив</button>
+              <a class="btn btn--ghost btn--sm" href="dashboard-detail.html"><iconify-icon icon="lucide:external-link"></iconify-icon> Открыть дашборд</a>
+            </div>
+          </article>
+        </main>
+        <div data-app-tabbar="insights"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

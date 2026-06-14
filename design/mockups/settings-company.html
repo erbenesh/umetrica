@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Компания — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/settings/company</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><a href="settings.html" class="text-xs text-muted">← Настройки</a><div class="mobile-header__title">Компания</div></div>
+        </header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:building-2"></iconify-icon></span><h1 class="doc-title">Компания</h1></div>
+              <p class="doc-lead">Название и логотип — в sidebar, embed и счетах</p>
+            </div>
+            <section class="doc-block">
+              <h2 class="doc-h2">Логотип</h2>
+              <div class="media-upload">
+                <div class="media-upload__preview media-upload__preview--logo" style="background:var(--primary-muted);color:var(--primary)">A</div>
+                <div class="media-upload__meta">
+                  <div class="media-upload__actions">
+                    <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:upload"></iconify-icon> Загрузить</button>
+                    <button class="btn btn--ghost btn--sm" type="button">Удалить</button>
+                  </div>
+                  <p class="media-upload__hint">Квадрат PNG/SVG, до 1 МБ. На тёмной теме — светлый вариант.</p>
+                </div>
+              </div>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Реквизиты</h2>
+              <form class="form-fields">
+                <div class="field"><label for="org-name">Название</label><input class="input" id="org-name" type="text" value="Acme Analytics" /></div>
+                <div class="field"><label for="org-slug">Slug</label><input class="input" id="org-slug" type="text" value="acme-analytics" readonly /><p class="field__hint">app.umetrica.ru/o/acme-analytics · меняется редко</p></div>
+                <div class="field"><label for="org-site">Сайт</label><input class="input" id="org-site" type="url" placeholder="https://acme.ru" value="https://acme.ru" /></div>
+              </form>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Enterprise</h2>
+              <div class="settings-group">
+                <div class="settings-row"><div><div class="settings-row__label">Audit log</div><div class="settings-row__hint">История действий в компании</div></div><a class="btn btn--ghost btn--sm" href="settings-audit.html">Открыть</a></div>
+                <div class="settings-row"><div><div class="settings-row__label">SSO / SAML</div><div class="settings-row__hint">Вход через IdP</div></div><a class="btn btn--ghost btn--sm" href="settings-sso.html">Настроить</a></div>
+              </div>
+            </section>
+            <section class="doc-block">
+              <div class="form-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn" type="button">Сохранить</button>
+                <a class="btn btn--ghost" href="settings.html">Отмена</a>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

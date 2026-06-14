@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Подписка истекла — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/billing/expired</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><div class="mobile-header__title">Подписка</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:credit-card"></iconify-icon></span><h1 class="doc-title">Подписка не активна</h1></div>
+              <p class="doc-lead">Pro истёк 1 июл 2026 · оплата не прошла</p>
+            </div>
+            <section class="doc-block">
+              <div class="empty-state" style="border-color:color-mix(in srgb,var(--destructive) 25%,var(--border))">
+                <span class="empty-state__icon"><iconify-icon icon="lucide:lock"></iconify-icon></span>
+                <h2 class="empty-state__title">Доступ ограничен</h2>
+                <p class="empty-state__desc">Просмотр дашбордов доступен в read-only. Редактирование, новые инсайты и подключения заблокированы до оплаты.</p>
+                <div class="empty-state__actions">
+                  <a class="btn" href="billing-payment.html">Обновить оплату</a>
+                  <a class="btn btn--outline" href="billing-plans.html">Сменить тариф</a>
+                </div>
+              </div>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Что работает</h2>
+              <div class="settings-group">
+                <div class="settings-row"><div><div class="settings-row__label">Просмотр дашбордов</div><div class="settings-row__hint">Кэшированные данные</div></div><span class="badge badge--success">Да</span></div>
+                <div class="settings-row"><div><div class="settings-row__label">AI-инсайты</div><div class="settings-row__hint">LLM и автопроверки</div></div><span class="badge">Нет</span></div>
+                <div class="settings-row"><div><div class="settings-row__label">Редактирование</div><div class="settings-row__hint">Виджеты, семантика, команда</div></div><span class="badge">Нет</span></div>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

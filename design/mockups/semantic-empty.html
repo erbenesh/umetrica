@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Семантика — пусто — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/semantic · empty</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="semantic"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><div class="mobile-header__title">Семантика</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:layers"></iconify-icon></span>
+                <h1 class="doc-title">Семантический слой</h1>
+              </div>
+              <p class="doc-lead">Кубы для дашбордов и AI-инсайтов</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">Источников</span> 0</span>
+              <span class="doc-prop"><span class="doc-prop__label">Кубов</span> 0</span>
+            </div>
+
+            <section class="doc-block">
+              <div class="empty-state">
+                <span class="empty-state__icon"><iconify-icon icon="lucide:box"></iconify-icon></span>
+                <h2 class="empty-state__title">Кубов ещё нет</h2>
+                <p class="empty-state__desc">Сначала подключите PostgreSQL, затем создайте первый куб в node-редакторе — маппинг таблицы на меры и измерения.</p>
+                <div class="empty-state__actions">
+                  <a class="btn" href="connections-add-db.html">Подключить БД</a>
+                  <a class="btn btn--outline" href="semantic-cube.html">Открыть демо Orders</a>
+                </div>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="semantic"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

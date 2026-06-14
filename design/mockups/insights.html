@@ -27,6 +27,7 @@
         <header class="mobile-header">
           <div><div class="mobile-header__title">AI-инсайты</div></div>
           <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn btn--ghost btn--icon" href="insights-settings.html" aria-label="Настройки AI"><iconify-icon icon="lucide:sliders-horizontal"></iconify-icon></a>
             <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:refresh-cw"></iconify-icon> Проверить</button>
             <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
           </div>
@@ -46,6 +47,7 @@
               <span class="doc-prop"><span class="doc-prop__label">Новых</span> 2</span>
               <span class="doc-prop"><span class="doc-prop__label">AI-кредиты</span> 47 / 100</span>
               <span class="doc-prop"><span class="doc-prop__label">Последняя проверка</span> 14 июн, 09:42</span>
+              <a class="doc-prop" href="insights-history.html" style="color:var(--primary);font-weight:500"><span class="doc-prop__label">История</span> →</a>
             </div>
 
             <div class="callout callout--compact" style="margin-bottom:20px">
@@ -61,7 +63,7 @@
               <div class="insight-feed">
                 <article class="insight-item insight-item--warn">
                   <div>
-                    <h3 class="insight-item__title">Рост выручки на 18% за неделю</h3>
+                    <h3 class="insight-item__title"><a href="insight-detail.html" style="color:inherit;text-decoration:none">Рост выручки на 18% за неделю</a></h3>
                     <p class="insight-item__meta">14 июн 2026, 09:42 · Средняя значимость</p>
                   </div>
                   <div style="display:flex;gap:6px;flex-wrap:wrap;align-self:start">
@@ -69,6 +71,7 @@
                     <span class="db-tag db-tag--green">↑ +18%</span>
                   </div>
                   <p class="insight-item__body">Выручка выросла быстрее обычного темпа. Основной вклад — completed-заказы в MSK.</p>
+                  <a class="insight-item__link" href="insight-detail.html">Подробнее →</a>
                   <div class="insight-item__tags">
                     <span class="db-tag db-tag--gray">completed · 62%</span>
                     <span class="db-tag db-tag--gray">MSK · 41%</span>

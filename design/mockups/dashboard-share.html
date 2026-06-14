@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Доступ к дашборду — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/dashboards/:id/share</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="dashboards"></div>
+      <div class="app-main">
+        <header class="mobile-header">
+          <div>
+            <a href="dashboard-detail.html" class="text-xs text-muted">← Операционный обзор</a>
+            <div class="mobile-header__title">Доступ и embed</div>
+          </div>
+        </header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:share-2"></iconify-icon></span>
+                <h1 class="doc-title">Доступ к дашборду</h1>
+              </div>
+              <p class="doc-lead">Операционный обзор · публичная ссылка и встраивание</p>
+            </div>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Публичная ссылка</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Включить ссылку</div>
+                    <div class="settings-row__hint">Только просмотр · без редактирования</div>
+                  </div>
+                  <label class="checkbox-row" style="min-height:auto;padding:0;margin:0">
+                    <input type="checkbox" checked />
+                  </label>
+                </div>
+              </div>
+              <div class="form-fields" style="margin-top:12px">
+                <div class="field">
+                  <label for="share-url">URL</label>
+                  <div style="display:flex;gap:8px">
+                    <input class="input" id="share-url" type="url" readonly value="https://app.umetrica.ru/embed/d/abc7x2k" />
+                    <button class="btn btn--outline btn--sm" type="button">Копировать</button>
+                  </div>
+                </div>
+                <div class="form-grid form-grid--2">
+                  <div class="field">
+                    <label for="share-exp">Срок действия</label>
+                    <select class="input" id="share-exp">
+                      <option>Без срока</option>
+                      <option selected>30 дней</option>
+                      <option>7 дней</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="share-pass">Пароль</label>
+                    <input class="input" id="share-pass" type="text" placeholder="Необязательно" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Embed <span class="doc-h2__hint">· iframe</span></h2>
+              <div class="field">
+                <label for="embed-code">Код для вставки</label>
+                <textarea class="input textarea textarea--sm" id="embed-code" rows="3" readonly style="font-family:ui-monospace,monospace;font-size:11px">&lt;iframe src="https://app.umetrica.ru/embed/d/abc7x2k" width="100%" height="480" frameborder="0"&gt;&lt;/iframe&gt;</textarea>
+              </div>
+              <div class="embed-preview" style="margin-top:12px">
+                <p class="text-xs text-muted" style="margin:0 0 8px">Предпросмотр</p>
+                <a class="btn btn--ghost btn--sm" href="embed-public.html" target="_blank">Предпросмотр</a>
+              </div>
+              <p class="field__hint">На тарифе Starter embed недоступен. <a href="billing-plans.html">Pro и выше →</a></p>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Команда</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Участники компании</div>
+                    <div class="settings-row__hint">По ролям owner / admin / viewer</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="team.html">Команда</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <div class="form-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn" type="button">Сохранить</button>
+                <a class="btn btn--ghost" href="dashboard-detail.html">Отмена</a>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="dashboards"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

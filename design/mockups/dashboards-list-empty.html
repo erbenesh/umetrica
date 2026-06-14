@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Дашборды — пусто — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/dashboards · empty</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="dashboards"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><div class="mobile-header__title">Дашборды</div></div><a class="btn btn--sm" href="modal-create-dashboard.html"><iconify-icon icon="lucide:plus"></iconify-icon></a></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span><h1 class="doc-title">Дашборды</h1></div><p class="doc-lead">Соберите первый обзор метрик</p></div>
+            <section class="doc-block">
+              <div class="empty-state">
+                <span class="empty-state__icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span>
+                <h2 class="empty-state__title">Дашбордов пока нет</h2>
+                <p class="empty-state__desc">Создайте дашборд и добавьте виджеты из опубликованных кубов — графики, фильтры и KPI.</p>
+                <div class="empty-state__actions"><a class="btn" href="modal-create-dashboard.html">Создать дашборд</a><a class="btn btn--outline" href="semantic-list.html">Семантика</a></div>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="dashboards"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

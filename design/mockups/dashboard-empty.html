@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Новый дашборд — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/dashboards/:id · empty</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="dashboards"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><a href="dashboards-list.html" class="text-xs text-muted">← Дашборды</a><div class="mobile-header__title">Новый дашборд</div></div><a class="btn btn--sm" href="widget-editor.html"><iconify-icon icon="lucide:plus"></iconify-icon></a></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span><h1 class="doc-title">Новый дашборд</h1></div><p class="doc-lead">Пустой canvas · добавьте первый виджет</p></div>
+            <section class="doc-block">
+              <div class="empty-state">
+                <span class="empty-state__icon"><iconify-icon icon="lucide:plus-square"></iconify-icon></span>
+                <h2 class="empty-state__title">Нет виджетов</h2>
+                <p class="empty-state__desc">График, фильтр, детализация времени или текстовый блок — данные из Cube.js.</p>
+                <div class="empty-state__actions">
+                  <a class="btn" href="widget-editor.html?kind=chart">Добавить график</a>
+                  <a class="btn btn--outline" href="widget-editor.html?kind=filter">Фильтр</a>
+                </div>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="dashboards"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

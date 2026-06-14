@@ -90,7 +90,13 @@
                       <td><code class="text-xs">db.acme.internal:5432</code></td>
                       <td><span class="badge badge--success">Подключено</span></td>
                       <td>
-                        <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Меню"><iconify-icon icon="lucide:ellipsis"></iconify-icon></button>
+                        <div class="dropdown">
+                          <button class="btn btn--ghost btn--icon btn--sm" type="button" data-dropdown-toggle aria-expanded="false" aria-label="Меню"><iconify-icon icon="lucide:ellipsis"></iconify-icon></button>
+                          <div class="dropdown__menu dropdown__menu--align-end" role="menu">
+                            <a class="menu-item" href="connections-add-db.html" role="menuitem"><iconify-icon icon="lucide:pencil"></iconify-icon> Изменить</a>
+                            <a class="menu-item menu-item--danger" href="modal-delete-connection.html" role="menuitem"><iconify-icon icon="lucide:trash-2"></iconify-icon> Удалить</a>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   </tbody>

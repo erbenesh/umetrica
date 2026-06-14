@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Удалить дашборд — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">modal · delete</span></div></div>
+    <div class="app-frame app-frame--blurred"><div data-app-sidebar="dashboards"></div><div class="app-main"><main class="app-scroll"><p class="text-muted" style="padding:16px">dashboard</p></main></div></div>
+    <div class="modal-backdrop" role="presentation">
+      <div class="modal modal--danger" role="dialog" aria-labelledby="m-title">
+        <div class="modal__grab" aria-hidden="true"></div>
+        <div class="modal__header"><h2 id="m-title">Удалить дашборд?</h2><p class="card__desc">Операционный обзор · 6 виджетов</p></div>
+        <div class="modal__body"><p class="text-sm text-muted" style="margin:0">Действие необратимо. Embed-ссылки перестанут работать. Участники команды потеряют доступ.</p></div>
+        <div class="modal__footer"><a class="btn btn--outline" href="dashboard-detail.html">Отмена</a><a class="btn" href="dashboards-list.html" style="background:var(--destructive)">Удалить</a></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Опубликовать куб — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">modal · publish</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame app-frame--blurred">
+      <div data-app-sidebar="semantic"></div>
+      <div class="app-main app-main--editor"><p class="text-muted" style="padding:16px">semantic/cubes/Orders</p></div>
+    </div>
+
+    <div class="modal-backdrop" role="presentation">
+      <div class="modal modal--wide" role="dialog" aria-labelledby="m-title">
+        <div class="modal__grab" aria-hidden="true"></div>
+        <div class="modal__header">
+          <h2 id="m-title">Опубликовать Orders</h2>
+          <p class="card__desc">Черновик → production · изменения затронут 6 виджетов</p>
+        </div>
+        <div class="modal__body">
+          <div class="diff-block" style="margin-bottom:16px">
+            <div class="diff-block__head">Изменения в кубе</div>
+            <div class="diff-row">
+              <span class="diff-row__op diff-row__op--add">+</span>
+              <span class="diff-row__label">Мера margin</span>
+              <span class="diff-row__value">sum(margin_amount) · currency</span>
+            </div>
+            <div class="diff-row">
+              <span class="diff-row__op diff-row__op--change">~</span>
+              <span class="diff-row__label">Мера revenue</span>
+              <span class="diff-row__value">заголовок: «Выручка» → «Выручка брутто»</span>
+            </div>
+            <div class="diff-row">
+              <span class="diff-row__op diff-row__op--add">+</span>
+              <span class="diff-row__label">Измерение region</span>
+              <span class="diff-row__value">string · orders.region</span>
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" checked />
+            <span>Уведомить команду об обновлении семантики</span>
+          </label>
+          <p class="field__hint field__hint--tight">Cube.js перезагрузит meta в течение ~30 сек. Дашборды продолжат работать.</p>
+        </div>
+        <div class="modal__footer">
+          <a class="btn btn--outline" href="semantic-cube.html">Отмена</a>
+          <a class="btn" href="semantic-list.html">Опубликовать</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

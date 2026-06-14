@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>AI-кредиты исчерпаны — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights · quota</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame">
+      <div data-app-sidebar="insights"></div>
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><div class="mobile-header__title">AI-инсайты</div></div>
+          <a class="btn btn--sm" href="modal-quota-exhausted.html">Купить кредиты</a>
+        </header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row">
+                <span class="doc-head__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span>
+                <h1 class="doc-title">AI-инсайты</h1>
+              </div>
+              <p class="doc-lead">Месячная квота исчерпана</p>
+            </div>
+            <div class="doc-props">
+              <span class="doc-prop"><span class="doc-prop__label">AI-кредиты</span> <span class="badge badge--warn">0 / 100</span></span>
+              <span class="doc-prop"><span class="doc-prop__label">Сброс</span> 1 июл 2026</span>
+            </div>
+
+            <div class="callout callout--info callout--compact" style="margin-bottom:20px">
+              <span>LLM-инсайты недоступны до пополнения или нового месяца. Простые алерты по порогам работают бесплатно. <a href="modal-quota-exhausted.html">Купить пакет →</a></span>
+            </div>
+
+            <section class="doc-block">
+              <div style="height:8px;border-radius:999px;background:color-mix(in srgb,var(--muted-foreground) 18%,transparent);overflow:hidden;margin-bottom:16px">
+                <div style="width:100%;height:100%;border-radius:999px;background:var(--destructive)"></div>
+              </div>
+
+              <div class="empty-state" style="border-style:solid;border-color:var(--border)">
+                <span class="empty-state__icon"><iconify-icon icon="lucide:zap-off"></iconify-icon></span>
+                <h2 class="empty-state__title">Кредиты закончились</h2>
+                <p class="empty-state__desc">Вы использовали 100 из 100 AI-инсайтов в июне. Докупите пакет или дождитесь сброса на тарифе Pro.</p>
+                <div class="empty-state__actions">
+                  <a class="btn" href="modal-quota-exhausted.html">Купить +50</a>
+                  <a class="btn btn--outline" href="billing-plans.html">Сменить тариф</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
+              <h2 class="doc-h2">Архив <span class="doc-h2__hint">· последние инсайты</span></h2>
+              <div class="insight-feed">
+                <article class="insight-item insight-item--warn">
+                  <div>
+                    <h3 class="insight-item__title"><a href="insight-detail.html" style="color:inherit">Рост выручки на 18% за неделю</a></h3>
+                    <p class="insight-item__meta">14 июн 2026 · Средняя значимость</p>
+                  </div>
+                  <span class="db-tag db-tag--gray">Прочитан</span>
+                  <p class="insight-item__body">Выручка выросла быстрее обычного темпа…</p>
+                </article>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="insights"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

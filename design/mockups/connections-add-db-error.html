@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Ошибка подключения — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/connections/new-db · error</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><div class="mobile-header__title">Источник данных</div></div><a class="btn btn--ghost btn--sm" href="connections.html">Отмена</a></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:database"></iconify-icon></span><h1 class="doc-title">Подключить базу данных</h1></div></div>
+            <section class="doc-block">
+              <h2 class="doc-h2">Проверка</h2>
+              <div class="callout callout--danger callout--compact">
+                <span><strong>Не удалось подключиться.</strong> Connection refused на db.acme.internal:5432. Проверьте host, firewall и что PostgreSQL принимает внешние подключения.</span>
+              </div>
+              <div class="settings-group" style="margin-top:12px">
+                <div class="settings-row"><div><div class="settings-row__label">Тестовое подключение</div><div class="settings-row__hint">14 июн, 12:04 · timeout 10s</div></div><button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:plug-zap"></iconify-icon> Повторить</button></div>
+              </div>
+              <p class="text-sm text-muted" style="margin-top:12px"><a href="connections-add-db.html">← Вернуться к форме</a></p>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

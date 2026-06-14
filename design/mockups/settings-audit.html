@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Audit log — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/settings/audit</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><a href="settings-company.html" class="text-xs text-muted">← Компания</a><div class="mobile-header__title">Audit log</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:scroll-text"></iconify-icon></span><h1 class="doc-title">Audit log</h1></div><p class="doc-lead">Enterprise · действия в Acme Analytics</p></div>
+            <section class="doc-block">
+              <div class="db">
+                <div class="db-toolbar"><span class="db-view is-active">Все</span><span class="db-view">Семантика</span><span class="db-view">Команда</span><span class="db-toolbar__spacer"></span><button class="btn btn--ghost btn--sm" type="button">Экспорт CSV</button></div>
+                <table class="db-table">
+                  <thead><tr><th>Дата</th><th>Актор</th><th>Действие</th><th>Объект</th></tr></thead>
+                  <tbody>
+                    <tr><td><div class="db-cell text-tabular">14 июн, 11:20</div></td><td><div class="db-cell">Егор</div></td><td><div class="db-cell">semantic.publish</div></td><td><div class="db-cell">Orders</div></td></tr>
+                    <tr><td><div class="db-cell text-tabular">13 июн, 18:05</div></td><td><div class="db-cell">Анна</div></td><td><div class="db-cell">dashboard.update</div></td><td><div class="db-cell">Операционный обзор</div></td></tr>
+                    <tr><td><div class="db-cell text-tabular">12 июн, 09:14</div></td><td><div class="db-cell">Егор</div></td><td><div class="db-cell">member.invite</div></td><td><div class="db-cell">new@partner.ru</div></td></tr>
+                    <tr><td><div class="db-cell text-tabular">11 июн, 14:00</div></td><td><div class="db-cell">System</div></td><td><div class="db-cell">billing.charge</div></td><td><div class="db-cell">Pro · июнь</div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

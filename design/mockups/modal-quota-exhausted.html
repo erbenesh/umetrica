@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Кредиты закончились — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>
+      (function () {
+        var t = localStorage.getItem('umetrica-mockup-theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">modal · quota</span></div>
+      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+
+    <div class="app-frame app-frame--blurred">
+      <div data-app-sidebar="insights"></div>
+      <div class="app-main"><main class="app-scroll"><p class="text-muted">/insights</p></main></div>
+    </div>
+
+    <div class="modal-backdrop" role="presentation">
+      <div class="modal" role="dialog" aria-labelledby="m-title">
+        <div class="modal__grab" aria-hidden="true"></div>
+        <div class="modal__header">
+          <h2 id="m-title">AI-кредиты закончились</h2>
+          <p class="card__desc">0 / 100 в этом месяце · сброс 1 июл 2026</p>
+        </div>
+        <div class="modal__body">
+          <p class="text-sm text-muted" style="margin:0 0 14px">Новые LLM-инсайты недоступны. Докупите пакет — кредиты добавятся сразу, без смены тарифа.</p>
+          <div class="settings-group" style="margin-bottom:16px">
+            <label class="settings-row" style="cursor:pointer">
+              <div>
+                <div class="settings-row__label">+50 кредитов</div>
+                <div class="settings-row__hint">1 990 ₽ · хватит ~50 проверок</div>
+              </div>
+              <input type="radio" name="pack" checked />
+            </label>
+            <label class="settings-row" style="cursor:pointer">
+              <div>
+                <div class="settings-row__label">+150 кредитов</div>
+                <div class="settings-row__hint">4 990 ₽ · выгоднее на 17%</div>
+              </div>
+              <input type="radio" name="pack" />
+            </label>
+          </div>
+          <div class="callout callout--compact">
+            <span>Или перейдите на <a href="billing-plans.html">Enterprise</a> для безлимитных инсайтов.</span>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <a class="btn btn--outline" href="insights-quota-exhausted.html">Позже</a>
+          <a class="btn" href="insights.html">Оплатить 1 990 ₽</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -39,8 +39,8 @@
       <div class="hig-note">
         <strong>v3:</strong> document canvas, database views, Iconify, sidebar из JS.
         Редактор виджетов: График · Фильтр · Детализация · Текст (<code>?kind=</code>).
-        Семантический слой: список кубов + редактор Orders.
-        Монетизация: биллинг, квота AI, BYOK только Enterprise.
+        Семантический слой: node-редактор кубов + список.
+        Монетизация, edge states, профиль/компания, enterprise, embed public.
       </div>
 
       <section class="gallery-section">
@@ -70,7 +70,11 @@
           <a class="gallery-card" href="dashboards-list.html"><h2>Дашборды</h2><p>Database table</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="dashboard-detail.html"><h2>Дашборд</h2><p>Canvas grid</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="team.html"><h2>Команда</h2><p>DB участников</p><span class="gallery-card__tag">App</span></a>
-          <a class="gallery-card" href="settings.html"><h2>Настройки</h2><p>Тема, профиль</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="settings.html"><h2>Настройки</h2><p>Хаб</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="settings-profile.html"><h2>Профиль</h2><p>Аватар, имя</p><span class="gallery-card__tag">Settings</span></a>
+          <a class="gallery-card" href="settings-company.html"><h2>Компания</h2><p>Логотип, slug</p><span class="gallery-card__tag">Settings</span></a>
+          <a class="gallery-card" href="insights-settings.html"><h2>AI настройки</h2><p>Расписание, метрики</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="insights-history.html"><h2>AI история</h2><p>Кредиты, прогоны</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="connections.html"><h2>Источники данных</h2><p>Только БД</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="connections-add-db.html"><h2>Новая БД</h2><p>PostgreSQL, тест</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="settings-enterprise-llm.html"><h2>BYOK LLM</h2><p>Enterprise only</p><span class="gallery-card__tag">App</span></a>
@@ -79,7 +83,27 @@
           <a class="gallery-card" href="widget-editor.html?kind=time"><h2>Детализация</h2><p>Переключение шага времени</p><span class="gallery-card__tag">Editor</span></a>
           <a class="gallery-card" href="widget-editor.html?kind=text"><h2>Текст</h2><p>Блок Markdown</p><span class="gallery-card__tag">Editor</span></a>
           <a class="gallery-card" href="semantic-list.html"><h2>Семантика</h2><p>Список кубов</p><span class="gallery-card__tag">Semantic</span></a>
-          <a class="gallery-card" href="semantic-cube.html"><h2>Куб Orders</h2><p>Меры · измерения · preview</p><span class="gallery-card__tag">Semantic</span></a>
+          <a class="gallery-card" href="semantic-cube.html"><h2>Куб Orders</h2><p>Node editor · canvas</p><span class="gallery-card__tag">Semantic</span></a>
+        </div>
+      </section>
+
+      <section class="gallery-section">
+        <h2>Edge states & flows</h2>
+        <div class="gallery-grid">
+          <a class="gallery-card" href="home-empty.html"><h2>Главная</h2><p>Нет данных</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="insights-empty.html"><h2>Инсайты</h2><p>Пустая лента</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="semantic-empty.html"><h2>Семантика</h2><p>Нет кубов</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="insights-quota-exhausted.html"><h2>Квота AI</h2><p>0 / 100</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="insight-detail.html"><h2>Инсайт</h2><p>Детальная карточка</p><span class="gallery-card__tag">Flow</span></a>
+          <a class="gallery-card" href="dashboard-share.html"><h2>Embed</h2><p>Настройки доступа</p><span class="gallery-card__tag">Flow</span></a>
+          <a class="gallery-card" href="embed-public.html"><h2>Embed view</h2><p>Публичная страница</p><span class="gallery-card__tag">Public</span></a>
+          <a class="gallery-card" href="home-cube-error.html"><h2>Cube down</h2><p>Ошибка аналитики</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="connections-add-db-error.html"><h2>БД ошибка</h2><p>Test failed</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="billing-trial-expired.html"><h2>Trial expired</h2><p>Paywall</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="dashboards-list-empty.html"><h2>Дашборды ∅</h2><p>Пустой список</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="dashboard-empty.html"><h2>Canvas ∅</h2><p>Без виджетов</p><span class="gallery-card__tag">State</span></a>
+          <a class="gallery-card" href="settings-audit.html"><h2>Audit log</h2><p>Enterprise</p><span class="gallery-card__tag">Enterprise</span></a>
+          <a class="gallery-card" href="settings-sso.html"><h2>SSO</h2><p>SAML</p><span class="gallery-card__tag">Enterprise</span></a>
         </div>
       </section>
 
@@ -88,7 +112,12 @@
         <div class="gallery-grid">
           <a class="gallery-card" href="modal-create-dashboard.html"><h2>Создать дашборд</h2><p>Sheet / dialog</p><span class="gallery-card__tag">Modal</span></a>
           <a class="gallery-card" href="modal-billing-credits.html"><h2>AI-кредиты</h2><p>Покупка пакета</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-quota-exhausted.html"><h2>Квота 0</h2><p>Paywall AI</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-semantic-publish.html"><h2>Публикация</h2><p>Diff куба</p><span class="gallery-card__tag">Modal</span></a>
           <a class="gallery-card" href="modal-billing-upgrade.html"><h2>Enterprise</h2><p>Заявка на апгрейд</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-delete-dashboard.html"><h2>Удалить дашборд</h2><p>Confirm</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-delete-connection.html"><h2>Удалить БД</h2><p>Confirm</p><span class="gallery-card__tag">Modal</span></a>
+          <a class="gallery-card" href="modal-delete-member.html"><h2>Удалить участника</h2><p>Confirm</p><span class="gallery-card__tag">Modal</span></a>
         </div>
       </section>
     </div>

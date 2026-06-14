@@ -19,7 +19,7 @@
     <div class="mockup-bar">
       <div class="mockup-bar__left">
         <a href="index.html" class="mockup-bar__title">← Макеты</a>
-        <span class="mockup-bar__meta">/semantic/cubes/Orders</span>
+        <span class="mockup-bar__meta">/semantic/cubes/Orders · node editor</span>
       </div>
       <div class="mockup-bar__actions">
         <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button>
@@ -35,7 +35,7 @@
             <a href="semantic-list.html" class="text-xs text-muted">← Семантика</a>
             <div class="mobile-header__title">Orders</div>
           </div>
-          <a class="btn btn--sm" href="semantic-list.html">Опубликовать</a>
+          <a class="btn btn--sm" href="modal-semantic-publish.html">Опубликовать</a>
         </header>
 
         <header class="editor-toolbar">
@@ -46,430 +46,393 @@
           </div>
           <div class="editor-toolbar__actions">
             <span class="db-tag db-tag--blue editor-toolbar__status">Черновик</span>
+            <button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:undo-2"></iconify-icon></button>
+            <button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:redo-2"></iconify-icon></button>
             <button class="btn btn--ghost btn--sm" type="button">Отменить</button>
-            <button class="btn btn--sm" type="button">Опубликовать</button>
+            <a class="btn btn--sm" href="modal-semantic-publish.html">Опубликовать</a>
           </div>
         </header>
 
-        <div class="semantic-editor-page" data-semantic-editor>
-          <div class="semantic-editor">
-            <nav class="semantic-tree" aria-label="Структура куба">
-              <div class="semantic-tree__head">
-                <span class="semantic-tree__cube">Orders</span>
-                <span class="text-xs text-muted">public.orders</span>
+        <div class="node-editor-page" data-semantic-editor>
+          <div class="node-editor">
+            <aside class="node-palette" aria-label="Палитра нод">
+              <div class="node-palette__head">
+                <p class="node-palette__title">Добавить ноду</p>
+              </div>
+              <button class="node-palette__item node-palette__item--source" type="button">
+                <iconify-icon icon="lucide:table"></iconify-icon>
+                <span>Таблица</span>
+              </button>
+              <button class="node-palette__item node-palette__item--cube" type="button" disabled>
+                <iconify-icon icon="lucide:box"></iconify-icon>
+                <span>Куб</span>
+              </button>
+              <button class="node-palette__item node-palette__item--measure" type="button" data-semantic-select="measure:new">
+                <iconify-icon icon="lucide:hash"></iconify-icon>
+                <span>Мера</span>
+              </button>
+              <button class="node-palette__item node-palette__item--dimension" type="button" data-semantic-select="dimension:new">
+                <iconify-icon icon="lucide:text"></iconify-icon>
+                <span>Измерение</span>
+              </button>
+              <button class="node-palette__item is-disabled" type="button" disabled>
+                <iconify-icon icon="lucide:git-merge"></iconify-icon>
+                <span>Join</span>
+              </button>
+              <p class="node-palette__hint">Перетащите на canvas или кликните «+» на кубе. Связи задают SQL-маппинг и агрегации.</p>
+            </aside>
+
+            <div class="node-canvas-wrap">
+              <div class="node-canvas-mobile">
+                <iconify-icon icon="lucide:monitor"></iconify-icon>
+                <span>Node-редактор удобнее на desktop · pinch-to-zoom на canvas</span>
+              </div>
+              <div class="node-canvas-toolbar">
+                <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Уменьшить"><iconify-icon icon="lucide:minus"></iconify-icon></button>
+                <span class="node-canvas-toolbar__zoom">100%</span>
+                <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="Увеличить"><iconify-icon icon="lucide:plus"></iconify-icon></button>
+                <span class="node-canvas-toolbar__spacer"></span>
+                <button class="btn btn--ghost btn--sm" type="button"><iconify-icon icon="lucide:maximize-2"></iconify-icon> Вписать</button>
+                <button class="btn btn--ghost btn--sm" type="button" data-semantic-select="cube:orders"><iconify-icon icon="lucide:box"></iconify-icon> Куб</button>
               </div>
 
-              <div class="semantic-tree__group">
-                <div class="semantic-tree__label">
-                  <span>Обзор</span>
-                </div>
-                <button class="semantic-tree__item" type="button" data-semantic-select="overview">
-                  <iconify-icon icon="lucide:settings-2"></iconify-icon>
-                  <span>Настройки куба</span>
-                </button>
-              </div>
+              <div class="node-canvas" data-semantic-canvas>
+                <div class="node-canvas__stage">
+                  <svg class="node-edges" aria-hidden="true"></svg>
 
-              <div class="semantic-tree__group">
-                <div class="semantic-tree__label">
-                  <span>Меры</span>
-                  <button class="semantic-tree__add btn btn--ghost btn--icon btn--sm" type="button" data-semantic-select="measure:new" aria-label="Добавить меру">
-                    <iconify-icon icon="lucide:plus"></iconify-icon>
-                  </button>
-                </div>
-                <button class="semantic-tree__item" type="button" data-semantic-select="measure:count">
-                  <iconify-icon icon="lucide:hash"></iconify-icon>
-                  <span class="semantic-tree__name">count</span>
-                  <span class="semantic-tree__meta">count</span>
-                </button>
-                <button class="semantic-tree__item is-active" type="button" data-semantic-select="measure:revenue">
-                  <iconify-icon icon="lucide:hash"></iconify-icon>
-                  <span class="semantic-tree__name">revenue</span>
-                  <span class="semantic-tree__meta">sum</span>
-                </button>
-                <button class="semantic-tree__item" type="button" data-semantic-select="measure:avgOrder">
-                  <iconify-icon icon="lucide:hash"></iconify-icon>
-                  <span class="semantic-tree__name">avgOrder</span>
-                  <span class="semantic-tree__meta">avg</span>
-                </button>
-              </div>
-
-              <div class="semantic-tree__group">
-                <div class="semantic-tree__label">
-                  <span>Измерения</span>
-                  <button class="semantic-tree__add btn btn--ghost btn--icon btn--sm" type="button" data-semantic-select="dimension:new" aria-label="Добавить измерение">
-                    <iconify-icon icon="lucide:plus"></iconify-icon>
-                  </button>
-                </div>
-                <button class="semantic-tree__item semantic-tree__item--locked" type="button" data-semantic-select="dimension:tenantId" disabled>
-                  <iconify-icon icon="lucide:lock"></iconify-icon>
-                  <span class="semantic-tree__name">tenantId</span>
-                  <span class="semantic-tree__meta">string</span>
-                </button>
-                <button class="semantic-tree__item" type="button" data-semantic-select="dimension:status">
-                  <iconify-icon icon="lucide:text"></iconify-icon>
-                  <span class="semantic-tree__name">status</span>
-                  <span class="semantic-tree__meta">string</span>
-                </button>
-                <button class="semantic-tree__item" type="button" data-semantic-select="dimension:createdAt">
-                  <iconify-icon icon="lucide:calendar"></iconify-icon>
-                  <span class="semantic-tree__name">createdAt</span>
-                  <span class="semantic-tree__meta">time</span>
-                </button>
-              </div>
-
-              <div class="semantic-tree__group">
-                <div class="semantic-tree__label">
-                  <span>Сегменты</span>
-                  <button class="semantic-tree__add btn btn--ghost btn--icon btn--sm" type="button" disabled aria-label="Добавить сегмент">
-                    <iconify-icon icon="lucide:plus"></iconify-icon>
-                  </button>
-                </div>
-                <p class="semantic-tree__empty">Пока нет · следующая итерация</p>
-              </div>
-            </nav>
-
-            <div class="semantic-editor__main">
-              <!-- Overview -->
-              <div class="semantic-panel" data-semantic-panel="overview" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Настройки куба</h2>
-                  <p class="semantic-panel__desc">Базовый SQL и метаданные semantic layer</p>
-                </div>
-                <div class="form-fields">
-                  <div class="field">
-                    <label for="cube-name">Имя куба</label>
-                    <input class="input" id="cube-name" type="text" value="Orders" readonly />
+                <article class="node node--source" style="left:48px;top:176px" data-semantic-node="source:orders" tabindex="0">
+                  <span class="node__port node__port--out" data-port="out"></span>
+                  <span class="node__port node__port--out-bottom" data-port="out-bottom"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:table"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">public.orders</h3>
+                      <p class="node__type">Источник · PostgreSQL</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__chips">
+                      <span class="node__chip">amount</span>
+                      <span class="node__chip">status</span>
+                      <span class="node__chip">created_at</span>
+                      <span class="node__chip">tenant_id</span>
+                      <span class="node__chip">+2</span>
+                    </div>
                   </div>
-                  <div class="field">
-                    <label for="cube-title">Заголовок</label>
-                    <input class="input" id="cube-title" type="text" value="Заказы" />
+                </article>
+
+                <article class="node node--cube" style="left:296px;top:156px" data-semantic-node="cube:orders" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <span class="node__port node__port--out" data-port="out"></span>
+                  <span class="node__port node__port--out-bottom" data-port="out-bottom"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:box"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">Orders</h3>
+                      <p class="node__type">Куб · 3 меры · 3 измерения</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Заголовок</span><span>Заказы</span></div>
+                    <div class="node__field"><span>SQL</span><code>SELECT * FROM orders</code></div>
                   </div>
-                  <div class="field">
-                    <label for="cube-desc">Описание</label>
-                    <textarea class="input textarea textarea--sm" id="cube-desc" rows="3">Заказы компании с суммой, статусом и датой создания.</textarea>
+                </article>
+
+                <article class="node node--measure node--compact is-selected" style="left:576px;top:32px" data-semantic-node="measure:revenue" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:hash"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">revenue</h3>
+                      <p class="node__type">Мера · sum</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Колонка</span><code>amount</code></div>
+                    <div class="node__field"><span>Формат</span><span>currency</span></div>
                   </div>
-                  <div class="field">
-                    <label for="cube-sql">SQL источник</label>
-                    <pre class="code-block" id="cube-sql">SELECT * FROM public.orders</pre>
-                    <p class="field__hint">Произвольный SQL — только в расширенном режиме. Сейчас: привязка к таблице.</p>
+                </article>
+
+                <article class="node node--measure node--compact" style="left:576px;top:128px" data-semantic-node="measure:count" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:hash"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">count</h3>
+                      <p class="node__type">Мера · count</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Колонка</span><code>*</code></div>
                   </div>
+                </article>
+
+                <article class="node node--measure node--compact" style="left:576px;top:224px" data-semantic-node="measure:avgOrder" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:hash"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">avgOrder</h3>
+                      <p class="node__type">Мера · avg</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Колонка</span><code>amount</code></div>
+                  </div>
+                </article>
+
+                <article class="node node--dimension node--compact" style="left:576px;top:320px" data-semantic-node="dimension:status" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:text"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">status</h3>
+                      <p class="node__type">Измерение · string</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Колонка</span><code>status</code></div>
+                  </div>
+                </article>
+
+                <article class="node node--dimension node--compact" style="left:296px;top:352px" data-semantic-node="dimension:createdAt" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:calendar"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">createdAt</h3>
+                      <p class="node__type">Измерение · time</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Колонка</span><code>created_at</code></div>
+                    <div class="node__field"><span>Granularity</span><span>day</span></div>
+                  </div>
+                </article>
+
+                <article class="node node--dimension node--system node--locked node--compact" style="left:48px;top:352px" data-semantic-node="dimension:tenantId" tabindex="0">
+                  <span class="node__port node__port--in" data-port="in"></span>
+                  <header class="node__header">
+                    <span class="node__icon"><iconify-icon icon="lucide:lock"></iconify-icon></span>
+                    <div class="node__titles">
+                      <h3 class="node__title">tenantId</h3>
+                      <p class="node__type">Системное · string</p>
+                    </div>
+                  </header>
+                  <div class="node__body">
+                    <div class="node__field"><span>Колонка</span><code>tenant_id</code></div>
+                  </div>
+                </article>
                 </div>
               </div>
+            </div>
 
-              <!-- Measure: revenue (default) -->
-              <div class="semantic-panel" data-semantic-panel="measure:revenue">
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Мера · revenue</h2>
-                  <p class="semantic-panel__desc">Orders.revenue · агрегация по полю amount</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
+            <aside class="node-inspector" aria-label="Инспектор ноды">
+              <div class="node-inspector__main">
+                <div class="semantic-panel" data-semantic-panel="cube:orders" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Куб · Orders</h2>
+                    <p class="semantic-panel__desc">Центральная нода semantic layer</p>
+                  </div>
+                  <div class="form-fields">
                     <div class="field">
-                      <label for="m-name">Имя (member)</label>
-                      <input class="input" id="m-name" type="text" value="revenue" readonly />
+                      <label for="cube-title">Заголовок</label>
+                      <input class="input" id="cube-title" type="text" value="Заказы" />
                     </div>
                     <div class="field">
-                      <label for="m-title">Заголовок</label>
-                      <input class="input" id="m-title" type="text" value="Выручка" />
+                      <label for="cube-desc">Описание</label>
+                      <textarea class="input textarea textarea--sm" id="cube-desc" rows="2">Заказы компании с суммой, статусом и датой.</textarea>
                     </div>
-                  </div>
-                  <div class="form-grid form-grid--2">
                     <div class="field">
-                      <label for="m-sql">SQL колонка</label>
-                      <input class="input" id="m-sql" type="text" value="amount" />
-                    </div>
-                    <div class="select-control">
-                      <label for="m-type">Тип агрегации</label>
-                      <select class="input" id="m-type">
-                        <option>count</option>
-                        <option selected>sum</option>
-                        <option>avg</option>
-                        <option>min</option>
-                        <option>max</option>
-                      </select>
+                      <label for="cube-sql">SQL источник</label>
+                      <pre class="code-block code-block--sm" id="cube-sql">SELECT * FROM public.orders</pre>
                     </div>
                   </div>
-                  <div class="form-grid form-grid--2">
+                </div>
+
+                <div class="semantic-panel" data-semantic-panel="source:orders" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Таблица · orders</h2>
+                    <p class="semantic-panel__desc">Подключение из Production Postgres</p>
+                  </div>
+                  <div class="form-fields">
+                    <div class="field">
+                      <label>Схема · таблица</label>
+                      <input class="input" type="text" value="public.orders" readonly />
+                    </div>
+                    <div class="field">
+                      <label>Колонок доступно</label>
+                      <input class="input" type="text" value="6" readonly />
+                    </div>
+                    <a class="btn btn--ghost btn--sm" href="connections.html">Источник данных →</a>
+                  </div>
+                </div>
+
+                <div class="semantic-panel" data-semantic-panel="measure:revenue">
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Мера · revenue</h2>
+                    <p class="semantic-panel__desc">Вход: <code>amount</code> из orders → sum</p>
+                  </div>
+                  <div class="form-fields">
+                    <div class="form-grid form-grid--2">
+                      <div class="field">
+                        <label for="m-name">Member</label>
+                        <input class="input" id="m-name" type="text" value="revenue" readonly />
+                      </div>
+                      <div class="field">
+                        <label for="m-title">Заголовок</label>
+                        <input class="input" id="m-title" type="text" value="Выручка" />
+                      </div>
+                    </div>
+                    <div class="form-grid form-grid--2">
+                      <div class="field">
+                        <label for="m-sql">SQL колонка</label>
+                        <input class="input" id="m-sql" type="text" value="amount" />
+                      </div>
+                      <div class="select-control">
+                        <label for="m-type">Агрегация</label>
+                        <select class="input" id="m-type">
+                          <option>count</option>
+                          <option selected>sum</option>
+                          <option>avg</option>
+                        </select>
+                      </div>
+                    </div>
                     <div class="select-control">
                       <label for="m-format">Формат</label>
                       <select class="input" id="m-format">
                         <option selected>currency</option>
                         <option>number</option>
-                        <option>percent</option>
                       </select>
                     </div>
-                    <div class="field">
-                      <label for="m-public">Публичное имя</label>
-                      <input class="input" id="m-public" type="text" value="Orders.revenue" readonly />
-                    </div>
-                  </div>
-                  <div class="field">
-                    <label for="m-desc">Описание</label>
-                    <textarea class="input textarea textarea--sm" id="m-desc" rows="2">Сумма завершённых заказов за выбранный период.</textarea>
                   </div>
                 </div>
-                <div class="semantic-panel__danger">
-                  <button class="btn btn--ghost btn--sm" type="button" disabled><iconify-icon icon="lucide:trash-2"></iconify-icon> Удалить меру</button>
-                </div>
-              </div>
 
-              <!-- Measure: count -->
-              <div class="semantic-panel" data-semantic-panel="measure:count" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Мера · count</h2>
-                  <p class="semantic-panel__desc">Orders.count · количество строк</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="m2-name">Имя (member)</label>
-                      <input class="input" id="m2-name" type="text" value="count" readonly />
-                    </div>
+                <div class="semantic-panel" data-semantic-panel="measure:count" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Мера · count</h2>
+                    <p class="semantic-panel__desc">count(*) по строкам куба</p>
+                  </div>
+                  <div class="form-fields">
                     <div class="field">
                       <label for="m2-title">Заголовок</label>
                       <input class="input" id="m2-title" type="text" value="Количество заказов" />
                     </div>
-                  </div>
-                  <div class="select-control">
-                    <label for="m2-type">Тип агрегации</label>
-                    <select class="input" id="m2-type">
-                      <option selected>count</option>
-                      <option>countDistinct</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Measure: avgOrder -->
-              <div class="semantic-panel" data-semantic-panel="measure:avgOrder" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Мера · avgOrder</h2>
-                  <p class="semantic-panel__desc">Orders.avgOrder · среднее по amount</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="m3-name">Имя (member)</label>
-                      <input class="input" id="m3-name" type="text" value="avgOrder" readonly />
+                    <div class="select-control">
+                      <label for="m2-type">Агрегация</label>
+                      <select class="input" id="m2-type">
+                        <option selected>count</option>
+                      </select>
                     </div>
+                  </div>
+                </div>
+
+                <div class="semantic-panel" data-semantic-panel="measure:avgOrder" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Мера · avgOrder</h2>
+                    <p class="semantic-panel__desc">avg(amount)</p>
+                  </div>
+                  <div class="form-fields">
                     <div class="field">
                       <label for="m3-title">Заголовок</label>
                       <input class="input" id="m3-title" type="text" value="Средний чек" />
                     </div>
-                  </div>
-                  <div class="form-grid form-grid--2">
                     <div class="field">
                       <label for="m3-sql">SQL колонка</label>
                       <input class="input" id="m3-sql" type="text" value="amount" />
                     </div>
-                    <div class="select-control">
-                      <label for="m3-type">Тип агрегации</label>
-                      <select class="input" id="m3-type">
-                        <option selected>avg</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- New measure -->
-              <div class="semantic-panel" data-semantic-panel="measure:new" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Новая мера</h2>
-                  <p class="semantic-panel__desc">Добавление member в куб Orders</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="mn-name">Имя (member)</label>
-                      <input class="input" id="mn-name" type="text" placeholder="margin" />
-                    </div>
-                    <div class="field">
-                      <label for="mn-title">Заголовок</label>
-                      <input class="input" id="mn-title" type="text" placeholder="Маржа" />
-                    </div>
+                <div class="semantic-panel" data-semantic-panel="measure:new" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Новая мера</h2>
+                    <p class="semantic-panel__desc">Подключите к кубу Orders на canvas</p>
                   </div>
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="mn-sql">SQL колонка</label>
-                      <input class="input" id="mn-sql" type="text" placeholder="margin_amount" />
+                  <div class="form-fields">
+                    <div class="form-grid form-grid--2">
+                      <div class="field">
+                        <label for="mn-name">Member</label>
+                        <input class="input" id="mn-name" type="text" placeholder="margin" />
+                      </div>
+                      <div class="field">
+                        <label for="mn-title">Заголовок</label>
+                        <input class="input" id="mn-title" type="text" placeholder="Маржа" />
+                      </div>
                     </div>
-                    <div class="select-control">
-                      <label for="mn-type">Тип агрегации</label>
-                      <select class="input" id="mn-type">
-                        <option>count</option>
-                        <option selected>sum</option>
-                        <option>avg</option>
-                      </select>
-                    </div>
+                    <button class="btn btn--sm" type="button">Добавить на canvas</button>
                   </div>
-                  <button class="btn btn--sm" type="button">Добавить в черновик</button>
                 </div>
-              </div>
 
-              <!-- Dimension: status -->
-              <div class="semantic-panel" data-semantic-panel="dimension:status" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Измерение · status</h2>
-                  <p class="semantic-panel__desc">Orders.status · строковое поле</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="d-name">Имя (member)</label>
-                      <input class="input" id="d-name" type="text" value="status" readonly />
-                    </div>
+                <div class="semantic-panel" data-semantic-panel="dimension:status" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Измерение · status</h2>
+                    <p class="semantic-panel__desc">Колонка status → string</p>
+                  </div>
+                  <div class="form-fields">
                     <div class="field">
                       <label for="d-title">Заголовок</label>
                       <input class="input" id="d-title" type="text" value="Статус" />
                     </div>
-                  </div>
-                  <div class="form-grid form-grid--2">
                     <div class="field">
                       <label for="d-sql">SQL колонка</label>
                       <input class="input" id="d-sql" type="text" value="status" />
                     </div>
-                    <div class="select-control">
-                      <label for="d-type">Тип данных</label>
-                      <select class="input" id="d-type">
-                        <option selected>string</option>
-                        <option>number</option>
-                        <option>time</option>
-                        <option>boolean</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Dimension: createdAt -->
-              <div class="semantic-panel" data-semantic-panel="dimension:createdAt" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Измерение · createdAt</h2>
-                  <p class="semantic-panel__desc">Orders.createdAt · временное измерение</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="d2-name">Имя (member)</label>
-                      <input class="input" id="d2-name" type="text" value="createdAt" readonly />
-                    </div>
+                <div class="semantic-panel" data-semantic-panel="dimension:createdAt" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Измерение · createdAt</h2>
+                    <p class="semantic-panel__desc">time · created_at</p>
+                  </div>
+                  <div class="form-fields">
                     <div class="field">
                       <label for="d2-title">Заголовок</label>
                       <input class="input" id="d2-title" type="text" value="Дата создания" />
                     </div>
+                    <label class="checkbox-row">
+                      <input type="checkbox" checked />
+                      <span>Детализация day / week / month</span>
+                    </label>
                   </div>
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="d2-sql">SQL колонка</label>
-                      <input class="input" id="d2-sql" type="text" value="created_at" />
-                    </div>
-                    <div class="select-control">
-                      <label for="d2-type">Тип данных</label>
-                      <select class="input" id="d2-type">
-                        <option selected>time</option>
-                      </select>
-                    </div>
-                  </div>
-                  <label class="checkbox-row">
-                    <input type="checkbox" checked />
-                    <span>Разрешить детализацию (day / week / month)</span>
-                  </label>
                 </div>
-              </div>
 
-              <!-- Dimension: tenantId (read-only) -->
-              <div class="semantic-panel" data-semantic-panel="dimension:tenantId" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Измерение · tenantId</h2>
-                  <p class="semantic-panel__desc">Системное поле · изоляция компании</p>
-                </div>
-                <div class="callout callout--info callout--compact">
-                  <span>Заблокировано платформой. Используется в <code>queryRewrite</code> для фильтрации по компании.</span>
-                </div>
-                <div class="form-fields">
-                  <div class="field">
-                    <label>SQL колонка</label>
-                    <input class="input" type="text" value="tenant_id" readonly />
+                <div class="semantic-panel" data-semantic-panel="dimension:tenantId" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">tenantId</h2>
+                    <p class="semantic-panel__desc">Системная нода · нельзя удалить</p>
+                  </div>
+                  <div class="callout callout--info callout--compact">
+                    <span>Используется в <code>queryRewrite</code> для изоляции компании.</span>
                   </div>
                 </div>
-              </div>
 
-              <!-- New dimension -->
-              <div class="semantic-panel" data-semantic-panel="dimension:new" hidden>
-                <div class="semantic-panel__head">
-                  <h2 class="semantic-panel__title">Новое измерение</h2>
-                  <p class="semantic-panel__desc">Колонка из public.orders</p>
-                </div>
-                <div class="form-fields">
-                  <div class="form-grid form-grid--2">
-                    <div class="field">
-                      <label for="dn-name">Имя (member)</label>
-                      <input class="input" id="dn-name" type="text" placeholder="region" />
-                    </div>
-                    <div class="field">
-                      <label for="dn-title">Заголовок</label>
-                      <input class="input" id="dn-title" type="text" placeholder="Регион" />
-                    </div>
+                <div class="semantic-panel" data-semantic-panel="dimension:new" hidden>
+                  <div class="semantic-panel__head">
+                    <h2 class="semantic-panel__title">Новое измерение</h2>
+                    <p class="semantic-panel__desc">Выберите колонку из orders</p>
                   </div>
-                  <div class="form-grid form-grid--2">
+                  <div class="form-fields">
                     <div class="select-control">
-                      <label for="dn-col">Колонка таблицы</label>
+                      <label for="dn-col">Колонка</label>
                       <select class="input" id="dn-col">
-                        <option value="">Выберите…</option>
                         <option>region</option>
                         <option>channel</option>
-                        <option>payment_method</option>
                       </select>
                     </div>
-                    <div class="select-control">
-                      <label for="dn-type">Тип данных</label>
-                      <select class="input" id="dn-type">
-                        <option selected>string</option>
-                        <option>number</option>
-                        <option>time</option>
-                      </select>
-                    </div>
+                    <button class="btn btn--sm" type="button">Добавить на canvas</button>
                   </div>
-                  <button class="btn btn--sm" type="button">Добавить в черновик</button>
                 </div>
               </div>
-            </div>
 
-            <aside class="semantic-editor__preview">
-              <div class="semantic-preview">
-                <div class="semantic-preview__head">
-                  <span>Предпросмотр</span>
+              <footer class="inspector-preview">
+                <div class="inspector-preview__toolbar">
+                  <span class="inspector-preview__title">Предпросмотр</span>
                   <span class="db-tag db-tag--green">meta</span>
                 </div>
-                <div class="semantic-preview__body" data-semantic-preview-body>
-                  <p class="semantic-preview__member">Orders.revenue</p>
-                  <dl class="semantic-preview__meta-list">
-                    <div><dt>Тип</dt><dd>sum · currency</dd></div>
-                    <div><dt>SQL</dt><dd><code>amount</code></dd></div>
-                  </dl>
-                  <p class="editor-section__title editor-section__title--sub">Пример значения</p>
-                  <p class="semantic-preview__sample">1 240 000 ₽</p>
-                  <p class="editor-section__title editor-section__title--sub">Используется в виджетах</p>
-                  <ul class="semantic-preview__links">
-                    <li><a href="dashboard-detail.html">Выручка (7д)</a></li>
-                    <li><a href="dashboard-detail.html">Выручка по дням</a></li>
-                    <li><a href="home.html">KPI на главной</a></li>
-                    <li class="text-muted">+ ещё 1</li>
-                  </ul>
-                  <p class="editor-section__title editor-section__title--sub">Тестовый запрос</p>
-                  <pre class="code-block code-block--sm">{
-  "measures": ["Orders.revenue"],
-  "timeDimensions": [{
-    "dimension": "Orders.createdAt",
-    "dateRange": "last 7 days"
-  }]
-}</pre>
-                  <button class="btn btn--ghost btn--sm" type="button" style="margin-top:10px;width:100%">
-                    <iconify-icon icon="lucide:play"></iconify-icon> Выполнить preview
-                  </button>
-                </div>
-              </div>
+                <div class="inspector-preview__content" data-semantic-preview-body></div>
+              </footer>
             </aside>
           </div>
         </div>
