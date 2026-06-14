@@ -1,0 +1,20 @@
+---
+description: Clean-room legal constraint — no code copying
+alwaysApply: true
+---
+
+# Clean-room
+
+umetrica is a personal clean-room rebuild. The author previously worked on BoostixERP dashboards (employer project, frozen).
+
+## Allowed
+
+- Reuse **experience** and **product ideas** (drag-drop dashboards, seller analytics)
+- Independent implementation with umetrica stack (Cube.js, Better Auth, Chart.js)
+
+## Forbidden
+
+- Copying source code, file structure, or proprietary logic from BoostixERP
+- Referencing BoostixERP file paths as copy sources
+
+When similar UX is needed, implement from first principles using this repo's patterns.

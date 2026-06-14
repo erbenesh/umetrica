@@ -1,0 +1,32 @@
+---
+description: React Studio frontend conventions
+globs: apps/studio/**/*
+alwaysApply: false
+---
+
+# Studio (`@umetrica/studio`)
+
+## Patterns
+
+- Pages in `src/pages/`, components in `src/components/`
+- Data fetching: TanStack Query hooks in `src/hooks/`
+- API clients in `src/lib/*-api.ts` with `credentials: 'include'`
+- Set `Content-Type: application/json` only when request has `body`
+
+## Cube
+
+- Wrap analytics views in `CubeApiProvider`
+- Token from `/api/cube/token`; proxy `/cubejs-api` in Vite
+
+## Auth
+
+- `authClient` with `organizationClient` + shared `orgRoles`
+- baseURL via Vite proxy (`''`) — same origin as REST API
+- Role checks: `useMe()`, `useCanWriteDashboards()` for viewer read-only UI
+- Routes: `/verify-email`, `/forgot-password`, `/reset-password`, `/accept-invitation/:id`, `/onboarding`
+- `OrgGate` redirects users without org to onboarding (except `/team` for invites)
+
+## Vite
+
+- `process.env` polyfill in `vite.config.ts` for react-grid-layout
+- Direct deps required in pnpm (e.g. `react-resizable`)

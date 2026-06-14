@@ -1,0 +1,31 @@
+---
+description: Fastify API and Drizzle conventions
+globs: apps/api/**/*
+alwaysApply: false
+---
+
+# API (`@umetrica/api`)
+
+## Patterns
+
+- Routes in `src/routes/*.ts`, register in `src/index.ts`
+- Auth via `getAuthContext()` from `lib/request-auth.ts`
+- Org scope: `organizationId` from session; never trust client tenant id
+- Write ops: `canWriteDashboards(role)` — owner/admin only
+
+## Database
+
+- Schema files: `src/db/schema.ts`, `dashboards.ts`, `insights.ts`, `orders.ts`
+- **Must list all schema files in `drizzle.config.ts`**
+- Prefer Drizzle; `orders` table may use raw bootstrap SQL
+
+## Auth
+
+- Better Auth proxy at `/api/auth/*`
+- Org plugin with roles: owner, admin, viewer (`lib/org-permissions.ts`)
+- Email verification + password reset + invitation emails via `lib/email.ts`
+- `POST /api/organizations` — create org with unique slug
+
+## Env
+
+Loaded from repo root `.env` via `apps/api/src/index.ts`.

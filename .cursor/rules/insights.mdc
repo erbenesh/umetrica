@@ -1,0 +1,28 @@
+---
+description: AI insights pipeline
+globs: packages/insights/**/*
+alwaysApply: false
+---
+
+# Insights (`@umetrica/insights`)
+
+## Pipeline
+
+1. `detectAnomalies()` — Cube queries, compare 7d vs prior 7d
+2. `InsightBrief` — anomaly + drivers + correlations
+3. `evaluateInsight()` — DeepSeek/Qwen structured JSON
+4. `buildFallbackEvaluation()` — when no API key or LLM fails
+
+## API
+
+- `GET /api/insights` — list by org
+- `POST /api/insights/generate` — detect all, evaluate each, store
+- `DELETE /api/insights/:id`
+
+## Schemas
+
+`InsightBrief`, `InsightEvaluation`, `Insight` in `packages/core/src/schemas.ts`.
+
+## LLM env
+
+`DEEPSEEK_API_KEY`, `QWEN_API_KEY` in root `.env`.

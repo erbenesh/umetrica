@@ -1,0 +1,23 @@
+---
+description: Shared packages — schemas and widget query builder
+globs: packages/core/**/*
+alwaysApply: false
+---
+
+# Core (`@umetrica/core`)
+
+## Role
+
+Single source of truth for cross-app contracts:
+- Zod schemas in `src/schemas.ts` (widgets, dashboards, insights)
+- `buildWidgetQuery()` in `src/build-widget-query.ts`
+
+## Conventions
+
+- Export types via `z.infer<typeof Schema>`
+- Widget fields: `measures`, `dimensions`, `timeDimension`, `dateRange`, `granularity`, `filters`, `chartType`
+- Changes here affect API validation, Studio forms, and Cube queries — update all consumers
+
+## Chart types
+
+`line`, `bar`, `area`, `kpi`, `pie`, `donut` — keep in sync with Studio renderer and editor.

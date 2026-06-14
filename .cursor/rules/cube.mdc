@@ -1,0 +1,27 @@
+---
+description: Cube.js models and analytics
+globs: cube/**/*
+alwaysApply: false
+---
+
+# Cube.js
+
+## Layout
+
+- Config: `cube/cube.js`
+- Models: `cube/model/cubes/*.yml` — **not** `schema/` (Cube 1.6+ default is `model/`)
+
+## Tenant isolation
+
+`queryRewrite` injects `Orders.tenantId` filter from JWT `tenantId`.
+
+## Widget queries
+
+Built in `packages/core/src/build-widget-query.ts`:
+- `timeDimensions` when widget has `timeDimension` + `dateRange`
+- `filters` from widget editor
+- KPI: measures only; charts: need dimensions
+
+## Demo data
+
+Seeded per org via `seed-demo-orders.ts` on cube token / insights generate.
