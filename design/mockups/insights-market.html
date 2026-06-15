@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Рыночные инсайты — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights · market only</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="insights"></div>
+      <div class="app-main">
+        <header class="mobile-header">
+          <div><div class="mobile-header__title">AI-инсайты</div><div class="text-xs text-muted">Режим «только рынок»</div></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn btn--ghost btn--sm" href="insights-settings.html"><iconify-icon icon="lucide:sliders-horizontal"></iconify-icon><span class="btn-label">Настройки AI</span></a>
+            <a class="btn btn--sm" href="onboarding-upload-csv.html"><span class="btn-label">Свои данные</span></a>
+          </div>
+        </header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:globe"></iconify-icon></span><h1 class="doc-title">Рынок · Дом и текстиль</h1></div>
+              <p class="doc-lead">Инсайты по категории на Wildberries — кабинет не подключён</p>
+            </div>
+            <div class="callout callout--info callout--compact" style="margin-bottom:20px">
+              <span>Подключите <a href="onboarding-upload-csv.html">CSV</a> или <a href="connections-add-marketplace.html">API</a>, чтобы видеть <strong>свои</strong> цифры рядом с рынком. <a href="insight-detail-benchmark.html">Пример бенчмарка →</a></span>
+            </div>
+            <section class="doc-block">
+              <div class="insight-feed">
+                <article class="insight-item insight-item--market">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px"><span class="insight-source insight-source--market">Рынок</span></div>
+                    <h3 class="insight-item__title"><a href="insight-detail-market.html" style="color:inherit;text-decoration:none">Пик спроса на постельное бельё — сентябрь–октябрь</a></h3>
+                    <p class="insight-item__meta">14 июн 2026 · WB · Дом и текстиль</p>
+                  </div>
+                  <span class="db-tag db-tag--green">Сезон</span>
+                  <p class="insight-item__body">За 2025 год 68% селлеров категории получили максимальную выручку в сент–окт. Средний рост к августу — +34%.</p>
+                  <a class="insight-item__link" href="insight-detail-market.html">Подробнее →</a>
+                </article>
+                <article class="insight-item insight-item--market">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px"><span class="insight-source insight-source--market">Рынок</span></div>
+                    <h3 class="insight-item__title">Тренд: комплекты «2 пододеяльника»</h3>
+                    <p class="insight-item__meta">12 июн 2026 · доля в топ-100 SKU</p>
+                  </div>
+                  <span class="db-tag db-tag--blue">Тренд</span>
+                  <p class="insight-item__body">Доля таких SKU в выручке категории выросла с 12% до 19% за год — спрос смещается в сторону семейных наборов.</p>
+                </article>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="insights"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>API маркетплейса — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar">
+      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/connections/marketplace</span></div>
+      <div class="mockup-bar__actions"><a class="btn btn--ghost btn--sm" href="settings-security.html">Безопасность</a><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
+    </div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><a href="onboarding-connect.html" class="text-xs text-muted">← Онбординг</a><div class="mobile-header__title">API маркетплейса</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head">
+              <div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:store"></iconify-icon></span><h1 class="doc-title">Подключить Wildberries</h1></div>
+              <p class="doc-lead">Только чтение статистики · ключ можно отозвать в любой момент</p>
+            </div>
+            <section class="doc-block">
+              <div class="trust-panel">
+                <p class="trust-panel__title">Мы запрашиваем только это</p>
+                <ul class="trust-list">
+                  <li><iconify-icon icon="lucide:check"></iconify-icon> Статистика продаж и заказов (read-only)</li>
+                  <li><iconify-icon icon="lucide:check"></iconify-icon> Шифрование AES-256 · хранение в РФ</li>
+                  <li><iconify-icon icon="lucide:x"></iconify-icon> Без изменения цен, карточек и рекламы</li>
+                  <li><iconify-icon icon="lucide:x"></iconify-icon> Без передачи сырых данных другим селлерам</li>
+                </ul>
+              </div>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Ключ API</h2>
+              <form class="form-fields">
+                <div class="field"><label for="wb-key">API-ключ Wildberries</label><input class="input" id="wb-key" type="password" placeholder="Вставьте ключ из кабинета продавца" /><p class="field__hint"><a href="settings-security.html">Как создать ключ с минимальными правами →</a></p></div>
+                <div class="field"><label for="category">Категория для рыночных инсайтов</label><select class="input" id="category"><option selected>Дом и текстиль</option><option>Одежда</option><option>Красота</option></select></div>
+                <label class="checkbox-row"><input type="checkbox" /><span>Участвовать в обезличенных бенчмарках (сравнение с похожими селлерами) · <a href="settings-data-privacy.html">подробнее</a></span></label>
+              </form>
+            </section>
+            <section class="doc-block">
+              <div class="form-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn" type="button">Проверить и подключить</button>
+                <a class="btn btn--ghost" href="onboarding-upload-csv.html">Вместо этого загрузить CSV</a>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -20,31 +20,61 @@
       <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
     </div>
     <div class="auth-frame">
-      <aside class="auth-brand-panel"><div><h2>Шаг 2 из 2</h2><p>Подключите свою БД или начните с демо. AI-инсайты уже включены в тариф.</p></div></aside>
+      <aside class="auth-brand-panel">
+        <div>
+          <h2>Шаг 2 из 2</h2>
+          <p>Ключ кабинета не обязателен. Сначала — рыночные инсайты по вашей категории на WB, потом свои цифры.</p>
+        </div>
+        <div class="auth-brand-panel__stats">
+          <div class="auth-stat"><strong>0</strong><span>ключей на старте</span></div>
+          <div class="auth-stat"><strong>152-ФЗ</strong><span>данные в РФ</span></div>
+        </div>
+      </aside>
       <div class="auth-form-panel">
         <header class="auth-topbar"><span class="brand__mark">u</span><button class="btn btn--ghost btn--icon" type="button" data-theme-toggle aria-label="Тема"></button></header>
         <main class="auth-main">
           <div class="auth-panel">
             <div class="auth-panel__head">
-              <h1>Откуда брать данные?</h1>
-              <p>Acme Analytics · для дашбордов и инсайтов</p>
+              <h1>Как подключить данные?</h1>
+              <p>HomeStyle · текстиль на Wildberries</p>
             </div>
             <div class="auth-panel__card">
-              <div class="settings-group" style="margin-bottom:16px">
-                <a class="settings-row" href="connections-add-db.html" style="text-decoration:none;color:inherit">
-                  <div>
-                    <div class="settings-row__label"><iconify-icon icon="lucide:database" style="vertical-align:-2px;margin-right:6px"></iconify-icon> Подключить базу данных</div>
-                    <div class="settings-row__hint">PostgreSQL, MySQL, BigQuery — read-only пользователь</div>
+              <div class="onboarding-paths">
+                <a class="onboarding-path onboarding-path--recommended" href="insights-market.html">
+                  <span class="onboarding-path__icon"><iconify-icon icon="lucide:globe"></iconify-icon></span>
+                  <div class="onboarding-path__body">
+                    <p class="onboarding-path__title">Только рынок</p>
+                    <p class="onboarding-path__hint">Сезонность, тренды категории, цены на витрине — без API и без вашего кабинета</p>
                   </div>
-                  <span class="btn btn--ghost btn--sm">Настроить</span>
+                  <span class="onboarding-path__badge">Рекомендуем</span>
+                </a>
+                <a class="onboarding-path" href="onboarding-upload-csv.html">
+                  <span class="onboarding-path__icon"><iconify-icon icon="lucide:file-up"></iconify-icon></span>
+                  <div class="onboarding-path__body">
+                    <p class="onboarding-path__title">Загрузить отчёт CSV</p>
+                    <p class="onboarding-path__hint">Выгрузка из кабинета WB — дашборды и личные инсайты без API-ключа</p>
+                  </div>
+                </a>
+                <a class="onboarding-path" href="connections-add-marketplace.html">
+                  <span class="onboarding-path__icon"><iconify-icon icon="lucide:key-round"></iconify-icon></span>
+                  <div class="onboarding-path__body">
+                    <p class="onboarding-path__title">API маркетплейса</p>
+                    <p class="onboarding-path__hint">Автообновление · только чтение · <a href="settings-security.html">как храним ключ</a></p>
+                  </div>
+                </a>
+                <a class="onboarding-path" href="connections-add-db.html">
+                  <span class="onboarding-path__icon"><iconify-icon icon="lucide:database"></iconify-icon></span>
+                  <div class="onboarding-path__body">
+                    <p class="onboarding-path__title">Своя база данных</p>
+                    <p class="onboarding-path__hint">PostgreSQL и др. — для агентств и крупных селлеров с витриной</p>
+                  </div>
                 </a>
               </div>
-              <div class="form-actions">
-                <a class="btn btn--block" href="home.html">Начать с демо-данными</a>
-                <p class="text-xs text-muted" style="text-align:center;margin:12px 0 0">20 AI-инсайтов в месяц на тарифе Starter · демо-заказы уже загружены</p>
+              <div class="form-actions" style="margin-top:16px">
+                <a class="btn btn--ghost btn--block" href="home.html">Пропустить · демо-данные</a>
               </div>
             </div>
-            <div class="auth-panel__footer">Позже: <a href="connections.html">Настройки → Источники данных</a></div>
+            <div class="auth-panel__footer">Участие в бенчмарках — отдельное согласие · <a href="settings-data-privacy.html">Конфиденциальность</a></div>
           </div>
         </main>
       </div>

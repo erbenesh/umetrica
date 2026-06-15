@@ -19,8 +19,8 @@
   <body class="has-mockup-bar">
     <div class="mockup-bar">
       <div class="mockup-bar__left">
-        <span class="mockup-bar__title">umetrica — HTML-макеты v3</span>
-        <span class="mockup-bar__meta">Document canvas · Notion-like DB views</span>
+        <span class="mockup-bar__title">umetrica — HTML-макеты v4</span>
+        <span class="mockup-bar__meta">Селлеры МП · лестница доверия · 3 типа инсайтов</span>
       </div>
       <div class="mockup-bar__actions">
         <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle>
@@ -37,10 +37,13 @@
       </p>
 
       <div class="hig-note">
-        <strong>v3:</strong> document canvas, database views, Iconify, sidebar из JS.
-        Редактор виджетов: График · Фильтр · Детализация · Текст (<code>?kind=</code>).
-        Семантический слой: node-редактор кубов + список.
-        Монетизация, edge states, профиль/компания, enterprise, embed public.
+        <strong>v4 — продуктовая модель:</strong> аналитика для селлеров WB/Ozon. Три типа инсайтов:
+        <span class="insight-source insight-source--tenant">Ваши данные</span>
+        <span class="insight-source insight-source--market">Рынок</span>
+        <span class="insight-source insight-source--benchmark">Бенчмарк</span>.
+        Онбординг без API: рынок → CSV → ключ. Бенчмарк — opt-in в
+        <a href="settings-data-privacy.html">конфиденциальности</a>.
+        Позиционирование vs DataLens: семантика, DnD-дашборды, AI, рыночный слой.
       </div>
 
       <section class="gallery-section">
@@ -52,7 +55,7 @@
           <a class="gallery-card" href="reset-password.html"><h2>Новый пароль</h2><p>/reset-password</p><span class="gallery-card__tag">Auth</span></a>
           <a class="gallery-card" href="verify-email.html"><h2>Email</h2><p>/verify-email</p><span class="gallery-card__tag">Auth</span></a>
           <a class="gallery-card" href="onboarding.html"><h2>Онбординг</h2><p>/onboarding</p><span class="gallery-card__tag">Auth</span></a>
-          <a class="gallery-card" href="onboarding-connect.html"><h2>Данные</h2><p>Шаг 2 · БД или демо</p><span class="gallery-card__tag">Auth</span></a>
+          <a class="gallery-card" href="onboarding-connect.html"><h2>Данные</h2><p>4 пути · лестница доверия</p><span class="gallery-card__tag">Auth</span></a>
           <a class="gallery-card" href="accept-invitation.html"><h2>Приглашение</h2><p>Форма accept</p><span class="gallery-card__tag">Auth</span></a>
           <a class="gallery-card" href="accept-invitation-states.html"><h2>Приглашение</h2><p>Edge states</p><span class="gallery-card__tag">Auth</span></a>
         </div>
@@ -62,7 +65,10 @@
         <h2>Приложение</h2>
         <div class="gallery-grid">
           <a class="gallery-card" href="home.html"><h2>Главная</h2><p>Doc + stat-strip + DB</p><span class="gallery-card__tag">App</span></a>
-          <a class="gallery-card" href="insights.html"><h2>AI-инсайты</h2><p>Лента + квота</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="insights.html"><h2>AI-инсайты</h2><p>3 типа в ленте</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="insights-market.html"><h2>Только рынок</h2><p>Без кабинета</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="insight-detail-market.html"><h2>Инсайт · рынок</h2><p>Сезонность</p><span class="gallery-card__tag">Flow</span></a>
+          <a class="gallery-card" href="insight-detail-benchmark.html"><h2>Инсайт · бенчмарк</h2><p>Цена vs медиана</p><span class="gallery-card__tag">Flow</span></a>
           <a class="gallery-card" href="settings-billing.html"><h2>Биллинг</h2><p>Подписка, счета, AI</p><span class="gallery-card__tag">Billing</span></a>
           <a class="gallery-card" href="billing-plans.html"><h2>Тарифы</h2><p>Starter · Pro · Enterprise</p><span class="gallery-card__tag">Billing</span></a>
           <a class="gallery-card" href="billing-payment.html"><h2>Оплата</h2><p>Карта, ИНН, счета</p><span class="gallery-card__tag">Billing</span></a>
@@ -73,9 +79,13 @@
           <a class="gallery-card" href="settings.html"><h2>Настройки</h2><p>Хаб</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="settings-profile.html"><h2>Профиль</h2><p>Аватар, имя</p><span class="gallery-card__tag">Settings</span></a>
           <a class="gallery-card" href="settings-company.html"><h2>Компания</h2><p>Логотип, slug</p><span class="gallery-card__tag">Settings</span></a>
+          <a class="gallery-card" href="settings-data-privacy.html"><h2>Конфиденциальность</h2><p>Бенчмарк opt-in</p><span class="gallery-card__tag">Settings</span></a>
+          <a class="gallery-card" href="settings-security.html"><h2>Безопасность</h2><p>API · 152-ФЗ</p><span class="gallery-card__tag">Settings</span></a>
           <a class="gallery-card" href="insights-settings.html"><h2>AI настройки</h2><p>Расписание, метрики</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="insights-history.html"><h2>AI история</h2><p>Кредиты, прогоны</p><span class="gallery-card__tag">App</span></a>
-          <a class="gallery-card" href="connections.html"><h2>Источники данных</h2><p>Только БД</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="connections.html"><h2>Источники</h2><p>МП · CSV · БД</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="connections-add-marketplace.html"><h2>API МП</h2><p>WB · read-only</p><span class="gallery-card__tag">App</span></a>
+          <a class="gallery-card" href="onboarding-upload-csv.html"><h2>CSV отчёт</h2><p>Без API-ключа</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="connections-add-db.html"><h2>Новая БД</h2><p>PostgreSQL, тест</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="settings-enterprise-llm.html"><h2>BYOK LLM</h2><p>Enterprise only</p><span class="gallery-card__tag">App</span></a>
           <a class="gallery-card" href="widget-editor.html?kind=chart"><h2>График</h2><p>Куб, запрос, предпросмотр</p><span class="gallery-card__tag">Editor</span></a>

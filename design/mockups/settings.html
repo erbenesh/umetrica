@@ -33,7 +33,7 @@
         <header class="mobile-header">
           <div>
             <div class="mobile-header__title">Настройки</div>
-            <div class="text-xs text-muted">Acme Analytics</div>
+            <div class="text-xs text-muted">HomeStyle</div>
           </div>
         </header>
 
@@ -44,7 +44,7 @@
                 <span class="doc-head__icon"><iconify-icon icon="lucide:settings"></iconify-icon></span>
                 <h1 class="doc-title">Настройки</h1>
               </div>
-              <p class="doc-lead">Профиль, компания, биллинг, данные и оформление</p>
+              <p class="doc-lead">Профиль, данные, конфиденциальность и биллинг</p>
             </div>
 
             <section class="doc-block">
@@ -77,8 +77,8 @@
                   <div style="display:flex;align-items:center;gap:12px">
                     <span class="brand__mark" style="width:32px;height:32px;font-size:14px;flex-shrink:0">A</span>
                     <div>
-                      <div class="settings-row__label">Acme Analytics</div>
-                      <div class="settings-row__hint">4 участника · логотип и название</div>
+                      <div class="settings-row__label">HomeStyle</div>
+                      <div class="settings-row__hint">Дом и текстиль · WB · 2 участника</div>
                     </div>
                   </div>
                   <a class="btn btn--ghost btn--sm" href="settings-company.html">Изменить</a>
@@ -120,12 +120,32 @@
             </section>
 
             <section class="doc-block">
+              <h2 class="doc-h2">Конфиденциальность</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Бенчмарки и рынок</div>
+                    <div class="settings-row__hint">Согласие на обезличенные сравнения · выкл.</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="settings-data-privacy.html">Настроить</a>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Безопасность API и файлов</div>
+                    <div class="settings-row__hint">152-ФЗ · шифрование ключей</div>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="settings-security.html">Открыть</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="doc-block">
               <h2 class="doc-h2">Данные</h2>
               <div class="settings-group">
                 <div class="settings-row">
                   <div>
-                    <div class="settings-row__label">Источники данных</div>
-                    <div class="settings-row__hint">PostgreSQL и другие БД для Cube.js</div>
+                    <div class="settings-row__label">Маркетплейсы и источники</div>
+                    <div class="settings-row__hint">WB CSV · API · PostgreSQL</div>
                   </div>
                   <a class="btn btn--ghost btn--sm" href="connections.html">Настроить</a>
                 </div>

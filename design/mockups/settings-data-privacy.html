@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Конфиденциальность — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/settings/privacy</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><a href="settings.html" class="text-xs text-muted">← Настройки</a><div class="mobile-header__title">Конфиденциальность</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:shield"></iconify-icon></span><h1 class="doc-title">Данные и бенчмарки</h1></div><p class="doc-lead">Три уровня инсайтов — вы управляете, чем делитесь</p></div>
+            <section class="doc-block">
+              <h2 class="doc-h2">Типы инсайтов</h2>
+              <div class="settings-group">
+                <div class="settings-row"><div><div class="settings-row__label"><span class="insight-source insight-source--tenant">Ваши данные</span></div><div class="settings-row__hint">Только ваша компания · дашборды и аномалии по кабинету</div></div></div>
+                <div class="settings-row"><div><div class="settings-row__label"><span class="insight-source insight-source--market">Рынок</span></div><div class="settings-row__hint">Агрегаты категории · без вашего кабинета · публичные и обезличенные данные</div></div></div>
+                <div class="settings-row"><div><div class="settings-row__label"><span class="insight-source insight-source--benchmark">Бенчмарк</span></div><div class="settings-row__hint">«Среди похожих селлеров» · только при согласии ниже и ≥10 участников в сегменте</div></div></div>
+              </div>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Участие в бенчмарках</h2>
+              <div class="settings-group">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label">Обезличенная аналитика</div>
+                    <div class="settings-row__hint">Ваши агрегаты (маржа, цена, оборот) участвуют в сравнениях. Сырые данные не показываются другим.</div>
+                  </div>
+                  <label class="checkbox-row" style="min-height:auto;padding:0;margin:0"><input type="checkbox" /></label>
+                </div>
+              </div>
+              <div class="callout callout--info callout--compact" style="margin-top:12px">
+                <span>Выключено по умолчанию. Включая, вы видите бенчмарки и помогаете точности рынка. <a href="settings-security.html">Безопасность →</a></span>
+              </div>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Категория на маркетплейсе</h2>
+              <form class="form-fields">
+                <div class="field"><label for="cat">Для рыночных инсайтов</label><select class="input" id="cat"><option selected>Дом и текстиль · WB</option><option>Одежда · WB</option></select><p class="field__hint">Не влияет на доступ к вашему кабинету</p></div>
+              </form>
+            </section>
+            <section class="doc-block">
+              <div class="form-actions"><button class="btn" type="button">Сохранить</button></div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

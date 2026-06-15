@@ -129,13 +129,13 @@
       '<button type="button" class="workspace-switcher" data-dropdown-toggle aria-expanded="false" aria-haspopup="menu">' +
       '<span class="workspace-switcher__icon"><iconify-icon icon="lucide:building-2"></iconify-icon></span>' +
       '<span class="workspace-switcher__body">' +
-      '<span class="workspace-switcher__name">Acme Analytics</span>' +
+      '<span class="workspace-switcher__name">HomeStyle</span>' +
       '<span class="workspace-switcher__hint">Компания</span>' +
       '</span>' +
       '<iconify-icon icon="lucide:chevron-down" class="workspace-switcher__chev"></iconify-icon>' +
       '</button>' +
       '<div class="dropdown__menu" role="menu">' +
-      '<button type="button" class="menu-item is-active" role="menuitem"><iconify-icon icon="lucide:building-2"></iconify-icon> Acme Analytics</button>' +
+      '<button type="button" class="menu-item is-active" role="menuitem"><iconify-icon icon="lucide:building-2"></iconify-icon> HomeStyle</button>' +
       '<button type="button" class="menu-item" role="menuitem"><iconify-icon icon="lucide:building-2"></iconify-icon> Beta Corp</button>' +
       '<div class="dropdown__divider"></div>' +
       '<button type="button" class="menu-item menu-item--muted" role="menuitem"><iconify-icon icon="lucide:plus"></iconify-icon> Новая компания</button>' +
@@ -567,8 +567,142 @@
     });
   }
 
+  /** iOS-style back on sub-pages (tab roots: home, insights, dashboards-list, team). */
+  var MOBILE_BACK = {
+    'settings.html': { href: 'home.html', label: 'Главная' },
+    'settings-billing.html': { href: 'settings.html', label: 'Настройки' },
+    'settings-profile.html': { href: 'settings.html', label: 'Настройки' },
+    'settings-company.html': { href: 'settings.html', label: 'Настройки' },
+    'settings-security.html': { href: 'settings.html', label: 'Настройки' },
+    'settings-data-privacy.html': { href: 'settings.html', label: 'Настройки' },
+    'settings-enterprise-llm.html': { href: 'settings.html', label: 'Настройки' },
+    'settings-audit.html': { href: 'settings-company.html', label: 'Компания' },
+    'settings-sso.html': { href: 'settings-company.html', label: 'Компания' },
+    'billing-plans.html': { href: 'settings-billing.html', label: 'Биллинг' },
+    'billing-payment.html': { href: 'settings-billing.html', label: 'Биллинг' },
+    'billing-invoices.html': { href: 'settings-billing.html', label: 'Биллинг' },
+    'billing-trial-expired.html': { href: 'settings-billing.html', label: 'Биллинг' },
+    'connections.html': { href: 'settings.html', label: 'Настройки' },
+    'connections-add-db.html': { href: 'connections.html', label: 'Источники' },
+    'connections-add-db-error.html': { href: 'connections-add-db.html', label: 'Назад' },
+    'connections-add-marketplace.html': { href: 'connections.html', label: 'Источники' },
+    'insights-settings.html': { href: 'insights.html', label: 'AI-инсайты' },
+    'insights-history.html': { href: 'insights.html', label: 'AI-инсайты' },
+    'insights-market.html': { href: 'insights.html', label: 'AI-инсайты' },
+    'insight-detail.html': { href: 'insights.html', label: 'AI-инсайты' },
+    'insight-detail-market.html': { href: 'insights-market.html', label: 'Рынок' },
+    'insight-detail-benchmark.html': { href: 'insights.html', label: 'AI-инсайты' },
+    'dashboard-detail.html': { href: 'dashboards-list.html', label: 'Дашборды' },
+    'dashboard-share.html': { href: 'dashboard-detail.html', label: 'Дашборд' },
+    'dashboard-empty.html': { href: 'dashboards-list.html', label: 'Дашборды' },
+    'widget-editor.html': { href: 'dashboard-detail.html', label: 'Дашборд' },
+    'semantic-list.html': { href: 'settings.html', label: 'Настройки' },
+    'semantic-cube.html': { href: 'semantic-list.html', label: 'Семантика' },
+    'semantic-empty.html': { href: 'semantic-list.html', label: 'Семантика' },
+  };
+
+  function currentMockupPage() {
+    var path = window.location.pathname || '';
+    var file = path.split('/').pop() || 'index.html';
+    if (!file || file.indexOf('.') === -1) file = 'index.html';
+    return file;
+  }
+
+  function structureMobileHeader(header) {
+    if (header.querySelector('.mobile-header__body')) return;
+
+    var body = document.createElement('div');
+    body.className = 'mobile-header__body';
+    var endNodes = [];
+
+    Array.from(header.childNodes).forEach(function (node) {
+      if (node.nodeType !== 1) return;
+      if (
+        node.classList.contains('btn') ||
+        node.querySelector('.btn') ||
+        node.classList.contains('mobile-header__end')
+      ) {
+        endNodes.push(node);
+      } else {
+        body.appendChild(node);
+      }
+    });
+
+    header.appendChild(body);
+
+    if (endNodes.length) {
+      var end = document.createElement('div');
+      end.className = 'mobile-header__end';
+      endNodes.forEach(function (node) {
+        end.appendChild(node);
+      });
+      header.appendChild(end);
+    }
+  }
+
+  function initMobileHeaders() {
+    var header = document.querySelector('.mobile-header');
+    if (!header) return;
+
+    structureMobileHeader(header);
+
+    if (header.querySelector('.mobile-header__back')) return;
+
+    var overrideHref = header.getAttribute('data-mobile-back');
+    var overrideLabel = header.getAttribute('data-mobile-back-label');
+    var config = overrideHref
+      ? { href: overrideHref, label: overrideLabel || 'Назад' }
+      : MOBILE_BACK[currentMockupPage()];
+
+    if (!config) return;
+
+    header.querySelectorAll('a.text-xs.text-muted').forEach(function (link) {
+      if (/^←/.test((link.textContent || '').trim())) link.remove();
+    });
+
+    var back = document.createElement('a');
+    back.className = 'mobile-header__back';
+    back.href = config.href;
+    back.setAttribute('aria-label', config.label);
+    back.innerHTML = '<iconify-icon icon="lucide:chevron-left"></iconify-icon>';
+    header.insertBefore(back, header.firstChild);
+  }
+
+  function initDocActions() {
+    var row = document.querySelector('.doc-head__row');
+    if (!row || row.querySelector('.doc-actions')) return;
+
+    var header = document.querySelector('.mobile-header');
+    if (!header) return;
+
+    var end = header.querySelector('.mobile-header__end');
+    if (!end || !end.children.length) return;
+
+    var actions = document.createElement('div');
+    actions.className = 'doc-actions';
+    actions.setAttribute('aria-label', 'Действия страницы');
+
+    Array.from(end.children).forEach(function (node) {
+      if (node.hasAttribute('data-mobile-only')) return;
+
+      var anchor = node.matches('a[href]') ? node : node.querySelector('a[href]');
+      if (anchor) {
+        if (anchor.hasAttribute('data-mobile-only')) return;
+        if (anchor.getAttribute('href') === 'settings.html') return;
+      }
+
+      actions.appendChild(node.cloneNode(true));
+    });
+
+    if (!actions.children.length) return;
+
+    row.appendChild(actions);
+  }
+
   function boot() {
     mountShell();
+    initMobileHeaders();
+    initDocActions();
     initAuthAmbient();
     initWidgetEditor();
     initSemanticEditor();

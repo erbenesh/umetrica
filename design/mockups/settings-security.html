@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Безопасность данных — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/settings/security</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="settings"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><a href="settings.html" class="text-xs text-muted">← Настройки</a><div class="mobile-header__title">Безопасность</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:shield-check"></iconify-icon></span><h1 class="doc-title">Безопасность данных</h1></div><p class="doc-lead">Как мы храним API-ключи и обрабатываем отчёты селлеров</p></div>
+            <section class="doc-block">
+              <h2 class="doc-h2">API-ключи маркетплейсов</h2>
+              <ul class="trust-list">
+                <li><iconify-icon icon="lucide:lock"></iconify-icon> Шифрование at rest (AES-256) · доступ только сервису аналитики</li>
+                <li><iconify-icon icon="lucide:map-pin"></iconify-icon> Серверы в РФ · соответствие 152-ФЗ</li>
+                <li><iconify-icon icon="lucide:eye-off"></iconify-icon> Минимальные scope: только статистика, без write-методов</li>
+                <li><iconify-icon icon="lucide:rotate-ccw"></iconify-icon> Отзыв ключа в umetrica = немедленная остановка синхронизации</li>
+                <li><iconify-icon icon="lucide:scroll-text"></iconify-icon> Все обращения к API пишутся в <a href="settings-audit.html">audit log</a> (Enterprise)</li>
+              </ul>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Как создать ключ WB с минимальными правами</h2>
+              <ol class="text-sm" style="margin:0;padding-left:20px;color:var(--foreground-secondary);line-height:1.6">
+                <li>Кабинет продавца → Настройки → Доступ к API</li>
+                <li>Создайте ключ «Только статистика» / read-only</li>
+                <li>Не включайте контент, цены, рекламу и финансы</li>
+                <li>Вставьте ключ здесь или в <a href="connections-add-marketplace.html">подключении</a></li>
+              </ol>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Загруженные файлы</h2>
+              <p class="text-sm text-muted" style="margin:0 0 12px">CSV/XLSX обрабатываются в изолированном контуре и по умолчанию удаляются после импорта.</p>
+              <a class="btn btn--ghost btn--sm" href="onboarding-upload-csv.html">Загрузить отчёт</a>
+            </section>
+            <section class="doc-block">
+              <h2 class="doc-h2">Документы</h2>
+              <div class="settings-group">
+                <div class="settings-row"><div><div class="settings-row__label">Политика конфиденциальности</div><div class="settings-row__hint">152-ФЗ · обработка ПДн</div></div><button class="btn btn--ghost btn--sm" type="button">PDF</button></div>
+                <div class="settings-row"><div><div class="settings-row__label">Договор оферты</div><div class="settings-row__hint">B2B · юрлица РФ</div></div><button class="btn btn--ghost btn--sm" type="button">PDF</button></div>
+              </div>
+            </section>
+          </article>
+        </main>
+        <div data-app-tabbar="settings"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

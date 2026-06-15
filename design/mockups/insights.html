@@ -27,9 +27,9 @@
         <header class="mobile-header">
           <div><div class="mobile-header__title">AI-инсайты</div></div>
           <div style="display:flex;gap:8px;align-items:center">
-            <a class="btn btn--ghost btn--icon" href="insights-settings.html" aria-label="Настройки AI"><iconify-icon icon="lucide:sliders-horizontal"></iconify-icon></a>
-            <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:refresh-cw"></iconify-icon> Проверить</button>
-            <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+            <a class="btn btn--ghost btn--sm" href="insights-settings.html" aria-label="Настройки AI"><iconify-icon icon="lucide:sliders-horizontal"></iconify-icon><span class="btn-label">Настройки AI</span></a>
+            <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:refresh-cw"></iconify-icon><span class="btn-label">Проверить</span></button>
+            <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки" data-mobile-only><iconify-icon icon="lucide:settings"></iconify-icon></a>
           </div>
         </header>
 
@@ -40,29 +40,49 @@
                 <span class="doc-head__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span>
                 <h1 class="doc-title">AI-инсайты</h1>
               </div>
-              <p class="doc-lead">Проактивные оценки: что произошло, почему и что делать дальше</p>
+              <p class="doc-lead">Ваши данные, рынок и бенчмарки — в одной ленте</p>
             </div>
             <div class="doc-props">
-              <span class="doc-prop"><span class="doc-prop__label">Компания</span> Acme Analytics</span>
-              <span class="doc-prop"><span class="doc-prop__label">Новых</span> 2</span>
+              <span class="doc-prop"><span class="doc-prop__label">Компания</span> HomeStyle</span>
+              <span class="doc-prop"><span class="doc-prop__label">Новых</span> 3</span>
               <span class="doc-prop"><span class="doc-prop__label">AI-кредиты</span> 47 / 100</span>
-              <span class="doc-prop"><span class="doc-prop__label">Последняя проверка</span> 14 июн, 09:42</span>
+              <span class="doc-prop"><span class="doc-prop__label">Кабинет</span> CSV · 13 июн</span>
               <a class="doc-prop" href="insights-history.html" style="color:var(--primary);font-weight:500"><span class="doc-prop__label">История</span> →</a>
             </div>
 
-            <div class="callout callout--compact" style="margin-bottom:20px">
-              <span>AI-инсайты включены в тариф Pro. Осталось <strong>53 кредита</strong> до 1 июл. <a href="settings-billing.html">Биллинг →</a></span>
+            <div class="callout callout--compact" style="margin-bottom:16px">
+              <span>Рыночные инсайты доступны без API. Бенчмарки — при <a href="settings-data-privacy.html">согласии</a>. <a href="settings-billing.html">Биллинг →</a></span>
             </div>
 
             <section class="doc-block">
+              <div class="insight-feed__filters" role="tablist">
+                <button class="insight-feed__filter is-active" type="button">Все</button>
+                <button class="insight-feed__filter" type="button">Ваши данные</button>
+                <button class="insight-feed__filter" type="button">Рынок</button>
+                <button class="insight-feed__filter" type="button">Бенчмарк</button>
+              </div>
               <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px">
                 <h2 class="doc-h2" style="margin:0">Лента</h2>
-                <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:refresh-cw"></iconify-icon> Проверить аномалии</button>
               </div>
 
               <div class="insight-feed">
+                <article class="insight-item insight-item--benchmark">
+                  <div>
+                    <div style="margin-bottom:4px"><span class="insight-source insight-source--benchmark">Бенчмарк</span></div>
+                    <h3 class="insight-item__title"><a href="insight-detail-benchmark.html" style="color:inherit;text-decoration:none">Цена выше медианы на 14%</a></h3>
+                    <p class="insight-item__meta">14 июн 2026, 09:42 · SKU 482910 · Высокая значимость</p>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-self:start">
+                    <span class="db-tag db-tag--red">Цена</span>
+                    <span class="db-tag db-tag--orange">Высокая</span>
+                  </div>
+                  <p class="insight-item__body">Среди 18 похожих селлеров в «Дом и текстиль» ваша цена на витрине в нижних 15% по конкурентности.</p>
+                  <a class="insight-item__link" href="insight-detail-benchmark.html">Подробнее →</a>
+                </article>
+
                 <article class="insight-item insight-item--warn">
                   <div>
+                    <div style="margin-bottom:4px"><span class="insight-source insight-source--tenant">Ваши данные</span></div>
                     <h3 class="insight-item__title"><a href="insight-detail.html" style="color:inherit;text-decoration:none">Рост выручки на 18% за неделю</a></h3>
                     <p class="insight-item__meta">14 июн 2026, 09:42 · Средняя значимость</p>
                   </div>
@@ -70,16 +90,28 @@
                     <span class="db-tag db-tag--orange">Средняя</span>
                     <span class="db-tag db-tag--green">↑ +18%</span>
                   </div>
-                  <p class="insight-item__body">Выручка выросла быстрее обычного темпа. Основной вклад — completed-заказы в MSK.</p>
+                  <p class="insight-item__body">Выручка выросла быстрее обычного темпа. Основной вклад — заказы WB в регионе ЦФО.</p>
                   <a class="insight-item__link" href="insight-detail.html">Подробнее →</a>
                   <div class="insight-item__tags">
                     <span class="db-tag db-tag--gray">completed · 62%</span>
-                    <span class="db-tag db-tag--gray">MSK · 41%</span>
+                    <span class="db-tag db-tag--gray">ЦФО · 41%</span>
                   </div>
+                </article>
+
+                <article class="insight-item insight-item--market">
+                  <div>
+                    <div style="margin-bottom:4px"><span class="insight-source insight-source--market">Рынок</span></div>
+                    <h3 class="insight-item__title"><a href="insight-detail-market.html" style="color:inherit;text-decoration:none">Пик спроса на постельное бельё — сент–окт</a></h3>
+                    <p class="insight-item__meta">14 июн 2026 · WB · Дом и текстиль</p>
+                  </div>
+                  <span class="db-tag db-tag--green">Сезон</span>
+                  <p class="insight-item__body">68% селлеров категории в 2025 году пикали в сентябре–октябре. Подготовьте закупку с августа.</p>
+                  <a class="insight-item__link" href="insight-detail-market.html">Подробнее →</a>
                 </article>
 
                 <article class="insight-item insight-item--info">
                   <div>
+                    <div style="margin-bottom:4px"><span class="insight-source insight-source--tenant">Ваши данные</span></div>
                     <h3 class="insight-item__title">Падение числа заказов</h3>
                     <p class="insight-item__meta">12 июн 2026 · Низкая значимость</p>
                   </div>

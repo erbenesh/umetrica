@@ -5,50 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>AI-инсайты — пусто — umetrica mockup</title>
     <link rel="stylesheet" href="assets/mockup.css" />
-    <script>
-      (function () {
-        var t = localStorage.getItem('umetrica-mockup-theme');
-        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
   </head>
   <body class="has-mockup-bar">
-    <div class="mockup-bar">
-      <div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights · empty</span></div>
-      <div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div>
-    </div>
-
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights · empty tenant</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
     <div class="app-frame">
       <div data-app-sidebar="insights"></div>
       <div class="app-main">
         <header class="mobile-header">
           <div><div class="mobile-header__title">AI-инсайты</div></div>
-          <button class="btn btn--sm" type="button" disabled><iconify-icon icon="lucide:refresh-cw"></iconify-icon> Проверить</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn btn--ghost btn--sm" href="insights-settings.html"><iconify-icon icon="lucide:sliders-horizontal"></iconify-icon><span class="btn-label">Настройки AI</span></a>
+            <a class="btn btn--ghost btn--icon" href="settings.html" aria-label="Настройки"><iconify-icon icon="lucide:settings"></iconify-icon></a>
+          </div>
         </header>
         <main class="app-scroll">
           <article class="doc">
-            <div class="doc-head">
-              <div class="doc-head__row">
-                <span class="doc-head__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span>
-                <h1 class="doc-title">AI-инсайты</h1>
-              </div>
-              <p class="doc-lead">Проактивные оценки по вашим метрикам</p>
+            <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span><h1 class="doc-title">AI-инсайты</h1></div><p class="doc-lead">Личных инсайтов нет — кабинет не подключён</p></div>
+            <div class="callout callout--info callout--compact" style="margin-bottom:20px">
+              <span>Рыночные инсайты по категории <strong>доступны без API</strong>. <a href="insights-market.html">Открыть рынок →</a></span>
             </div>
-            <div class="doc-props">
-              <span class="doc-prop"><span class="doc-prop__label">AI-кредиты</span> 100 / 100</span>
-              <span class="doc-prop"><span class="doc-prop__label">Проверок</span> 0</span>
-            </div>
-
             <section class="doc-block">
               <div class="empty-state">
-                <span class="empty-state__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span>
-                <h2 class="empty-state__title">Инсайтов пока нет</h2>
-                <p class="empty-state__desc">Нужны опубликованные кубы и данные за последние 30 дней. Запустите первую проверку аномалий — это займёт 1 AI-кредит.</p>
+                <span class="empty-state__icon"><iconify-icon icon="lucide:line-chart"></iconify-icon></span>
+                <h2 class="empty-state__title">Нет инсайтов по вашим продажам</h2>
+                <p class="empty-state__desc">Загрузите отчёт из кабинета WB или подключите API — тогда появятся аномалии и бенчмарки по вашим SKU.</p>
                 <div class="empty-state__actions">
-                  <a class="btn" href="semantic-list.html">Настроить семантику</a>
-                  <button class="btn btn--outline" type="button">Проверить аномалии</button>
+                  <a class="btn" href="onboarding-upload-csv.html">Загрузить CSV</a>
+                  <a class="btn btn--outline" href="connections-add-marketplace.html">API маркетплейса</a>
+                  <a class="btn btn--ghost" href="insights-market.html">Только рынок</a>
                 </div>
               </div>
             </section>

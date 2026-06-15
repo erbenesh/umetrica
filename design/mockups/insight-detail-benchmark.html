@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Бенчмарк — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/insights/benchmark</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="app-frame">
+      <div data-app-sidebar="insights"></div>
+      <div class="app-main">
+        <header class="mobile-header"><div><a href="insights.html" class="text-xs text-muted">← AI-инсайты</a><div class="mobile-header__title">Бенчмарк</div></div></header>
+        <main class="app-scroll">
+          <article class="doc">
+            <div class="insight-detail__hero">
+              <div class="insight-detail__badges">
+                <span class="insight-source insight-source--benchmark">Бенчмарк</span>
+                <span class="db-tag db-tag--red">Нижние 15%</span>
+                <span class="db-tag db-tag--gray">SKU 482910 · WB</span>
+              </div>
+              <h1 class="doc-title">Цена выше 14% медианы среди похожих селлеров</h1>
+              <p class="doc-lead">14 июн 2026 · HomeStyle · сегмент 18 селлеров · 1 AI-кредит</p>
+            </div>
+            <section class="insight-detail__section">
+              <h2>Сравнение</h2>
+              <p>Ваша цена на витрине по SKU «Комплект сатин 1.5 сп» — <strong>4 290 ₽</strong>. Медиана в сегменте (похожие карточки, тот же МП и категория) — <strong>3 760 ₽</strong>. Вы в нижних 15% по конкурентности цены.</p>
+            </section>
+            <section class="insight-detail__section">
+              <h2>Что делать</h2>
+              <ul>
+                <li>Проверить акции конкурентов за последние 7 дней — возможен временный разрыв.</li>
+                <li>Если маржа позволяет — тест −8% на 2 недели с замером конверсии.</li>
+                <li>Если позиционирование премиум — усилить контент карточки, а не снижать цену.</li>
+              </ul>
+            </section>
+            <section class="insight-detail__section">
+              <h2>Как считается бенчмарк</h2>
+              <p class="text-sm text-muted">Сегмент: «Дом и текстиль», сопоставимые SKU по атрибутам. Участвуют только селлеры с включённым <a href="settings-data-privacy.html">согласием на бенчмарк</a>. Показываем вывод только при ≥10 участниках. Сырые данные конкурентов не раскрываются.</p>
+            </section>
+            <div class="insight-detail__actions">
+              <button class="btn btn--sm" type="button"><iconify-icon icon="lucide:thumbs-up"></iconify-icon> Полезно</button>
+              <a class="btn btn--ghost btn--sm" href="dashboard-detail.html">Карточка на дашборде</a>
+            </div>
+          </article>
+        </main>
+        <div data-app-tabbar="insights"></div>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Загрузка отчёта — umetrica mockup</title>
+    <link rel="stylesheet" href="assets/mockup.css" />
+    <script>(function(){var t=localStorage.getItem('umetrica-mockup-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');})();</script>
+  </head>
+  <body class="has-mockup-bar">
+    <div class="mockup-bar"><div class="mockup-bar__left"><a href="index.html" class="mockup-bar__title">← Макеты</a><span class="mockup-bar__meta">/onboarding/upload</span></div><div class="mockup-bar__actions"><button class="btn btn--ghost btn--sm" type="button" data-theme-toggle><span data-theme-label>Тёмная</span></button></div></div>
+    <div class="auth-frame">
+      <aside class="auth-brand-panel"><div><h2>Без API-ключа</h2><p>Файл остаётся у вас: мы парсим отчёт и строим дашборды. Ключ не нужен.</p></div></aside>
+      <div class="auth-form-panel">
+        <header class="auth-topbar"><a href="onboarding-connect.html" class="text-xs text-muted">← Назад</a></header>
+        <main class="auth-main">
+          <div class="auth-panel">
+            <div class="auth-panel__head"><h1>Загрузить отчёт</h1><p>Wildberries · продажи и заказы</p></div>
+            <div class="auth-panel__card">
+              <form class="form-fields">
+                <div class="field">
+                  <label for="mp">Маркетплейс</label>
+                  <select class="input" id="mp"><option selected>Wildberries</option><option>Ozon</option><option>Яндекс Маркет</option></select>
+                </div>
+                <div class="field">
+                  <label for="report-type">Тип отчёта</label>
+                  <select class="input" id="report-type"><option selected>Продажи по артикулам</option><option>Заказы</option><option>Остатки</option></select>
+                </div>
+                <div class="field">
+                  <label>Файл CSV или XLSX</label>
+                  <div class="media-upload" style="align-items:center">
+                    <div class="media-upload__preview media-upload__preview--logo" style="width:48px;height:48px;font-size:18px"><iconify-icon icon="lucide:file-spreadsheet"></iconify-icon></div>
+                    <div class="media-upload__meta">
+                      <div class="media-upload__actions"><button class="btn btn--sm" type="button"><iconify-icon icon="lucide:upload"></iconify-icon> Выбрать файл</button></div>
+                      <p class="media-upload__hint">До 20 МБ · инструкция: Кабинет → Аналитика → Скачать</p>
+                    </div>
+                  </div>
+                </div>
+                <label class="checkbox-row"><input type="checkbox" checked /><span>Удалить файл с сервера после обработки (рекомендуется)</span></label>
+              </form>
+              <div class="trust-panel" style="margin-top:16px">
+                <p class="trust-panel__title">Что будет дальше</p>
+                <ul class="trust-list">
+                  <li><iconify-icon icon="lucide:check"></iconify-icon> Личные дашборды и инсайты по вашим продажам</li>
+                  <li><iconify-icon icon="lucide:check"></iconify-icon> Сравнение с рынком — если подключена категория</li>
+                  <li class="is-muted"><iconify-icon icon="lucide:minus"></iconify-icon> Бенчмарк «среди конкурентов» — только с отдельным согласием</li>
+                </ul>
+              </div>
+              <div class="form-actions" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+                <a class="btn btn--block" href="home.html" style="flex:1">Загрузить и продолжить</a>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="assets/mockup.js"></script>
+  </body>
+</html>

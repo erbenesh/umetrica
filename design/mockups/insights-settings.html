@@ -17,6 +17,12 @@
           <article class="doc">
             <div class="doc-head"><div class="doc-head__row"><span class="doc-head__icon"><iconify-icon icon="lucide:sparkles"></iconify-icon></span><h1 class="doc-title">Настройки AI-инсайтов</h1></div><p class="doc-lead">Автопроверки и метрики для мониторинга · owner/admin</p></div>
             <section class="doc-block">
+              <h2 class="doc-h2">Типы инсайтов</h2>
+              <label class="checkbox-row"><input type="checkbox" checked /><span><span class="insight-source insight-source--tenant">Ваши данные</span> — аномалии по кабинету</span></label>
+              <label class="checkbox-row"><input type="checkbox" checked /><span><span class="insight-source insight-source--market">Рынок</span> — тренды категории (без API)</span></label>
+              <label class="checkbox-row"><input type="checkbox" /><span><span class="insight-source insight-source--benchmark">Бенчмарк</span> — нужно <a href="settings-data-privacy.html">согласие</a></span></label>
+            </section>
+            <section class="doc-block">
               <h2 class="doc-h2">Автопроверки</h2>
               <div class="settings-group">
                 <div class="settings-row"><div><div class="settings-row__label">Расписание</div><div class="settings-row__hint">Pro · до 3 проверок в день</div></div><select class="input" style="width:auto;min-width:140px"><option selected>Ежедневно 09:00</option><option>Каждые 12 ч</option><option>Вручную</option></select></div>
