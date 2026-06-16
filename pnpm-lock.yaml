@@ -44,10 +44,10 @@ importers:
       '@fastify/multipart':
         specifier: ^9.0.3
         version: 9.4.0
-      '@umetrica/core':
+      '@sellerpool/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@umetrica/insights':
+      '@sellerpool/insights':
         specifier: workspace:*
         version: link:../../packages/insights
       better-auth:
@@ -81,7 +81,7 @@ importers:
       '@types/node':
         specifier: ^24.0.3
         version: 24.13.2
-      '@umetrica/tsconfig':
+      '@sellerpool/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       drizzle-kit:
@@ -108,7 +108,7 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.81.5
         version: 5.101.0(react@19.2.7)
-      '@umetrica/core':
+      '@sellerpool/core':
         specifier: workspace:*
         version: link:../../packages/core
       better-auth:
@@ -169,7 +169,7 @@ importers:
       '@types/react-grid-layout':
         specifier: ^1.3.5
         version: 1.3.6
-      '@umetrica/tsconfig':
+      '@sellerpool/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@vitejs/plugin-react-swc':
@@ -194,7 +194,7 @@ importers:
       '@types/node':
         specifier: ^24.0.3
         version: 24.13.2
-      '@umetrica/tsconfig':
+      '@sellerpool/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       tsx:
@@ -210,7 +210,7 @@ importers:
         specifier: ^3.25.67
         version: 3.25.76
     devDependencies:
-      '@umetrica/tsconfig':
+      '@sellerpool/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       typescript:
@@ -219,7 +219,7 @@ importers:
 
   packages/insights:
     dependencies:
-      '@umetrica/core':
+      '@sellerpool/core':
         specifier: workspace:*
         version: link:../core
       zod:
@@ -229,7 +229,7 @@ importers:
       '@types/node':
         specifier: ^24.0.3
         version: 24.13.2
-      '@umetrica/tsconfig':
+      '@sellerpool/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       typescript:

@@ -7,31 +7,36 @@ import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
 import { FormActions, FormField } from '@/components/doc/form-field';
 import { InsightSourceBadge } from '@/components/doc/insight-source-badge';
+import { ServicePolicyPillars } from '@/components/doc/service-policy-pillars';
 import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
+import { TrustFaq } from '@/components/doc/trust-faq';
 import { Button } from '@/components/ui/button';
+import {
+  BENCHMARK_MIN_POOL_PARTICIPANTS,
+  BENCHMARK_POOL_CONTRIBUTION_LABEL,
+  formatBenchmarkPoolThresholdHint,
+} from '@sellerpool/core';
 import {
   BENCHMARK_OPT_OUT_COOLDOWN_DAYS,
   BENCHMARK_WARMUP_DAYS,
   formatParticipationDate,
 } from '@/lib/benchmark-participation';
+import { MARKET_CATEGORIES, DEFAULT_MARKET_CATEGORY } from '@/lib/market-categories';
+import { capabilityStatusLines } from '@/lib/trust-policy-ui';
+import { useCanWriteDashboards } from '@/hooks/use-me';
 import { usePrivacySettings, useUpdatePrivacySettings } from '@/hooks/use-privacy';
 
-const MARKET_CATEGORIES = [
-  'Дом и текстиль',
-  'Одежда',
-  'Красота и здоровье',
-  'Электроника',
-  'Другое',
-];
-
 export function SettingsPrivacyPage() {
+  const canManage = useCanWriteDashboards();
   const { data, isLoading } = usePrivacySettings();
   const updatePrivacy = useUpdatePrivacySettings();
   const [benchmarkOptIn, setBenchmarkOptIn] = useState(false);
-  const [category, setCategory] = useState(MARKET_CATEGORIES[0]);
-  const [saved, setSaved] = useState(false);
+  const [category, setCategory] = useState<string>(DEFAULT_MARKET_CATEGORY);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  const trust = data?.trustPolicy;
+  const canJoinBenchmarkPool = trust?.capabilities.personalInsights ?? false;
 
   useEffect(() => {
     if (!data) return;
@@ -41,7 +46,6 @@ export function SettingsPrivacyPage() {
 
   const handleSave = async () => {
     setError(null);
-    setSaved(false);
     setNotice(null);
 
     try {
@@ -49,11 +53,9 @@ export function SettingsPrivacyPage() {
         benchmarkOptIn,
         marketCategory: category,
       });
-      setSaved(true);
       if ('notice' in result && typeof result.notice === 'string') {
         setNotice(result.notice);
       }
-      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось сохранить');
     }
@@ -64,22 +66,50 @@ export function SettingsPrivacyPage() {
   const savedOptIn = data?.benchmarkOptIn ?? false;
   const isDraft = data !== undefined && benchmarkOptIn !== savedOptIn;
   const poolCount = data?.benchmarkPoolParticipants;
+  const capabilityLines = data && trust ? capabilityStatusLines(data, trust) : [];
 
   return (
     <DocPage
       title="Данные и бенчмарки"
-      lead="Честный пул: смотреть бенчмарки можно только если делитесь обезличенными агрегатами"
+      lead="Вы сами выбираете, что подключать. Бенчмарки — отдельное согласие и только обезличенные сводки."
       icon={Shield}
       back="auto"
       mobileTitle="Конфиденциальность"
     >
+      {trust ? (
+        <DocBlock title="Ваш режим данных">
+          <p className="m-0 mb-3 text-[13px] text-muted-foreground">{trust.contributionHint}</p>
+          <p className="m-0 mb-3 text-xs font-medium text-foreground">
+            Сейчас: {trust.contributionLabel}
+          </p>
+          {capabilityLines.length > 0 ? (
+            <ul className="m-0 mb-4 grid gap-1.5 p-0 list-none sm:grid-cols-2">
+              {capabilityLines.map((line) => {
+                const Icon = line.icon;
+                return (
+                  <li
+                    key={line.label}
+                    className={`flex items-center gap-2 text-[13px] ${line.on ? 'text-foreground' : 'text-muted-foreground/60'}`}
+                  >
+                    <Icon className="size-3.5 shrink-0" />
+                    {line.label}
+                    <span className="text-xs">{line.on ? '· вкл.' : '· выкл.'}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+          <ServicePolicyPillars pillars={trust.pillars} />
+        </DocBlock>
+      ) : null}
+
       <DocBlock title="Типы инсайтов">
         <SettingsGroup>
           <SettingsRow label="">
             <div>
               <InsightSourceBadge source="tenant" className="mb-1" />
               <div className="text-xs text-muted-foreground">
-                Только ваша компания · дашборды и аномалии по кабинету
+                Только ваша компания · нужен файл, API или БД
               </div>
             </div>
           </SettingsRow>
@@ -87,7 +117,7 @@ export function SettingsPrivacyPage() {
             <div>
               <InsightSourceBadge source="market" className="mb-1" />
               <div className="text-xs text-muted-foreground">
-                Агрегаты категории · без вашего кабинета · публичные и обезличенные данные
+                Тренды категории · без вашего кабинета · публичные и обезличенные данные
               </div>
             </div>
           </SettingsRow>
@@ -95,8 +125,7 @@ export function SettingsPrivacyPage() {
             <div>
               <InsightSourceBadge source="benchmark" className="mb-1" />
               <div className="text-xs text-muted-foreground">
-                «Среди похожих селлеров» на Pro · единый переключатель ниже: получаете и отдаёте в
-                пул
+                Сравнение с сегментом · отдельный переключатель: получаете и отдаёте в пул
               </div>
             </div>
           </SettingsRow>
@@ -104,21 +133,46 @@ export function SettingsPrivacyPage() {
       </DocBlock>
 
       <DocBlock title="Бенчмарк-пул">
+        <DocCallout variant="info" className="mb-3">
+          {formatBenchmarkPoolThresholdHint(category, poolCount)}
+          {' '}
+          В пул уходит только: {BENCHMARK_POOL_CONTRIBUTION_LABEL}. SKU, артикулы и строки заказов не
+          передаются. Бенчмарк-инсайты — от {BENCHMARK_MIN_POOL_PARTICIPANTS} участников в категории.
+        </DocCallout>
+
         <SettingsGroup>
           <SettingsRow
             label="Получать и делиться"
-            hint={`Обезличенные сводные метрики (маржа, цена, оборот) идут в сегмент «${category}». Сырые данные и SKU не передаются.`}
+            hint={`В пул категории «${category}»: ${BENCHMARK_POOL_CONTRIBUTION_LABEL}. SKU и строки заказов не передаются.`}
             action={
               <input
                 type="checkbox"
                 checked={benchmarkOptIn}
                 onChange={(event) => setBenchmarkOptIn(event.target.checked)}
                 aria-label="Участие в бенчмарк-пуле"
-                disabled={isLoading}
+                disabled={isLoading || (!canJoinBenchmarkPool && !benchmarkOptIn)}
               />
             }
           />
         </SettingsGroup>
+
+        {!canJoinBenchmarkPool && !savedOptIn ? (
+          <DocCallout variant="info" className="mt-3">
+            {canManage ? (
+              <>
+                Чтобы участвовать в пуле, сначала подключите{' '}
+                <Link to="/onboarding/connect" className="text-primary hover:underline">
+                  свои данные
+                </Link>{' '}
+                — файл, API маркетплейса или базу. Без вклада сравнение с сегментом недоступно.
+              </>
+            ) : (
+              <>
+                Чтобы участвовать в пуле, администратор компании должен подключить источники данных.
+              </>
+            )}
+          </DocCallout>
+        ) : null}
 
         <DocCallout variant="info" className="mt-3">
           {benchmarkOptIn ? (
@@ -189,8 +243,20 @@ export function SettingsPrivacyPage() {
         </FormField>
       </DocBlock>
 
+      {trust ? (
+        <DocBlock title="Частые вопросы">
+          <TrustFaq items={trust.faq} />
+          <p className="mt-3 text-xs text-muted-foreground">
+            Нужен разбор вашего кейса?{' '}
+            <Link to="/settings" className="text-primary hover:underline">
+              Напишите в поддержку
+            </Link>{' '}
+            — учтём при развитии аналитики.
+          </p>
+        </DocBlock>
+      ) : null}
+
       <DocBlock>
-        {saved ? <p className="mb-3 text-xs text-muted-foreground">Сохранено</p> : null}
         {error ? <p className="mb-3 text-xs text-insight-warning">{error}</p> : null}
         <FormActions>
           <Button type="button" onClick={handleSave} disabled={updatePrivacy.isPending || isLoading}>

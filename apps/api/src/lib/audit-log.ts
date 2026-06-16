@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { AuditEvent, AuditEventCategory, AuditFilter } from '@umetrica/core';
+import type { AuditEvent, AuditEventCategory, AuditFilter } from '@sellerpool/core';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { auditEvents } from '../db/audit-events.js';

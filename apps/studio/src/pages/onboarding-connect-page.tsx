@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { OnboardingPathCard } from '@/components/onboarding/onboarding-path-card';
 import { Button } from '@/components/ui/button';
+import { CONTRIBUTION_PATH_COPY } from '@/lib/trust-policy-ui';
 import { useMe } from '@/hooks/use-me';
 
 const ONBOARDING_FROM = { from: 'onboarding' };
@@ -17,18 +18,18 @@ export function OnboardingConnectPage() {
       topbar="mark"
       showBrandBlock={false}
       brandTitle="Шаг 2 из 2"
-      brandDescription="Ключ кабинета не обязателен. Сначала — рыночные инсайты по вашей категории на WB, потом свои цифры."
+      brandDescription="Подключайте данные постепенно: сначала рынок без кабинета, потом файл или API — когда будете готовы."
       brandStats={[
-        { value: '0', label: 'ключей на старте' },
+        { value: '0', label: 'обязательных ключей' },
         { value: '152-ФЗ', label: 'данные в РФ' },
       ]}
       panelTitle="Как подключить данные?"
-      panelDescription={`${orgName} · текстиль на Wildberries`}
+      panelDescription={`${orgName} · выберите уровень доступа`}
       footer={
         <>
-          Участие в бенчмарках — отдельное согласие ·{' '}
+          Бенчмарки — отдельное согласие, только обезличенные сводки ·{' '}
           <Link to="/settings/privacy" className="text-primary hover:underline">
-            Конфиденциальность
+            Как это устроено
           </Link>
         </>
       }
@@ -38,37 +39,38 @@ export function OnboardingConnectPage() {
           to="/insights"
           icon={Globe}
           title="Только рынок"
-          hint="Сезонность, тренды категории, цены на витрине — без API и без вашего кабинета"
+          hint={CONTRIBUTION_PATH_COPY.market_only.hint}
           recommended
         />
         <OnboardingPathCard
           to="/onboarding/upload-csv"
           icon={FileUp}
-          title="Загрузить отчёт CSV"
-          hint="Выгрузка из кабинета WB — дашборды и личные инсайты без API-ключа"
+          title="Файл CSV или Excel"
+          hint={CONTRIBUTION_PATH_COPY.file_import.hint}
         />
         <OnboardingPathCard
           to="/settings/connections/add-marketplace"
           icon={KeyRound}
           title="API маркетплейса"
-          hint={
-            <>
-              Автообновление · только чтение ·{' '}
-              <Link to="/settings/security" className="text-primary hover:underline">
-                как храним ключ
-              </Link>
-            </>
-          }
+          hint={CONTRIBUTION_PATH_COPY.marketplace_api.hint}
           state={ONBOARDING_FROM}
         />
         <OnboardingPathCard
           to="/settings/connections/add-db"
           icon={Database}
           title="Своя база данных"
-          hint="PostgreSQL и др. — для агентств и крупных селлеров с витриной"
+          hint={CONTRIBUTION_PATH_COPY.database.hint}
           state={ONBOARDING_FROM}
         />
       </nav>
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        Не готовы делиться сейчас — начните с рынка или демо. Ключи и файлы подключите позже в{' '}
+        <Link to="/settings/connections" className="text-primary hover:underline">
+          подключениях
+        </Link>
+        .
+      </p>
 
       <div className="form-actions">
         <Link to="/">

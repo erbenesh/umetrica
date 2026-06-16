@@ -1,5 +1,6 @@
-import { UpdateSsoSettingsSchema } from '@umetrica/core';
+import { UpdateSsoSettingsSchema } from '@sellerpool/core';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 import { isEnterprisePlan } from '../lib/enterprise-access.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
@@ -34,7 +35,7 @@ export async function registerSsoRoutes(app: FastifyInstance) {
 
     const parsed = UpdateSsoSettingsSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const next = await updateSsoSettings(auth.organizationId, parsed.data);

@@ -4,7 +4,7 @@ globs: apps/api/**/*
 alwaysApply: false
 ---
 
-# API (`@umetrica/api`)
+# API (`@sellerpool/api`)
 
 ## Patterns
 

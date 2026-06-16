@@ -1,7 +1,7 @@
 import {
   BENCHMARK_OPT_OUT_COOLDOWN_DAYS,
   BENCHMARK_WARMUP_DAYS,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 
 export function formatParticipationDate(value: string | null | undefined) {
   if (!value) return null;

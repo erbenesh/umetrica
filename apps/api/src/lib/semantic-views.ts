@@ -11,7 +11,7 @@ import {
   type SemanticViewDetail,
   type SemanticViewListItem,
   type UpdateSemanticViewDraftInput,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { semanticViews } from '../db/semantic-views.js';

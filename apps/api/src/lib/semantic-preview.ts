@@ -1,4 +1,4 @@
-import { SemanticPreviewQueryInputSchema } from '@umetrica/core';
+import { SemanticPreviewQueryInputSchema } from '@sellerpool/core';
 
 import { createCubeToken } from './cube-token.js';
 

@@ -1,4 +1,4 @@
-import type { SemanticPublishDiffOp, SemanticPublishPreview } from '@umetrica/core';
+import type { SemanticPublishDiffOp, SemanticPublishPreview } from '@sellerpool/core';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 

@@ -2,6 +2,8 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { organization } from 'better-auth/plugins';
 
+import { BRAND_NAME } from '@sellerpool/core';
+
 import { db } from './db/index.js';
 import * as schema from './db/schema.js';
 import { sendEmail, studioUrl } from './lib/email.js';
@@ -21,7 +23,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: 'Сброс пароля umetrica',
+        subject: `Сброс пароля ${BRAND_NAME}`,
         text: [
           `Здравствуйте, ${user.name ?? user.email}!`,
           '',
@@ -59,7 +61,7 @@ export const auth = betterAuth({
 
       await sendEmail({
         to: user.email,
-        subject: 'Подтвердите email в umetrica',
+        subject: `Подтвердите email в ${BRAND_NAME}`,
         text: [
           `Здравствуйте, ${user.name ?? user.email}!`,
           '',
@@ -81,7 +83,7 @@ export const auth = betterAuth({
         const inviteLink = studioUrl(`/accept-invitation/${data.id}`);
         await sendEmail({
           to: data.email,
-          subject: `Приглашение в ${data.organization.name} — umetrica`,
+          subject: `Приглашение в ${data.organization.name} — ${BRAND_NAME}`,
           text: [
             `${data.inviter.user.name ?? data.inviter.user.email} приглашает вас в организацию «${data.organization.name}».`,
             `Роль: ${data.role}`,

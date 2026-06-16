@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Доступ к дашборду — umetrica mockup</title>
+    <title>Доступ к дашборду — Sellerpool mockup</title>
     <link rel="stylesheet" href="assets/mockup.css" />
     <script>
       (function () {
-        var t = localStorage.getItem('umetrica-mockup-theme');
+        var t = (localStorage.getItem('sellerpool-mockup-theme') || localStorage.getItem('umetrica-mockup-theme'));
         if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
@@ -56,7 +56,7 @@
                 <div class="field">
                   <label for="share-url">URL</label>
                   <div style="display:flex;gap:8px">
-                    <input class="input" id="share-url" type="url" readonly value="https://app.umetrica.ru/embed/d/abc7x2k" />
+                    <input class="input" id="share-url" type="url" readonly value="https://app.sellerpool.ru/embed/d/abc7x2k" />
                     <button class="btn btn--outline btn--sm" type="button">Копировать</button>
                   </div>
                 </div>
@@ -81,7 +81,7 @@
               <h2 class="doc-h2">Embed <span class="doc-h2__hint">· iframe</span></h2>
               <div class="field">
                 <label for="embed-code">Код для вставки</label>
-                <textarea class="input textarea textarea--sm" id="embed-code" rows="3" readonly style="font-family:ui-monospace,monospace;font-size:11px">&lt;iframe src="https://app.umetrica.ru/embed/d/abc7x2k" width="100%" height="480" frameborder="0"&gt;&lt;/iframe&gt;</textarea>
+                <textarea class="input textarea textarea--sm" id="embed-code" rows="3" readonly style="font-family:ui-monospace,monospace;font-size:11px">&lt;iframe src="https://app.sellerpool.ru/embed/d/abc7x2k" width="100%" height="480" frameborder="0"&gt;&lt;/iframe&gt;</textarea>
               </div>
               <div class="embed-preview" style="margin-top:12px">
                 <p class="text-xs text-muted" style="margin:0 0 8px">Предпросмотр</p>

@@ -1,6 +1,7 @@
-import { UpdateEnterpriseLlmSettingsSchema } from '@umetrica/core';
+import { UpdateEnterpriseLlmSettingsSchema } from '@sellerpool/core';
 
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 
 
@@ -78,7 +79,7 @@ export async function registerEnterpriseLlmRoutes(app: FastifyInstance) {
 
     if (!parsed.success) {
 
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
 
     }
 

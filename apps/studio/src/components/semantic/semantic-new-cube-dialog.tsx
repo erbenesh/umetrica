@@ -1,4 +1,4 @@
-import type { CreateSemanticCubeInput, SemanticTableInfo } from '@umetrica/core';
+import type { CreateSemanticCubeInput, SemanticTableInfo } from '@sellerpool/core';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';

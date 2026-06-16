@@ -1,4 +1,4 @@
-import type { Insight, InsightRun } from '@umetrica/core';
+import type { Insight, InsightRun } from '@sellerpool/core';
 export type InsightGenerationResult = {
     ok: true;
     generated: boolean;

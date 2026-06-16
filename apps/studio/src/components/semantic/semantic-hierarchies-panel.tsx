@@ -1,5 +1,5 @@
-import type { SemanticCubeDefinition, SemanticHierarchy } from '@umetrica/core';
-import { semanticMemberLabel } from '@umetrica/core';
+import type { SemanticCubeDefinition, SemanticHierarchy } from '@sellerpool/core';
+import { semanticMemberLabel } from '@sellerpool/core';
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 
 import { DocCallout } from '@/components/doc/doc-callout';

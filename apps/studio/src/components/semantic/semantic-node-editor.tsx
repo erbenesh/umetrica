@@ -3,8 +3,8 @@ import type {
   SemanticDimension,
   SemanticGraphLayout,
   SemanticMeasure,
-} from '@umetrica/core';
-import { buildMemberPreviewQuery, semanticCubeLabel, semanticCubeNodeId, semanticMemberLabel, semanticSourceNodeId } from '@umetrica/core';
+} from '@sellerpool/core';
+import { buildMemberPreviewQuery, semanticCubeLabel, semanticCubeNodeId, semanticMemberLabel, semanticSourceNodeId } from '@sellerpool/core';
 import {
   Box,
   Calendar,

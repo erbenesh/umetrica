@@ -4,15 +4,16 @@ import {
   PrivacySettingsSchema,
   type BenchmarkSegmentSnapshot,
   type MarketSegmentSnapshot,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, eq } from 'drizzle-orm';
 
 import { marketSegmentSnapshots } from '../db/market-segments.js';
 import { db } from '../db/index.js';
 import { organization } from '../db/schema.js';
 import { isBenchmarkContributor } from './benchmark-access.js';
+import { countActivePoolContributors } from './benchmark-pool.js';
 import { parseOrgMetadata } from './org-metadata.js';
-export { MARKET_MIN_PARTICIPANTS } from '@umetrica/core';
+export { MARKET_MIN_PARTICIPANTS } from '@sellerpool/core';
 export async function getMarketSegmentSnapshot(
   category: string
 ): Promise<MarketSegmentSnapshot | null> {
@@ -105,13 +106,16 @@ export async function countBenchmarkParticipants(category: string): Promise<numb
 }
 
 export async function resolveBenchmarkParticipants(category: string): Promise<number> {
-  const liveCount = await countBenchmarkParticipants(category);
+  const [optInCount, poolCount] = await Promise.all([
+    countBenchmarkParticipants(category),
+    countActivePoolContributors(category),
+  ]);
 
   if (process.env.NODE_ENV === 'production') {
-    return liveCount;
+    return poolCount > 0 ? poolCount : optInCount;
   }
 
   const snapshot = await getBenchmarkSegmentSnapshot(category);
   const floor = snapshot?.participantCount ?? 0;
-  return Math.max(liveCount, floor);
+  return Math.max(optInCount, poolCount, floor);
 }

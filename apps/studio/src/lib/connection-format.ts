@@ -1,4 +1,4 @@
-import type { Connection } from '@umetrica/core';
+import type { Connection } from '@sellerpool/core';
 
 const PROVIDER_LABELS: Record<string, string> = {
   wildberries: 'Wildberries',

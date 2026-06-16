@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { appToast } from '@/lib/app-toast';
 import {
   createBillingCheckout,
   createCreditPackCheckout,
@@ -42,6 +43,7 @@ export function useUpdateBillingPlan() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingQueryKey });
       queryClient.invalidateQueries({ queryKey: billingPlansQueryKey });
+      appToast.success('Тариф обновлён');
     },
   });
 }
@@ -61,6 +63,7 @@ export function useUpdateBillingPayment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingPaymentQueryKey });
       queryClient.invalidateQueries({ queryKey: billingQueryKey });
+      appToast.success('Платёжные данные сохранены');
     },
   });
 }
@@ -114,6 +117,7 @@ export function useMockBillingPaymentSetup() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: billingPaymentQueryKey });
       queryClient.invalidateQueries({ queryKey: billingQueryKey });
+      appToast.success('Тестовый способ оплаты добавлен');
     },
   });
 }
@@ -121,5 +125,8 @@ export function useMockBillingPaymentSetup() {
 export function useEnterpriseInquiry() {
   return useMutation({
     mutationFn: submitEnterpriseInquiry,
+    onSuccess: () => {
+      appToast.success('Заявка отправлена');
+    },
   });
 }

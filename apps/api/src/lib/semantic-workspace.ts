@@ -4,7 +4,7 @@ import {
   buildDefaultWorkspaceLayout,
   SemanticWorkspaceLayoutSchema,
   type SemanticWorkspaceLayout,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { eq } from 'drizzle-orm';
 
 import { semanticWorkspace } from '../db/semantic-workspace.js';

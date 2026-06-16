@@ -1,5 +1,5 @@
 {
-  "name": "@umetrica/insights",
+  "name": "@sellerpool/insights",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,12 +15,12 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@umetrica/core": "workspace:*",
+    "@sellerpool/core": "workspace:*",
     "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/node": "^24.0.3",
-    "@umetrica/tsconfig": "workspace:*",
+    "@sellerpool/tsconfig": "workspace:*",
     "typescript": "^5.8.3"
   }
 }

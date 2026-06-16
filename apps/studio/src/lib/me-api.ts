@@ -1,3 +1,7 @@
+import type { OrgDataMode, TrustCapabilities } from '@sellerpool/core';
+
+import { apiFetch } from '@/lib/api-client';
+
 export interface MeResponse {
   user: {
     id: string;
@@ -14,19 +18,20 @@ export interface MeResponse {
     id: string;
     name: string;
   };
+  dataMode?: OrgDataMode;
+  trustCapabilities?: TrustCapabilities;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
+export type { OrgDataMode, TrustCapabilities };
 
 export function fetchMe() {
-  return fetch(`${API_BASE}/api/me`, { credentials: 'include' }).then(async (response) => {
-    if (!response.ok) {
-      throw new Error('Unauthorized');
-    }
-    return response.json() as Promise<MeResponse>;
-  });
+  return apiFetch<MeResponse>('/api/me');
 }
 
 export function canWriteDashboards(role?: string) {
   return role === 'owner' || role === 'admin';
+}
+
+export function canManageOrganization(role?: string) {
+  return canWriteDashboards(role);
 }

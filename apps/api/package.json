@@ -1,5 +1,5 @@
 {
-  "name": "@umetrica/api",
+  "name": "@sellerpool/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.1",
     "@fastify/multipart": "^9.0.3",
-    "@umetrica/core": "workspace:*",
-    "@umetrica/insights": "workspace:*",
+    "@sellerpool/core": "workspace:*",
+    "@sellerpool/insights": "workspace:*",
     "better-auth": "^1.2.12",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.45.2",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.3",
-    "@umetrica/tsconfig": "workspace:*",
+    "@sellerpool/tsconfig": "workspace:*",
     "drizzle-kit": "^0.31.1",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"

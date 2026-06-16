@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-import { initTheme, setTheme, type Theme } from '@/lib/theme';
+import { getStoredTheme, initTheme, setTheme, type Theme } from '@/lib/theme';
 
 const ThemeContext = createContext<{
   theme: Theme;
@@ -13,7 +13,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => {
-      if (!localStorage.getItem('umetrica-theme')) {
+      if (!getStoredTheme()) {
         const next = media.matches ? 'dark' : 'light';
         setThemeState(next);
         setTheme(next);

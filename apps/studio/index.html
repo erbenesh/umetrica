@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="umetrica — аналитика с AI-оценкой" />
+    <meta name="description" content="Sellerpool — аналитика и пул для селлеров маркетплейсов" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -15,7 +15,8 @@
     />
     <script>
       (function () {
-        var stored = localStorage.getItem('umetrica-theme');
+        var stored =
+          localStorage.getItem('sellerpool-theme') || localStorage.getItem('umetrica-theme');
         var dark =
           stored === 'dark' ||
           (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -23,7 +24,7 @@
       })();
     </script>
     <link rel="manifest" href="/manifest.webmanifest" />
-    <title>umetrica</title>
+    <title>Sellerpool</title>
   </head>
   <body>
     <div id="root"></div>

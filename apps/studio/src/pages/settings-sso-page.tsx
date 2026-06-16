@@ -23,7 +23,6 @@ export function SettingsSsoPage() {
   const [requireForAll, setRequireForAll] = useState(false);
   const [idpSsoUrl, setIdpSsoUrl] = useState('');
   const [idpCertificate, setIdpCertificate] = useState('');
-  const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const isEnterprise = billing?.planId === 'enterprise';
@@ -38,7 +37,6 @@ export function SettingsSsoPage() {
 
   const handleSave = async () => {
     setSaveError(null);
-    setSaved(false);
 
     try {
       await update.mutateAsync({
@@ -47,8 +45,6 @@ export function SettingsSsoPage() {
         idpSsoUrl: idpSsoUrl || undefined,
         idpCertificate: idpCertificate || undefined,
       });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Не удалось сохранить');
     }
@@ -157,7 +153,6 @@ export function SettingsSsoPage() {
             сохраняет резервный доступ.
           </DocCallout>
 
-          {saved ? <p className="text-xs text-muted-foreground">Сохранено</p> : null}
           {saveError ? <p className="text-xs text-destructive">{saveError}</p> : null}
 
           <div className="form-actions max-w-lg">

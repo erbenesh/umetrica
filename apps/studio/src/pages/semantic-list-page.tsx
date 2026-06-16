@@ -1,5 +1,5 @@
-import { semanticCubeLabel } from '@umetrica/core';
-import { Box, Database, Eye, Layers, List, Loader2, Network, Plus, Settings } from 'lucide-react';
+import { semanticCubeLabel } from '@sellerpool/core';
+import { Box, Database, Eye, Layers, List, Loader2, Network, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -38,14 +38,6 @@ export function SemanticListPage() {
   const layout = workspace?.layout ?? { cubes: {}, views: {} };
   const sourceLabel = resolveSourceLabel(hasPostgres);
 
-  const settingsAction = (
-    <Link to="/settings" aria-label="Настройки">
-      <Button variant="ghost" size="icon-sm" type="button">
-        <Settings size={16} />
-      </Button>
-    </Link>
-  );
-
   const handleJoinCubes = (sourceCubeName: string, targetCubeName: string) => {
     if (!canWrite) return;
     navigate(`/semantic/cubes/${sourceCubeName}?tab=relationships&joinTarget=${targetCubeName}`);
@@ -58,7 +50,7 @@ export function SemanticListPage() {
         lead="Data graph: кубы, joins и views"
         icon={Layers}
         mobileTitle="Семантика"
-        mobileActions={settingsAction}
+        back="auto"
       >
         <DocBlock>
           <div className="empty-state">
@@ -89,7 +81,7 @@ export function SemanticListPage() {
       lead="Data graph: кубы, joins и views"
       icon={Layers}
       mobileTitle="Семантика"
-      mobileActions={settingsAction}
+      back="auto"
       props={[
         { label: 'Кубов', value: String(cubes.length) },
         { label: 'Views', value: String(views.length) },

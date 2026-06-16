@@ -1,9 +1,11 @@
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'umetrica-theme';
+const STORAGE_KEY = 'sellerpool-theme';
+const LEGACY_STORAGE_KEY = 'umetrica-theme';
 
 export function getStoredTheme(): Theme | null {
-  const value = localStorage.getItem(STORAGE_KEY);
+  const value =
+    localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
   return value === 'light' || value === 'dark' ? value : null;
 }
 
@@ -29,6 +31,7 @@ export function initTheme(): Theme {
 
 export function setTheme(theme: Theme) {
   localStorage.setItem(STORAGE_KEY, theme);
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
   applyTheme(theme);
 }
 

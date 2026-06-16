@@ -2,8 +2,12 @@ import { readFile, mkdir, writeFile, unlink, readdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { SemanticCubeDefinition, SemanticViewDefinition } from '@umetrica/core';
-import { SemanticCubeDefinitionSchema, SemanticViewDefinitionSchema } from '@umetrica/core';
+import type { SemanticCubeDefinition, SemanticViewDefinition } from '@sellerpool/core';
+import {
+  ensureCubePrimaryKey,
+  SemanticCubeDefinitionSchema,
+  SemanticViewDefinitionSchema,
+} from '@sellerpool/core';
 import { parse as parseYaml } from 'yaml';
 
 const repoRoot = fileURLToPath(new URL('../../../../', import.meta.url));
@@ -23,11 +27,21 @@ type LocalizedMember = {
   shortTitle?: string;
 };
 
+type YamlMemberMeta = {
+  sellerpool?: { title?: string };
+  /** @deprecated legacy namespace — read-only */
+  umetrica?: { title?: string };
+};
+
 type YamlMemberRow = {
   title?: string;
   shortTitle?: string;
-  meta?: { umetrica?: { title?: string } };
+  meta?: YamlMemberMeta;
 };
+
+function readMetaFullTitle(meta?: YamlMemberMeta) {
+  return meta?.sellerpool?.title ?? meta?.umetrica?.title;
+}
 
 function cubeMemberTitle(member: LocalizedMember) {
   return member.shortTitle ?? member.title;
@@ -39,13 +53,13 @@ function appendLocalizedTitleLines(lines: string[], member: LocalizedMember, ind
   if (member.shortTitle && member.title !== member.shortTitle) {
     lines.push(`${indent}shortTitle: ${yamlQuote(member.shortTitle)}`);
     lines.push(`${indent}meta:`);
-    lines.push(`${indent}  umetrica:`);
+    lines.push(`${indent}  sellerpool:`);
     lines.push(`${indent}    title: ${yamlQuote(member.title)}`);
   }
 }
 
 function parseLocalizedMemberTitles(row: YamlMemberRow, fallbackName: string): LocalizedMember {
-  const metaFullTitle = row.meta?.umetrica?.title;
+  const metaFullTitle = readMetaFullTitle(row.meta);
   const yamlTitle = row.title ? String(row.title) : undefined;
   const yamlShortTitle = row.shortTitle ? String(row.shortTitle) : undefined;
 
@@ -73,15 +87,16 @@ function viewYamlFileName(viewName: string, orgPrefix?: string) {
 }
 
 export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
-  const lines: string[] = ['cubes:', `  - name: ${definition.name}`];
+  const normalized = ensureCubePrimaryKey(definition);
+  const lines: string[] = ['cubes:', `  - name: ${normalized.name}`];
 
-  lines.push(`    title: ${yamlQuote(definition.displayTitle)}`);
-  if (definition.displayShortTitle && definition.displayShortTitle !== definition.displayTitle) {
-    lines.push(`    shortTitle: ${yamlQuote(definition.displayShortTitle)}`);
+  lines.push(`    title: ${yamlQuote(normalized.displayTitle)}`);
+  if (normalized.displayShortTitle && normalized.displayShortTitle !== normalized.displayTitle) {
+    lines.push(`    shortTitle: ${yamlQuote(normalized.displayShortTitle)}`);
   }
-  lines.push(`    sql: ${yamlQuote(definition.source.sql)}`);
+  lines.push(`    sql: ${yamlQuote(normalized.source.sql)}`);
 
-  const joins = definition.joins ?? [];
+  const joins = normalized.joins ?? [];
   if (joins.length > 0) {
     lines.push('    joins:');
     for (const join of joins) {
@@ -93,7 +108,7 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
 
   lines.push('    measures:');
 
-  for (const measure of definition.measures) {
+  for (const measure of normalized.measures) {
     lines.push(`      - name: ${measure.name}`);
     appendLocalizedTitleLines(lines, measure, '        ');
     if (measure.type === 'count') {
@@ -108,17 +123,17 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
   }
 
   lines.push('    dimensions:');
-  for (const dimension of definition.dimensions) {
+  for (const dimension of normalized.dimensions) {
     lines.push(`      - name: ${dimension.name}`);
     appendLocalizedTitleLines(lines, dimension, '        ');
     lines.push(`        sql: ${yamlQuote(dimension.sql)}`);
     lines.push(`        type: ${dimension.type}`);
-    if (dimension.type === 'time' && dimension.granularity) {
-      lines.push(`        granularity: ${dimension.granularity}`);
+    if (dimension.primaryKey) {
+      lines.push('        primary_key: true');
     }
   }
 
-  const segments = definition.segments ?? [];
+  const segments = normalized.segments ?? [];
   if (segments.length > 0) {
     lines.push('    segments:');
     for (const segment of segments) {
@@ -137,7 +152,7 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
     }
   }
 
-  const hierarchies = definition.hierarchies ?? [];
+  const hierarchies = normalized.hierarchies ?? [];
   if (hierarchies.length > 0) {
     lines.push('    hierarchies:');
     for (const hierarchy of hierarchies) {
@@ -159,7 +174,7 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
     }
   }
 
-  const preAggregations = definition.preAggregations ?? [];
+  const preAggregations = normalized.preAggregations ?? [];
   if (preAggregations.length > 0) {
     lines.push('    pre_aggregations:');
     for (const preAgg of preAggregations) {
@@ -316,6 +331,17 @@ export async function compileOrgSemanticModel(input: {
     await writeSemanticCubeYaml(definition, input.orgPrefix);
     if (hasTenantIsolation(definition)) {
       tenantCubes.add(definition.name);
+
+      // Убираем legacy (без orgPrefix) YAML, чтобы не было duplicate cube name
+      // на этапе компиляции Cube.js (например, `orders.yml` и `{orgSlug}__orders.yml`).
+      const legacyPath = resolve(cubesDir, cubeYamlFileName(definition.name));
+      try {
+        await unlink(legacyPath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+          throw error;
+        }
+      }
     }
   }
 
@@ -347,7 +373,7 @@ type YamlCubeRow = {
     name?: string;
     title?: string;
     shortTitle?: string;
-    meta?: { umetrica?: { title?: string } };
+    meta?: YamlMemberMeta;
     sql?: string;
     type?: string;
     format?: string;
@@ -356,23 +382,25 @@ type YamlCubeRow = {
     name?: string;
     title?: string;
     shortTitle?: string;
-    meta?: { umetrica?: { title?: string } };
+    meta?: YamlMemberMeta;
     sql?: string;
     type?: string;
     granularity?: string;
+    primary_key?: boolean;
+    primaryKey?: boolean;
   }>;
   segments?: Array<{
     name?: string;
     title?: string;
     shortTitle?: string;
-    meta?: { umetrica?: { title?: string } };
+    meta?: YamlMemberMeta;
     sql?: string;
   }>;
   hierarchies?: Array<{
     name?: string;
     title?: string;
     shortTitle?: string;
-    meta?: { umetrica?: { title?: string } };
+    meta?: YamlMemberMeta;
     levels?: string[];
   }>;
   pre_aggregations?: Array<{
@@ -438,6 +466,7 @@ export function parseSemanticCubeYaml(yaml: string): SemanticCubeDefinition {
       ...(dimension.granularity
         ? { granularity: dimension.granularity as 'day' | 'week' | 'month' | 'year' }
         : {}),
+      ...(dimension.primary_key ?? dimension.primaryKey ? { primaryKey: true } : {}),
     };
   });
 

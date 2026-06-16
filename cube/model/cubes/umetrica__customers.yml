@@ -7,6 +7,11 @@ cubes:
         title: "Количество клиентов"
         type: count
     dimensions:
+      - name: id
+        title: ID
+        sql: id
+        type: string
+        primary_key: true
       - name: email
         title: Email
         sql: email
@@ -23,7 +28,6 @@ cubes:
         title: "Дата регистрации"
         sql: created_at
         type: time
-        granularity: day
       - name: tenantId
         title: tenantId
         sql: tenant_id

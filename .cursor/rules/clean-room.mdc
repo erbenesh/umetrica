@@ -5,12 +5,12 @@ alwaysApply: true
 
 # Clean-room
 
-umetrica is a personal clean-room rebuild. The author previously worked on BoostixERP dashboards (employer project, frozen).
+Sellerpool (Селлерпул) is a personal clean-room rebuild. The author previously worked on BoostixERP dashboards (employer project, frozen).
 
 ## Allowed
 
 - Reuse **experience** and **product ideas** (drag-drop dashboards, seller analytics)
-- Independent implementation with umetrica stack (Cube.js, Better Auth, Chart.js)
+- Independent implementation with Sellerpool stack (Cube.js, Better Auth, Chart.js)
 
 ## Forbidden
 

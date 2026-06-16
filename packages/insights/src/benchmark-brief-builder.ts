@@ -1,6 +1,7 @@
-import type { BenchmarkSegmentSnapshot, InsightBrief } from '@umetrica/core';
+import type { BenchmarkSegmentSnapshot, InsightBrief } from '@sellerpool/core';
+import { BENCHMARK_MIN_POOL_PARTICIPANTS } from '@sellerpool/core';
 
-export const BENCHMARK_MIN_PARTICIPANTS = 10;
+export const BENCHMARK_MIN_PARTICIPANTS = BENCHMARK_MIN_POOL_PARTICIPANTS;
 
 export type BenchmarkEvaluationMeta = {
   metric: string;

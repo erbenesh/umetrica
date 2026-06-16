@@ -17,6 +17,11 @@ cubes:
         type: avg
         format: currency
     dimensions:
+      - name: id
+        title: ID
+        sql: id
+        type: string
+        primary_key: true
       - name: name
         title: "Название"
         sql: name
@@ -29,7 +34,6 @@ cubes:
         title: "Дата добавления"
         sql: created_at
         type: time
-        granularity: day
       - name: tenantId
         title: tenantId
         sql: tenant_id

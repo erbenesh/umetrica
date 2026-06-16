@@ -7,10 +7,18 @@ import {
   fetchDashboards,
   updateDashboard,
 } from '@/lib/dashboards-api';
-import type { CreateDashboardInput, UpdateDashboardInput } from '@umetrica/core';
+import { appToast } from '@/lib/app-toast';
+import type { CreateDashboardInput, UpdateDashboardInput } from '@sellerpool/core';
 
 export const dashboardsQueryKey = ['dashboards'] as const;
 export const dashboardQueryKey = (id: string) => ['dashboards', id] as const;
+
+export type UpdateDashboardMutationInput = {
+  input: UpdateDashboardInput;
+  /** Без тоста — для автосохранения раскладки виджетов */
+  silent?: boolean;
+  successMessage?: string;
+};
 
 export function useDashboards() {
   return useQuery({
@@ -34,6 +42,7 @@ export function useCreateDashboard() {
     mutationFn: (input: CreateDashboardInput) => createDashboard(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dashboardsQueryKey });
+      appToast.success('Дашборд создан');
     },
   });
 }
@@ -42,10 +51,13 @@ export function useUpdateDashboard(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: UpdateDashboardInput) => updateDashboard(id, input),
-    onSuccess: (data) => {
+    mutationFn: ({ input }: UpdateDashboardMutationInput) => updateDashboard(id, input),
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(dashboardQueryKey(id), data);
       queryClient.invalidateQueries({ queryKey: dashboardsQueryKey });
+      if (!variables.silent) {
+        appToast.success(variables.successMessage ?? 'Дашборд сохранён');
+      }
     },
   });
 }
@@ -57,6 +69,7 @@ export function useDeleteDashboard() {
     mutationFn: (id: string) => deleteDashboard(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dashboardsQueryKey });
+      appToast.success('Дашборд удалён');
     },
   });
 }

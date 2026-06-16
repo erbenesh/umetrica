@@ -2,16 +2,17 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ThemeToggle } from '@/components/theme-toggle';
+import { BRAND_MARK, BRAND_NAME, BRAND_TAGLINE } from '@/lib/brand';
 
 function BrandMark() {
   return (
     <Link to="/auth" className="flex items-center gap-2">
       <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-        u
+        {BRAND_MARK}
       </span>
       <div className="leading-none">
-        <div className="text-sm font-semibold tracking-tight">umetrica</div>
-        <div className="text-[10px] text-muted-foreground">B2B-аналитика</div>
+        <div className="text-sm font-semibold tracking-tight">{BRAND_NAME}</div>
+        <div className="text-[10px] text-muted-foreground">{BRAND_TAGLINE}</div>
       </div>
     </Link>
   );

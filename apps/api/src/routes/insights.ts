@@ -1,11 +1,13 @@
 import {
   BENCHMARK_WARMUP_DAYS,
+  PERSONAL_INSIGHTS_REQUIRES_SOURCE,
   UpdateInsightSettingsSchema,
   type Insight,
   type InsightRun,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, desc, eq, gte } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 import { insightRuns } from '../db/insight-runs.js';
 import { insights } from '../db/insights.js';
@@ -19,6 +21,7 @@ import {
 import { runInsightGeneration } from '../lib/insight-generation.js';
 import { toInsightRow } from '../lib/market-insight-generation.js';
 import { getInsightSettings, getPrivacySettings, updateInsightSettings } from '../lib/org-metadata.js';
+import { canUsePersonalInsights } from '../lib/policy-gate.js';
 import { canWriteDashboards, getAuthContext } from '../lib/request-auth.js';
 
 function toInsightRun(
@@ -103,10 +106,15 @@ export async function registerInsightRoutes(app: FastifyInstance) {
 
     const parsed = UpdateInsightSettingsSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     if (parsed.data.sources?.benchmark === true) {
+      const personalAllowed = await canUsePersonalInsights(auth.organizationId);
+      if (!personalAllowed) {
+        return reply.status(400).send({ error: PERSONAL_INSIGHTS_REQUIRES_SOURCE });
+      }
+
       const privacy = await getPrivacySettings(auth.organizationId);
       if (!privacy.benchmarkOptIn) {
         return reply.status(400).send({
@@ -118,6 +126,13 @@ export async function registerInsightRoutes(app: FastifyInstance) {
         return reply.status(400).send({
           error: `Бенчмарк-инсайты появятся через ${BENCHMARK_WARMUP_DAYS} дн. после включения участия — идёт период прогрева.`,
         });
+      }
+    }
+
+    if (parsed.data.sources?.tenant === true) {
+      const personalAllowed = await canUsePersonalInsights(auth.organizationId);
+      if (!personalAllowed) {
+        return reply.status(400).send({ error: PERSONAL_INSIGHTS_REQUIRES_SOURCE });
       }
     }
 
@@ -142,6 +157,7 @@ export async function registerInsightRoutes(app: FastifyInstance) {
     const source = (request.query as { source?: string }).source;
 
     const receiveBenchmarks = await canReceiveBenchmarkInsights(auth.organizationId);
+    const personalAllowed = await canUsePersonalInsights(auth.organizationId);
 
     const rows = await db
       .select()
@@ -152,7 +168,8 @@ export async function registerInsightRoutes(app: FastifyInstance) {
     const items = rows
       .map(toInsightRow)
       .filter((item) => !source || item.source === source)
-      .filter((item) => item.source !== 'benchmark' || receiveBenchmarks);
+      .filter((item) => item.source !== 'benchmark' || receiveBenchmarks)
+      .filter((item) => item.source !== 'tenant' || personalAllowed);
 
     return {
       items,
@@ -176,7 +193,25 @@ export async function registerInsightRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Insight not found' });
     }
 
-    return toInsightRow(row);
+    const item = toInsightRow(row);
+
+    if (item.source === 'benchmark') {
+      const receiveBenchmarks = await canReceiveBenchmarkInsights(auth.organizationId);
+      if (!receiveBenchmarks) {
+        return reply.status(403).send({
+          error: 'Бенчмарк-инсайты недоступны без участия в пуле или до окончания прогрева.',
+        });
+      }
+    }
+
+    if (item.source === 'tenant') {
+      const personalAllowed = await canUsePersonalInsights(auth.organizationId);
+      if (!personalAllowed) {
+        return reply.status(403).send({ error: PERSONAL_INSIGHTS_REQUIRES_SOURCE });
+      }
+    }
+
+    return item;
   });
 
   app.post('/api/insights/generate', async (request, reply) => {

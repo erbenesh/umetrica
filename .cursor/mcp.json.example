@@ -5,7 +5,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://umetrica:umetrica@localhost:5432/umetrica"
+        "postgresql://sellerpool:sellerpool@localhost:5432/sellerpool"
       ]
     }
   }

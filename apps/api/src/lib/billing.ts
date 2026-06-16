@@ -6,7 +6,7 @@ import {
   getPlanCheckoutPriceRub,
   type BillingOverview,
   type BillingPlanId,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, gte } from 'drizzle-orm';
 
 import { insightRuns } from '../db/insight-runs.js';

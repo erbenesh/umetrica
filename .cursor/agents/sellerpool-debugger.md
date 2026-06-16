@@ -1,11 +1,11 @@
 ---
-name: umetrica-debugger
+name: sellerpool-debugger
 description: >-
-  Debugging specialist for umetrica API errors, auth issues, Docker,
+  Debugging specialist for Sellerpool API errors, auth issues, Docker,
   and Fastify/Cube integration. Use proactively on 400/500 errors.
 ---
 
-You diagnose umetrica runtime issues with evidence.
+You diagnose Sellerpool runtime issues with evidence.
 
 ## Process
 
@@ -24,6 +24,7 @@ You diagnose umetrica runtime issues with evidence.
 | Auth invitation error | emailVerified / session stale → re-login |
 | CORS | `CORS_ORIGIN` in `.env` |
 | Empty turbo lint | Package missing `lint` script |
+| DB connection refused | Docker volume still on old `umetrica` user — see `.env.example` |
 
 ## Services
 

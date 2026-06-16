@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { appToast } from '@/lib/app-toast';
 import {
   applySemanticCubeYaml,
   applySemanticViewYaml,
@@ -119,6 +120,7 @@ export function useDiscardSemanticViewDraft(name: string) {
     onSuccess: (data) => {
       queryClient.setQueryData(semanticViewQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticViewsQueryKey });
+      appToast.success('Черновик сброшен');
     },
   });
 }
@@ -131,6 +133,7 @@ export function useDiscardSemanticDraft(name: string) {
     onSuccess: (data) => {
       queryClient.setQueryData(semanticCubeQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticCubesQueryKey });
+      appToast.success('Черновик сброшен');
     },
   });
 }
@@ -160,6 +163,7 @@ export function usePublishSemanticCube(name: string) {
       queryClient.setQueryData(semanticCubeQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticCubesQueryKey });
       queryClient.invalidateQueries({ queryKey: semanticWorkspaceQueryKey });
+      appToast.success('Изменения опубликованы');
     },
   });
 }
@@ -173,6 +177,7 @@ export function usePublishSemanticView(name: string) {
       queryClient.setQueryData(semanticViewQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticViewsQueryKey });
       queryClient.invalidateQueries({ queryKey: semanticWorkspaceQueryKey });
+      appToast.success('Представление опубликовано');
     },
   });
 }
@@ -215,6 +220,7 @@ export function useCreateSemanticCube() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: semanticCubesQueryKey });
       queryClient.invalidateQueries({ queryKey: semanticWorkspaceQueryKey });
+      appToast.success('Куб создан');
     },
   });
 }
@@ -227,6 +233,7 @@ export function useCreateSemanticView() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: semanticViewsQueryKey });
       queryClient.invalidateQueries({ queryKey: semanticWorkspaceQueryKey });
+      appToast.success('Представление создано');
     },
   });
 }
@@ -239,6 +246,7 @@ export function useDeleteSemanticCube() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: semanticCubesQueryKey });
       queryClient.invalidateQueries({ queryKey: semanticWorkspaceQueryKey });
+      appToast.success('Куб удалён');
     },
   });
 }
@@ -251,6 +259,7 @@ export function useDeleteSemanticView() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: semanticViewsQueryKey });
       queryClient.invalidateQueries({ queryKey: semanticWorkspaceQueryKey });
+      appToast.success('Представление удалено');
     },
   });
 }
@@ -272,6 +281,7 @@ export function useApplySemanticCubeYaml(name: string) {
       queryClient.setQueryData(semanticCubeQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticCubesQueryKey });
       queryClient.invalidateQueries({ queryKey: [...semanticCubeQueryKey(name), 'yaml'] });
+      appToast.success('YAML применён');
     },
   });
 }
@@ -292,6 +302,7 @@ export function useApplySemanticViewYaml(name: string) {
     onSuccess: (data) => {
       queryClient.setQueryData(semanticViewQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticViewsQueryKey });
+      appToast.success('YAML применён');
     },
   });
 }

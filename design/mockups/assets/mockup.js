@@ -1,5 +1,6 @@
 (function () {
-  const STORAGE_KEY = 'umetrica-mockup-theme';
+  const STORAGE_KEY = 'sellerpool-mockup-theme';
+  const LEGACY_STORAGE_KEY = 'umetrica-mockup-theme';
 
   const NAV = [
     { key: 'home', href: 'home.html', icon: 'lucide:home', label: 'Главная' },
@@ -49,7 +50,7 @@
   }
 
   function initTheme() {
-    var stored = localStorage.getItem(STORAGE_KEY);
+    var stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
     var initial =
       stored === 'dark' || stored === 'light'
         ? stored
@@ -122,8 +123,8 @@
       '<aside class="sidebar">' +
       '<div class="sidebar__top">' +
       '<a href="home.html" class="sidebar-app-link">' +
-      '<span class="brand__mark">u</span>' +
-      '<span class="brand__name">umetrica</span>' +
+      '<span class="brand__mark">s</span>' +
+      '<span class="brand__name">Sellerpool</span>' +
       '</a>' +
       '<div class="dropdown dropdown--block">' +
       '<button type="button" class="workspace-switcher" data-dropdown-toggle aria-expanded="false" aria-haspopup="menu">' +

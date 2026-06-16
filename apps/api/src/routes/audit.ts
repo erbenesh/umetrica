@@ -1,4 +1,4 @@
-import { AuditFilterSchema } from '@umetrica/core';
+import { AuditFilterSchema } from '@sellerpool/core';
 import type { FastifyInstance } from 'fastify';
 
 import {

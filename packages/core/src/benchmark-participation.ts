@@ -1,4 +1,3 @@
-import type { BillingPlanId } from './billing-schemas.js';
 import type { PrivacySettings } from './schemas.js';
 
 /** Days after opt-out when anonymized aggregates still stay in the pool */
@@ -6,10 +5,6 @@ export const BENCHMARK_OPT_OUT_COOLDOWN_DAYS = 14;
 
 /** Days after opt-in before benchmark insights become visible */
 export const BENCHMARK_WARMUP_DAYS = 3;
-
-export function isBenchmarkPlanAllowed(planId: BillingPlanId | string) {
-  return planId === 'pro' || planId === 'enterprise';
-}
 
 export function isBenchmarkContributor(settings: PrivacySettings, now = new Date()): boolean {
   if (settings.benchmarkOptIn) return true;

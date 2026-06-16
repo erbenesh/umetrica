@@ -1,4 +1,4 @@
-import type { InsightBrief, MarketSegmentSnapshot } from '@umetrica/core';
+import type { InsightBrief, MarketSegmentSnapshot } from '@sellerpool/core';
 
 export function buildMarketBriefFromSnapshot(snapshot: MarketSegmentSnapshot): InsightBrief {  return {
     anomaly: {

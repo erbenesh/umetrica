@@ -1,4 +1,4 @@
-import type { Widget } from '@umetrica/core';
+import type { Widget } from '@sellerpool/core';
 
 export function nextWidgetLayout(widgets: Widget[], chartType: Widget['chartType']) {
   const maxY = widgets.reduce((max, widget) => Math.max(max, widget.layout.y + widget.layout.h), 0);

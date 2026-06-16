@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthAmbient } from '@/components/layout/auth-ambient';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import { BRAND_MARK, BRAND_NAME } from '@/lib/brand';
 import { cn } from '@/lib/utils';
 
 export type AuthTopbarVariant = 'full' | 'mark' | 'back';
@@ -50,10 +51,10 @@ export function AuthSplitLayout({
   const brandBlock = (
     <div className="brand">
       <span className="brand__mark" aria-hidden="true">
-        u
+        {BRAND_MARK}
       </span>
       <span>
-        <div className="brand__name">umetrica</div>
+        <div className="brand__name">{BRAND_NAME}</div>
         {brandTag ? <div className="brand__tag">{brandTag}</div> : null}
       </span>
     </div>
@@ -89,18 +90,18 @@ export function AuthSplitLayout({
 
         <header className="auth-topbar">
           {topbar === 'full' ? (
-            <Link to="/auth" className="brand" aria-label="umetrica — страница входа">
+            <Link to="/auth" className="brand" aria-label={`${BRAND_NAME} — страница входа`}>
               <span className="brand__mark" aria-hidden="true">
-                u
+                {BRAND_MARK}
               </span>
               <span>
-                <div className="brand__name">umetrica</div>
+                <div className="brand__name">{BRAND_NAME}</div>
               </span>
             </Link>
           ) : topbar === 'mark' ? (
-            <Link to="/auth" className="brand" aria-label="umetrica — на страницу входа">
+            <Link to="/auth" className="brand" aria-label={`${BRAND_NAME} — на страницу входа`}>
               <span className="brand__mark" aria-hidden="true">
-                u
+                {BRAND_MARK}
               </span>
             </Link>
           ) : backTo ? (

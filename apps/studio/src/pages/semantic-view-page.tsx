@@ -1,5 +1,5 @@
-import type { SemanticViewDefinition } from '@umetrica/core';
-import { listJoinPathsForCube } from '@umetrica/core';
+import type { SemanticViewDefinition } from '@sellerpool/core';
+import { listJoinPathsForCube } from '@sellerpool/core';
 import { ChevronRight, Loader2, Undo2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';

@@ -1,5 +1,5 @@
-import { LineChart, Settings } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { LineChart } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { CubeApiProvider } from '@/components/cube/cube-provider';
@@ -8,11 +8,15 @@ import { RevenueByStatusChart } from '@/components/cube/revenue-chart';
 import { DocBlock } from '@/components/doc/doc-block';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
+import { WorkspaceStatusCard } from '@/components/workspace/workspace-status-card';
 import { Button } from '@/components/ui/button';
-import { useSession } from '@/lib/auth-client';
-import { useMe } from '@/hooks/use-me';
+import { useBilling } from '@/hooks/use-billing';
 import { useConnections } from '@/hooks/use-connections';
+import { useCanWriteDashboards, useMe } from '@/hooks/use-me';
+import { usePrivacySettings } from '@/hooks/use-privacy';
+import { useSession } from '@/lib/auth-client';
 import { connectionHomeLead } from '@/lib/connection-format';
+import { buildHomeDocProps, buildWorkspaceStatusItems } from '@/lib/workspace-status';
 
 const LAST_30_DAYS_QUERY = {
   measures: ['Orders.revenue', 'Orders.count'],
@@ -39,10 +43,38 @@ export function HomePage() {
   const [importFlash, setImportFlash] = useState<string | null>(null);
   const { data: session } = useSession();
   const { data: me } = useMe();
+  const canManage = useCanWriteDashboards();
   const { data: connections } = useConnections();
+  const { data: privacy } = usePrivacySettings();
+  const { data: billing } = useBilling();
   const userName = session?.user?.name;
   const orgName = me?.organization?.name;
   const lead = connectionHomeLead(connections?.items ?? []);
+  const isDemo = me?.dataMode !== 'live';
+
+  const statusItems = useMemo(
+    () =>
+      buildWorkspaceStatusItems({
+        dataMode: me?.dataMode,
+        connections,
+        privacy,
+        billing: billing ?? null,
+        capabilities: me?.trustCapabilities,
+        canManage,
+      }),
+    [me?.dataMode, me?.trustCapabilities, connections, privacy, billing, canManage]
+  );
+
+  const docProps = useMemo(
+    () =>
+      buildHomeDocProps({
+        orgName: orgName ?? undefined,
+        dataMode: me?.dataMode,
+        billing: billing ?? null,
+        canManage,
+      }),
+    [orgName, me?.dataMode, billing, canManage]
+  );
 
   useEffect(() => {
     const flash = (location.state as { importFlash?: string } | null)?.importFlash;
@@ -62,34 +94,32 @@ export function HomePage() {
         icon={LineChart}
         mobileTitle="Главная"
         mobileSubtitle={orgName}
-        mobileActions={
-          <Link to="/settings" aria-label="Настройки">
-            <Button variant="ghost" size="icon-sm" type="button">
-              <Settings size={16} />
-            </Button>
-          </Link>
-        }
-        props={
-          orgName
-            ? [
-                { label: 'Магазин', value: orgName },
-                { label: 'Период', value: '30 дней' },
-                {
-                  label: 'Данные',
-                  value: 'Подключить API →',
-                  href: '/settings/connections/add-marketplace',
-                },
-              ]
-            : [
-                { label: 'Период', value: '30 дней' },
-                {
-                  label: 'Данные',
-                  value: 'Подключить API →',
-                  href: '/settings/connections/add-marketplace',
-                },
-              ]
-        }
+        props={docProps}
       >
+        <DocBlock title="Статус workspace">
+          <WorkspaceStatusCard items={statusItems} />
+        </DocBlock>
+
+        {isDemo && canManage ? (
+          <DocCallout variant="info">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="m-0">
+                Сейчас демо-данные. Подключите файл, API или БД — появятся свои продажи и инсайты по
+                кабинету.
+              </p>
+              <Link to="/onboarding/connect">
+                <Button size="sm" type="button">
+                  Подключить данные
+                </Button>
+              </Link>
+            </div>
+          </DocCallout>
+        ) : null}
+        {isDemo && !canManage ? (
+          <DocCallout variant="info">
+            Сейчас демо-данные. Подключение источников доступно владельцу и администратору компании.
+          </DocCallout>
+        ) : null}
         {importFlash ? <DocCallout>{importFlash}</DocCallout> : null}
 
         <DocBlock title="Сводка" hint="· KPI">

@@ -4,7 +4,7 @@ globs: packages/insights/**/*
 alwaysApply: false
 ---
 
-# Insights (`@umetrica/insights`)
+# Insights (`@sellerpool/insights`)
 
 ## Pipeline
 

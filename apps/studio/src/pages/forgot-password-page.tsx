@@ -9,6 +9,7 @@ import { AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { requestPasswordReset } from '@/lib/auth-client';
+import { appToast } from '@/lib/app-toast';
 
 const schema = z.object({
   email: z.string().email('Укажите корректный email'),
@@ -37,6 +38,7 @@ export function ForgotPasswordPage() {
         variant: 'info',
         message: 'Если аккаунт существует, мы отправили ссылку для сброса пароля.',
       });
+      appToast.success('Письмо отправлено, если аккаунт существует');
     } catch (err) {
       setStatus({
         variant: 'error',

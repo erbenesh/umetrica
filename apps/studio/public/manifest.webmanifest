@@ -1,7 +1,7 @@
 {
-  "name": "umetrica",
-  "short_name": "umetrica",
-  "description": "Аналитика с AI-оценкой",
+  "name": "Sellerpool",
+  "short_name": "Sellerpool",
+  "description": "Аналитика и пул для селлеров маркетплейсов",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

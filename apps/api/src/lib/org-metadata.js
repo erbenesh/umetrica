@@ -1,4 +1,4 @@
-import { BillingPlanIdSchema, DEFAULT_INSIGHT_SETTINGS, DEFAULT_PRIVACY_SETTINGS, InsightSettingsSchema, PrivacySettingsSchema, } from '@umetrica/core';
+import { BillingPlanIdSchema, DEFAULT_INSIGHT_SETTINGS, DEFAULT_PRIVACY_SETTINGS, InsightSettingsSchema, PrivacySettingsSchema, } from '@sellerpool/core';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { organization } from '../db/schema.js';

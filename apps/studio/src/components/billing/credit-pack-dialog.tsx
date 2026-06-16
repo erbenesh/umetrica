@@ -1,4 +1,4 @@
-import type { CreditPack, CreditPackId } from '@umetrica/core';
+import type { CreditPack, CreditPackId } from '@sellerpool/core';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';

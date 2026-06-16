@@ -1,4 +1,4 @@
-import { type BillingPlanId, type InsightSettings, type PrivacySettings, type UpdateInsightSettingsInput, type UpdatePrivacySettingsInput } from '@umetrica/core';
+import { type BillingPlanId, type InsightSettings, type PrivacySettings, type UpdateInsightSettingsInput, type UpdatePrivacySettingsInput } from '@sellerpool/core';
 type OrgMetadata = {
     planId?: string;
     insightSettings?: unknown;

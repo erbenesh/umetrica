@@ -1,4 +1,4 @@
-import type { Insight } from '@umetrica/core';
+import type { Insight } from '@sellerpool/core';
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

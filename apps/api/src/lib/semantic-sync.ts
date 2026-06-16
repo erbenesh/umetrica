@@ -5,7 +5,7 @@ import { semanticViews } from '../db/semantic-views.js';
 import { organization } from '../db/schema.js';
 import { db } from '../db/index.js';
 import { compileOrgSemanticModel } from './semantic-yaml.js';
-import { SemanticCubeDefinitionSchema, SemanticViewDefinitionSchema } from '@umetrica/core';
+import { SemanticCubeDefinitionSchema, SemanticViewDefinitionSchema } from '@sellerpool/core';
 
 async function getOrgPrefix(organizationId: string) {
   const [row] = await db

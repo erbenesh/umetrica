@@ -1,4 +1,4 @@
-import { buildWidgetQuery, type Widget } from '@umetrica/core';
+import { buildWidgetQuery, type Widget } from '@sellerpool/core';
 import type { Query } from '@cubejs-client/core';
 import {
   ArcElement,

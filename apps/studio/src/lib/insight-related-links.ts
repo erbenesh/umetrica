@@ -1,4 +1,4 @@
-import type { Dashboard, Insight } from '@umetrica/core';
+import type { Dashboard, Insight } from '@sellerpool/core';
 
 export interface InsightRelatedLink {
   label: string;

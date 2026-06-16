@@ -1,11 +1,11 @@
 ---
-name: umetrica-auth
+name: sellerpool-auth
 description: >-
-  Better Auth orgs, roles, invitations for umetrica. Use when working on
+  Better Auth orgs, roles, invitations for Sellerpool. Use when working on
   team page, auth, org switcher, RBAC, or invitation errors.
 ---
 
-# umetrica Auth
+# Sellerpool Auth
 
 ## Stack
 

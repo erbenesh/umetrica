@@ -1,1 +1,1 @@
-export { semanticCubeNodeId, semanticSourceNodeId, tableToCubeName } from '@umetrica/core';
+export { semanticCubeNodeId, semanticSourceNodeId, tableToCubeName } from '@sellerpool/core';

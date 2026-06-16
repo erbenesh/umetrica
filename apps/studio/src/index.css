@@ -1243,6 +1243,32 @@ body {
   min-width: 8px;
 }
 
+.db-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 240px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.db-search__input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  color: var(--foreground);
+  outline: none;
+}
+
+.db-search__input::placeholder {
+  color: var(--muted-foreground);
+}
+
 .db-cell__icon {
   width: 30px;
   height: 30px;
@@ -3780,4 +3806,86 @@ select.input {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 11px;
   resize: vertical;
+}
+
+.app-toast-viewport {
+  position: fixed;
+  z-index: 200;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.app-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  animation: app-toast-in 0.2s ease;
+}
+
+.app-toast__message {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+
+.app-toast__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: -2px -4px 0 0;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.app-toast__close:hover {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.app-toast--success {
+  border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+}
+
+.app-toast--error {
+  border-color: color-mix(in srgb, var(--insight-warning) 40%, var(--border));
+}
+
+.app-toast--info {
+  border-color: color-mix(in srgb, var(--insight-info) 35%, var(--border));
+}
+
+@keyframes app-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .app-toast-viewport {
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
 }

@@ -2,12 +2,17 @@ import { useCallback, useState } from 'react';
 
 export type InsightFeedback = 'useful' | 'not_relevant';
 
+const LEGACY_FEEDBACK_PREFIX = 'umetrica-insight-feedback:';
+const FEEDBACK_PREFIX = 'sellerpool-insight-feedback:';
+
 function storageKey(insightId: string) {
-  return `umetrica-insight-feedback:${insightId}`;
+  return `${FEEDBACK_PREFIX}${insightId}`;
 }
 
 function readFeedback(insightId: string): InsightFeedback | null {
-  const stored = localStorage.getItem(storageKey(insightId));
+  const stored =
+    localStorage.getItem(storageKey(insightId)) ??
+    localStorage.getItem(`${LEGACY_FEEDBACK_PREFIX}${insightId}`);
   return stored === 'useful' || stored === 'not_relevant' ? stored : null;
 }
 

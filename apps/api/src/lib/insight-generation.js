@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { buildFallbackEvaluation, createLLMProvider, detectAnomalies, evaluateInsight, } from '@umetrica/insights';
+import { buildFallbackEvaluation, createLLMProvider, detectAnomalies, evaluateInsight, } from '@sellerpool/insights';
 import { insightRuns } from '../db/insight-runs.js';
 import { db } from '../db/index.js';
 import { getAvailableCredits } from './billing.js';

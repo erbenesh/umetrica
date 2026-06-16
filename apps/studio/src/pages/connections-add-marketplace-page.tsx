@@ -1,4 +1,4 @@
-import { Check, FileUp, Store, X } from 'lucide-react';
+import { FileUp, Store, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { FormActions, FormField } from '@/components/doc/form-field';
 import { TrustPanel } from '@/components/doc/trust-panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { trustPanelItemsForPath } from '@/lib/trust-policy-ui';
 import { useCreateMarketplaceConnection, useTestMarketplaceConnection } from '@/hooks/use-connections';
 
 const PROVIDER_CONFIG = {
@@ -121,12 +122,10 @@ export function ConnectionsAddMarketplacePage() {
           </Link>
         </div>
         <TrustPanel
-          title="Мы запрашиваем только это"
+          title="Что запрашиваем"
           items={[
-            { icon: Check, text: 'Статистика продаж и заказов (read-only)' },
-            { icon: Check, text: 'Шифрование AES-256 · хранение в РФ' },
-            { icon: X, text: 'Без изменения цен, карточек и рекламы' },
-            { icon: X, text: 'Без передачи сырых данных другим селлерам' },
+            ...trustPanelItemsForPath('marketplace_api'),
+            { icon: X, text: 'Без изменения цен, карточек и рекламы', muted: true },
           ]}
         />
       </DocBlock>

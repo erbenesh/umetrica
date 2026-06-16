@@ -1,4 +1,4 @@
-import { ConnectionConfigSchema } from '@umetrica/core';
+import { ConnectionConfigSchema } from '@sellerpool/core';
 import { and, desc, eq } from 'drizzle-orm';
 import postgres from 'postgres';
 
@@ -129,7 +129,7 @@ export async function resolveOrgPostgresParams(
   }
 
   const connectionString =
-    process.env.DATABASE_URL ?? 'postgresql://umetrica:umetrica@localhost:5432/umetrica';
+    process.env.DATABASE_URL ?? 'postgresql://sellerpool:sellerpool@localhost:5432/sellerpool';
 
   return {
     params: paramsFromDatabaseUrl(connectionString),

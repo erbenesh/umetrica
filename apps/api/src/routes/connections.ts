@@ -8,9 +8,10 @@ import {
   TestMarketplaceApiConnectionSchema,
   type Connection,
   type ConnectionConfig,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, desc, eq } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 import { connections } from '../db/connections.js';
 import { db } from '../db/index.js';
@@ -18,6 +19,7 @@ import { decryptCredentials, encryptCredentials } from '../lib/connection-crypto
 import { importCsvForTenant, parseCsvMultipart } from '../lib/csv-upload.js';
 import { testMarketplaceApiConnection, testPostgresConnection } from '../lib/connection-test.js';
 import { syncMarketplaceConnection } from '../lib/marketplace-sync.js';
+import { queueBenchmarkContributionCollect } from '../lib/benchmark-pool.js';
 import { canWriteDashboards, getAuthContext } from '../lib/request-auth.js';
 
 const MARKETPLACE_LABELS: Record<string, string> = {
@@ -231,7 +233,7 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
 
     const parsed = CreateMarketplaceApiConnectionSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const { provider, apiKey, clientId, name, category, benchmarkOptIn } = parsed.data;
@@ -289,6 +291,7 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
       await updateInsightSettings(auth.organizationId, {
         sources: { ...insightSettings.sources, benchmark: true },
       });
+      queueBenchmarkContributionCollect(auth.organizationId);
     }
 
     const [updated] = await db
@@ -313,7 +316,7 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
 
     const parsed = TestMarketplaceApiConnectionSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const resolved = await resolveMarketplaceTestApiKey(auth.organizationId, parsed.data);
@@ -338,7 +341,7 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
 
     const parsed = CreateDatabaseConnectionSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const input = parsed.data;
@@ -411,7 +414,7 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
 
     const parsed = TestDatabaseConnectionSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const resolved = await resolveDatabaseTestParams(auth.organizationId, parsed.data);
@@ -468,6 +471,8 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
         updatedAt: now,
       })
       .returning();
+
+    queueBenchmarkContributionCollect(auth.organizationId);
 
     return reply.status(201).send({
       connection: toConnection(row!),
@@ -537,6 +542,8 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
       .where(eq(connections.id, id))
       .returning();
 
+    queueBenchmarkContributionCollect(auth.organizationId);
+
     return reply.send({
       connection: toConnection(row!),
       import: importResult,
@@ -567,6 +574,8 @@ export async function registerConnectionRoutes(app: FastifyInstance) {
     if ('error' in sync) {
       return reply.status(400).send({ error: sync.error });
     }
+
+    queueBenchmarkContributionCollect(auth.organizationId);
 
     return reply.send({
       connection: toConnection(sync.connection),

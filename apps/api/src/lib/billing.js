@@ -1,4 +1,4 @@
-import { getBillingPlan } from '@umetrica/core';
+import { getBillingPlan } from '@sellerpool/core';
 import { and, eq, gte } from 'drizzle-orm';
 import { insightRuns } from '../db/insight-runs.js';
 import { db } from '../db/index.js';

@@ -28,7 +28,6 @@ export function SettingsBillingPaymentPage() {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [autopay, setAutopay] = useState(true);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +47,6 @@ export function SettingsBillingPaymentPage() {
 
   const handleSave = async () => {
     setError(null);
-    setSaved(false);
 
     try {
       await updatePayment.mutateAsync({
@@ -62,8 +60,6 @@ export function SettingsBillingPaymentPage() {
           address: address || undefined,
         },
       });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось сохранить');
     }
@@ -77,7 +73,6 @@ export function SettingsBillingPaymentPage() {
 
       if (hasPaidPlan) {
         await mockPaymentSetup.mutateAsync();
-        setSaved(true);
         return;
       }
 
@@ -89,7 +84,6 @@ export function SettingsBillingPaymentPage() {
         window.location.href = result.confirmationUrl;
         return;
       }
-      setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось подключить карту');
     }
@@ -224,7 +218,6 @@ export function SettingsBillingPaymentPage() {
           </div>
         </div>
 
-        {saved ? <p className="mt-3 text-xs text-muted-foreground">Сохранено</p> : null}
         {error ? <p className="mt-3 text-xs text-insight-warning">{error}</p> : null}
 
         <div className="form-actions max-w-lg">

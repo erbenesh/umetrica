@@ -28,6 +28,7 @@ export const SemanticDimensionSchema = z.object({
   sql: z.string().min(1).max(500),
   type: SemanticDimensionTypeSchema,
   granularity: z.enum(['day', 'week', 'month', 'year']).optional(),
+  primaryKey: z.boolean().optional(),
   locked: z.boolean().optional(),
 });
 
@@ -402,6 +403,42 @@ export function semanticMemberLabel(member: {
   shortTitle?: string;
 }) {
   return member.shortTitle ?? member.title ?? member.name;
+}
+
+/** Cube.js требует primary key на измерении id (особенно для кубов в join-графе). */
+export function ensureCubePrimaryKey(definition: SemanticCubeDefinition): SemanticCubeDefinition {
+  const dimensions = [...definition.dimensions];
+  const idIndex = dimensions.findIndex((dimension) => dimension.name === 'id' || dimension.sql === 'id');
+
+  if (idIndex >= 0) {
+    const existing = dimensions[idIndex];
+    if (!existing) return definition;
+    if (existing.primaryKey) return definition;
+    dimensions[idIndex] = { ...existing, primaryKey: true };
+    return { ...definition, dimensions };
+  }
+
+  if (!definition.source.columns.includes('id')) return definition;
+
+  return {
+    ...definition,
+    dimensions: [
+      {
+        id: 'dimension:id',
+        name: 'id',
+        title: 'ID',
+        sql: 'id',
+        type: 'string',
+        primaryKey: true,
+      },
+      ...dimensions,
+    ],
+  };
+}
+
+/** @deprecated alias — используйте ensureCubePrimaryKey */
+export function ensureJoinPrimaryKeys(definition: SemanticCubeDefinition): SemanticCubeDefinition {
+  return ensureCubePrimaryKey(definition);
 }
 
 export function computeSemanticPublishDiff(
@@ -979,6 +1016,7 @@ export function scaffoldSemanticCubeFromTable(input: {
         title: memberName,
         sql: column.name,
         type: 'string',
+        ...(column.name === 'id' ? { primaryKey: true } : {}),
       });
       continue;
     }

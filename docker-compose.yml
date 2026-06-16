@@ -1,13 +1,13 @@
 x-cube-environment: &cube-environment
   CUBEJS_DEV_MODE: "true"
-  CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:-umetrica-cube-secret-change-me}
+  CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:-sellerpool-cube-secret-change-me}
   CUBEJS_CORS_ORIGIN: http://localhost:5173
   CUBEJS_DB_TYPE: postgres
   CUBEJS_DB_HOST: postgres
   CUBEJS_DB_PORT: 5432
-  CUBEJS_DB_NAME: umetrica
-  CUBEJS_DB_USER: umetrica
-  CUBEJS_DB_PASS: umetrica
+  CUBEJS_DB_NAME: sellerpool
+  CUBEJS_DB_USER: sellerpool
+  CUBEJS_DB_PASS: sellerpool
   CUBEJS_CUBESTORE_HOST: cubestore
   CUBEJS_SCHEDULED_REFRESH_TIMER: "true"
 
@@ -18,13 +18,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: umetrica
-      POSTGRES_PASSWORD: umetrica
-      POSTGRES_DB: umetrica
+      POSTGRES_USER: sellerpool
+      POSTGRES_PASSWORD: sellerpool
+      POSTGRES_DB: sellerpool
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U umetrica"]
+      test: ["CMD-SHELL", "pg_isready -U sellerpool"]
       interval: 5s
       timeout: 5s
       retries: 5

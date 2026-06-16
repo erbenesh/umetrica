@@ -1,18 +1,18 @@
 ---
-description: Core umetrica project context and constraints
+description: Core Sellerpool project context and constraints
 alwaysApply: true
 ---
 
-# umetrica
+# Sellerpool (Селлерпул)
 
-Clean-room analytics platform: Data → Dashboards → AI insights. Not BoostixERP.
+Clean-room analytics platform: Data → Dashboards → AI insights → benchmark pool. Not BoostixERP.
 
 ## Monorepo layout
 
-- `apps/api` — Fastify backend
-- `apps/studio` — React SPA (`@/` alias)
-- `packages/core` — shared Zod schemas + `buildWidgetQuery`
-- `packages/insights` — anomaly detection + LLM evaluator
+- `apps/api` — Fastify backend (`@sellerpool/api`)
+- `apps/studio` — React SPA (`@sellerpool/studio`, `@/` alias)
+- `packages/core` — shared Zod schemas + `buildWidgetQuery` (`@sellerpool/core`)
+- `packages/insights` — anomaly detection + LLM evaluator (`@sellerpool/insights`)
 - `cube/` — Cube.js config; models in `model/cubes/`
 
 ## Commands
@@ -23,7 +23,7 @@ Use `npx pnpm@9.15.4` (not global pnpm). Run `typecheck` and `lint` after change
 
 - ESM (`"type": "module"`)
 - Minimal focused diffs; no drive-by refactors
-- User-facing UI text in Russian
+- User-facing UI text in Russian; product brand Sellerpool / Селлерпул
 - API errors as `{ error: string }` or Better Auth format
 
 ## Do not

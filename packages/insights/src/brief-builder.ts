@@ -1,4 +1,4 @@
-import type { InsightBrief } from '@umetrica/core';
+import type { InsightBrief } from '@sellerpool/core';
 
 import { loadCubeQuery, readMeasure, type CubeQuery } from './cube-client.js';
 

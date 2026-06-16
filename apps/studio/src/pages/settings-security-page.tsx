@@ -6,6 +6,7 @@ import { DocPage } from '@/components/doc/doc-page';
 import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
 import { TrustList } from '@/components/doc/trust-list';
 import { Button } from '@/components/ui/button';
+import { BRAND_NAME_RU } from '@/lib/brand';
 
 export function SettingsSecurityPage() {
   return (
@@ -22,7 +23,7 @@ export function SettingsSecurityPage() {
             { icon: Lock, text: 'Шифрование at rest (AES-256) · доступ только сервису аналитики' },
             { icon: MapPin, text: 'Серверы в РФ · соответствие 152-ФЗ' },
             { icon: EyeOff, text: 'Минимальные scope: только статистика, без write-методов' },
-            { icon: RotateCcw, text: 'Отзыв ключа в umetrica = немедленная остановка синхронизации' },
+            { icon: RotateCcw, text: `Отзыв ключа в ${BRAND_NAME_RU} = немедленная остановка синхронизации` },
             {
               icon: ScrollText,
               text: (

@@ -90,6 +90,16 @@ export function ConnectionsPage() {
     >
       {importFlash ? <DocCallout className="mb-4">{importFlash}</DocCallout> : null}
 
+      <DocCallout variant="info" className="mb-4">
+        <p className="m-0">
+          Как мы обрабатываем файлы, ключи API и бенчмарки — в{' '}
+          <Link to="/settings/privacy" className="text-primary underline-offset-2 hover:underline">
+            политике конфиденциальности
+          </Link>
+          .
+        </p>
+      </DocCallout>
+
       {isLoading ? (
         <Card className="mb-4">
           <CardContent className="flex items-center gap-2 p-3 text-xs text-muted-foreground">

@@ -1,3 +1,5 @@
+import { BRAND_NAME } from '@sellerpool/core';
+
 export interface EmailMessage {
   to: string;
   subject: string;
@@ -6,7 +8,7 @@ export interface EmailMessage {
 }
 
 function getEmailFrom() {
-  return process.env.EMAIL_FROM ?? 'umetrica <noreply@localhost>';
+  return process.env.EMAIL_FROM ?? `${BRAND_NAME} <noreply@localhost>`;
 }
 
 async function sendViaResend(message: EmailMessage) {
@@ -37,7 +39,7 @@ async function sendViaResend(message: EmailMessage) {
 }
 
 function sendViaConsole(message: EmailMessage) {
-  console.log('\n========== umetrica email ==========');
+  console.log(`\n========== ${BRAND_NAME} email ==========`);
   console.log(`To: ${message.to}`);
   console.log(`Subject: ${message.subject}`);
   console.log(message.text);

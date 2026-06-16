@@ -1,12 +1,12 @@
 ---
-name: umetrica-dev
+name: sellerpool-dev
 description: >-
-  umetrica local development workflow: pnpm, turbo, docker, db:push, env.
+  Sellerpool local development workflow: pnpm, turbo, docker, db:push, env.
   Use when starting dev, debugging setup, running commands, or onboarding
   to the monorepo.
 ---
 
-# umetrica Dev Workflow
+# Sellerpool Dev Workflow
 
 ## Prerequisites
 

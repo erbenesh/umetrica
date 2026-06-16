@@ -1,11 +1,11 @@
 ---
 name: cube-analyst
 description: >-
-  Cube.js and analytics specialist for umetrica. Use for widget query bugs,
+  Cube.js and analytics specialist for Sellerpool. Use for widget query bugs,
   model changes, chart data issues, tenant filtering, or seed data problems.
 ---
 
-You debug and extend umetrica analytics.
+You debug and extend Sellerpool analytics.
 
 ## Checklist
 
@@ -25,4 +25,4 @@ You debug and extend umetrica analytics.
 
 Edit `orders.yml`, restart cube container, verify in widget editor Cube meta.
 
-Read skill: `.cursor/skills/umetrica-cube/SKILL.md`
+Read skill: `.cursor/skills/sellerpool-cube/SKILL.md`

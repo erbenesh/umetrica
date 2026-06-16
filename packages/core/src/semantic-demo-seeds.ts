@@ -37,6 +37,15 @@ const CUSTOMERS_CUBE: SemanticCubeDefinition = {
   ],
   dimensions: [
     {
+      id: 'dimension:id',
+      name: 'id',
+      title: 'ID',
+      shortTitle: 'ID',
+      sql: 'id',
+      type: 'string',
+      primaryKey: true,
+    },
+    {
       id: 'dimension:email',
       name: 'email',
       title: 'Email',
@@ -141,6 +150,15 @@ const PRODUCTS_CUBE: SemanticCubeDefinition = {
   ],
   dimensions: [
     {
+      id: 'dimension:id',
+      name: 'id',
+      title: 'ID',
+      shortTitle: 'ID',
+      sql: 'id',
+      type: 'string',
+      primaryKey: true,
+    },
+    {
       id: 'dimension:name',
       name: 'name',
       title: 'Название товара',
@@ -228,6 +246,15 @@ const ORDER_ITEMS_CUBE: SemanticCubeDefinition = {
   ],
   dimensions: [
     {
+      id: 'dimension:id',
+      name: 'id',
+      title: 'ID',
+      shortTitle: 'ID',
+      sql: 'id',
+      type: 'string',
+      primaryKey: true,
+    },
+    {
       id: 'dimension:orderId',
       name: 'orderId',
       title: 'Заказ',
@@ -286,6 +313,15 @@ function buildOrdersDemoCube(): SemanticCubeDefinition {
       columns: ['id', 'tenant_id', 'customer_id', 'status', 'amount', 'created_at'],
     },
     dimensions: [
+      {
+        id: 'dimension:id',
+        name: 'id',
+        title: 'ID',
+        shortTitle: 'ID',
+        sql: 'id',
+        type: 'string',
+        primaryKey: true,
+      },
       {
         id: 'dimension:status',
         name: 'status',

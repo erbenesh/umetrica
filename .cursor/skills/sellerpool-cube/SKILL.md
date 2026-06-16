@@ -1,12 +1,12 @@
 ---
-name: umetrica-cube
+name: sellerpool-cube
 description: >-
-  Cube.js integration for umetrica: models, tenant JWT, widget queries,
+  Cube.js integration for Sellerpool: models, tenant JWT, widget queries,
   seed data. Use when editing cube models, fixing chart data, or widget
   query issues.
 ---
 
-# umetrica Cube.js
+# Sellerpool Cube.js
 
 ## Model location
 
@@ -25,7 +25,7 @@ cubes:
 ## Server-side queries
 
 ```ts
-import { loadCubeQuery } from '@umetrica/insights';
+import { loadCubeQuery } from '@sellerpool/insights';
 
 await loadCubeQuery(cubeUrl, token, {
   measures: ['Orders.revenue'],

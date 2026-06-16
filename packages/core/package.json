@@ -1,5 +1,5 @@
 {
-  "name": "@umetrica/core",
+  "name": "@sellerpool/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@umetrica/tsconfig": "workspace:*",
+    "@sellerpool/tsconfig": "workspace:*",
     "typescript": "^5.8.3"
   }
 }

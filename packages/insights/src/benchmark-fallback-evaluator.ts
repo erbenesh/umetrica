@@ -1,4 +1,4 @@
-import type { InsightBrief, InsightEvaluation } from '@umetrica/core';
+import type { InsightBrief, InsightEvaluation } from '@sellerpool/core';
 
 import type { BenchmarkEvaluationMeta } from './benchmark-brief-builder.js';
 

@@ -5,6 +5,7 @@ import {
   computeSemanticPublishDiff,
   DEMO_SEMANTIC_VIEW,
   DEFAULT_ORDERS_GRAPH_LAYOUT,
+  ensureCubePrimaryKey,
   getDemoSemanticCubeSeeds,
   scaffoldSemanticCubeFromTable,
   SemanticCubeDefinitionSchema,
@@ -21,7 +22,7 @@ import {
   type SemanticGraphLayout,
   type UpdateSemanticDraftInput,
   WidgetSchema,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { dashboards } from '../db/dashboards.js';
@@ -179,6 +180,48 @@ async function upgradeLegacyOrdersCube(organizationId: string) {
   return true;
 }
 
+async function upgradeDemoCubePrimaryKeys(organizationId: string) {
+  const cubeNames = ['Orders', 'OrderItems', 'Customers', 'Products'];
+  let changed = false;
+
+  for (const cubeName of cubeNames) {
+    const [row] = await db
+      .select()
+      .from(semanticCubes)
+      .where(and(eq(semanticCubes.organizationId, organizationId), eq(semanticCubes.name, cubeName)))
+      .limit(1);
+
+    if (!row) continue;
+
+    const published = parseDefinition(row.publishedDefinition);
+    const draft = parseDefinition(row.draftDefinition);
+    const fixedPublished = ensureCubePrimaryKey(published);
+    const fixedDraft = ensureCubePrimaryKey(draft);
+
+    if (
+      semanticDefinitionsEqual(published, fixedPublished) &&
+      semanticDefinitionsEqual(draft, fixedDraft)
+    ) {
+      continue;
+    }
+
+    const now = new Date();
+    await db
+      .update(semanticCubes)
+      .set({
+        draftDefinition: fixedDraft,
+        publishedDefinition: fixedPublished,
+        subtitle: semanticCubeSubtitle(fixedDraft),
+        updatedAt: now,
+      })
+      .where(eq(semanticCubes.id, row.id));
+
+    changed = true;
+  }
+
+  return changed;
+}
+
 export async function ensureSemanticCubes(organizationId: string) {
   await seedDemoSemanticForTenant(organizationId);
 
@@ -213,6 +256,10 @@ export async function ensureSemanticCubes(organizationId: string) {
   }
 
   if (await upgradeLegacyOrdersCube(organizationId)) {
+    changed = true;
+  }
+
+  if (await upgradeDemoCubePrimaryKeys(organizationId)) {
     changed = true;
   }
 

@@ -1,4 +1,5 @@
-import type { Insight } from '@umetrica/core';
+import type { Insight } from '@sellerpool/core';
+import { BENCHMARK_MIN_POOL_PARTICIPANTS, BENCHMARK_POOL_CONTRIBUTION_LABEL } from '@sellerpool/core';
 import { Link } from 'react-router-dom';
 
 import { InsightDetailActions } from '@/components/insights/insight-detail-actions';
@@ -126,12 +127,13 @@ export function TenantInsightDetailView({
         <section className="insight-detail__section">
           <h2>Как считается бенчмарк</h2>
           <p className="text-sm text-muted-foreground">
-            Сегмент формируется по категории и сопоставимым SKU. В пул попадают селлеры с{' '}
+            Сегмент формируется по категории на маркетплейсе. В пул попадают селлеры с{' '}
             <Link to="/settings/privacy" className="font-medium text-primary hover:underline">
               включённым участием
             </Link>{' '}
             и в период охлаждения после отключения. Смотреть бенчмарки можно только при активном
-            участии. Вывод — при ≥10 участниках в сегменте. Сырые данные конкурентов не
+            участии. В пул уходит только: {BENCHMARK_POOL_CONTRIBUTION_LABEL}. Вывод — при ≥
+            {BENCHMARK_MIN_POOL_PARTICIPANTS} участниках в категории. Сырые данные конкурентов не
             раскрываются.
           </p>
         </section>

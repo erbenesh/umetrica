@@ -1,30 +1,6 @@
-import type { CreateDashboardInput, Dashboard, UpdateDashboardInput } from '@umetrica/core';
+import type { CreateDashboardInput, Dashboard, UpdateDashboardInput } from '@sellerpool/core';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
-
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    const message =
-      typeof error.error === 'string' ? error.error : `Request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json() as Promise<T>;
-}
+import { apiFetch } from '@/lib/api-client';
 
 export interface DashboardListResponse {
   items: Dashboard[];

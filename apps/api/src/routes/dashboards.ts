@@ -6,9 +6,10 @@ import {
   WidgetSchema,
   type Dashboard,
   type Widget,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { and, desc, eq } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 import { dashboards } from '../db/dashboards.js';
 import { db } from '../db/index.js';
@@ -77,7 +78,7 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
 
     const parsed = CreateDashboardSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const now = new Date();
@@ -121,7 +122,7 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
     const parsed = UpdateDashboardSchema.safeParse(request.body);
 
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const [existing] = await db

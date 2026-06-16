@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { ReactNode } from 'react';
@@ -17,13 +17,24 @@ import { signIn, signOut, signUp, useSession } from '@/lib/auth-client';
 import { isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpers';
 import { confirmInvitationSignupEmail, prepareInvitationAccept } from '@/lib/invitations-api';
 
-const schema = z.object({
-  name: z.string().min(2, 'Укажите имя').optional(),
+const loginSchema = z.object({
   email: z.string().email('Укажите корректный email'),
   password: z.string().min(8, 'Пароль — минимум 8 символов'),
 });
 
-type FormData = z.infer<typeof schema>;
+const registerSchema = loginSchema
+  .extend({
+    name: z.string().min(2, 'Укажите имя'),
+    confirmPassword: z.string().min(1, 'Повторите пароль'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  });
+
+type LoginFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
+type FormData = LoginFormData | RegisterFormData;
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Владелец',
@@ -84,7 +95,7 @@ export function AcceptInvitationPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(mode === 'login' ? loginSchema : registerSchema),
   });
 
   useEffect(() => {
@@ -92,9 +103,9 @@ export function AcceptInvitationPage() {
     reset({
       email: preview.email,
       password: '',
-      name: '',
+      ...(mode === 'register' ? { name: '', confirmPassword: '' } : {}),
     });
-  }, [preview?.email, reset]);
+  }, [preview?.email, mode, reset]);
 
   const sessionEmailMatches =
     session?.user.email.toLowerCase() === preview?.email.toLowerCase();
@@ -148,10 +159,11 @@ export function AcceptInvitationPage() {
           throw new Error(result.error.message);
         }
       } else {
+        const registerData = data as RegisterFormData;
         const result = await signUp.email({
-          email: data.email,
-          password: data.password,
-          name: data.name ?? data.email.split('@')[0] ?? 'User',
+          email: registerData.email,
+          password: registerData.password,
+          name: registerData.name ?? registerData.email.split('@')[0] ?? 'User',
         });
         if (result.error) throw new Error(result.error.message);
 
@@ -172,6 +184,8 @@ export function AcceptInvitationPage() {
       setError(err instanceof Error ? err.message : 'Ошибка авторизации');
     }
   };
+
+  const registerErrors = errors as FieldErrors<RegisterFormData>;
 
   if (previewLoading || sessionPending) {
     return (
@@ -276,7 +290,7 @@ export function AcceptInvitationPage() {
               label="Имя"
               placeholder="Анна"
               autoComplete="name"
-              error={errors.name?.message}
+              error={registerErrors.name?.message}
               {...register('name')}
             />
           )}
@@ -294,10 +308,21 @@ export function AcceptInvitationPage() {
             id="password"
             label="Пароль"
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            hint={mode === 'register' ? 'Минимум 8 символов' : undefined}
             required
             error={errors.password?.message}
             {...register('password')}
           />
+          {mode === 'register' ? (
+            <PasswordField
+              id="confirmPassword"
+              label="Подтвердите пароль"
+              autoComplete="new-password"
+              required
+              error={registerErrors.confirmPassword?.message}
+              {...register('confirmPassword')}
+            />
+          ) : null}
         </div>
 
         {error ? <AuthStatusMessage variant="error">{error}</AuthStatusMessage> : null}

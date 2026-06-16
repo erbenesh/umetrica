@@ -1,5 +1,5 @@
-import { BarChart3, LayoutDashboard, LayoutGrid, Plus, Settings, Table, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { BarChart3, LayoutDashboard, LayoutGrid, Plus, Table, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CreateDashboardDialog } from '@/components/dashboards/create-dashboard-dialog';
@@ -16,6 +16,7 @@ import {
 import { DocBlock } from '@/components/doc/doc-block';
 import { DocBlockHead } from '@/components/doc/doc-block-head';
 import { DocPage } from '@/components/doc/doc-page';
+import { ListSearchInput, matchesListQuery } from '@/components/doc/list-search-input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateDashboard, useDashboards, useDeleteDashboard } from '@/hooks/use-dashboards';
@@ -39,11 +40,19 @@ function dashboardIcon(index: number) {
 export function DashboardsListPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [view, setView] = useState<'table' | 'gallery'>('table');
+  const [searchQuery, setSearchQuery] = useState('');
   const { data, isLoading, error } = useDashboards();
   const { data: me } = useMe();
   const createMutation = useCreateDashboard();
   const deleteMutation = useDeleteDashboard();
   const canWrite = useCanWriteDashboards();
+
+  const filteredDashboards = useMemo(() => {
+    const items = data?.items ?? [];
+    return items.filter((dashboard) =>
+      matchesListQuery(searchQuery, dashboard.name, dashboard.description)
+    );
+  }, [data?.items, searchQuery]);
 
   const createButton = (
     <Button onClick={() => setCreateOpen(true)} disabled={!canWrite} size="sm" type="button">
@@ -53,16 +62,7 @@ export function DashboardsListPage() {
     </Button>
   );
 
-  const mobileActions = (
-    <>
-      {createButton}
-      <Link to="/settings" aria-label="Настройки" className="md:hidden">
-        <Button variant="ghost" size="icon-sm" type="button">
-          <Settings size={16} />
-        </Button>
-      </Link>
-    </>
-  );
+  const mobileActions = createButton;
 
   const handleCreate = async (payload: { name: string; description?: string }) => {
     await createMutation.mutateAsync(payload);
@@ -108,6 +108,16 @@ export function DashboardsListPage() {
                 </CardTitle>
                 <CardDescription>
                   Создайте первый дашборд, чтобы собирать графики и KPI.
+                  {me?.dataMode !== 'live' && canWrite ? (
+                    <>
+                      {' '}
+                      Или{' '}
+                      <Link to="/onboarding/connect" className="text-primary hover:underline">
+                        подключите данные
+                      </Link>{' '}
+                      для метрик по своим продажам.
+                    </>
+                  ) : null}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -120,6 +130,7 @@ export function DashboardsListPage() {
           )}
 
           {data && data.items.length > 0 && view === 'table' ? (
+            <>
             <DataTable
               toolbar={
                 <DataTableToolbar className="db-toolbar">
@@ -140,6 +151,11 @@ export function DashboardsListPage() {
                     Галерея
                   </button>
                   <span className="db-toolbar__spacer" />
+                  <ListSearchInput
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder="Поиск дашбордов"
+                  />
                 </DataTableToolbar>
               }
             >
@@ -152,7 +168,7 @@ export function DashboardsListPage() {
                 </DataTableRow>
               </DataTableHead>
               <DataTableBody>
-                {data.items.map((dashboard, index) => {
+                {filteredDashboards.map((dashboard, index) => {
                   const Icon = dashboardIcon(index);
 
                   return (
@@ -197,6 +213,10 @@ export function DashboardsListPage() {
                 })}
               </DataTableBody>
             </DataTable>
+            {filteredDashboards.length === 0 && searchQuery.trim() ? (
+              <p className="mt-3 text-sm text-muted-foreground">Ничего не найдено по запросу «{searchQuery}»</p>
+            ) : null}
+            </>
           ) : null}
 
           {data && data.items.length > 0 && view === 'gallery' ? (
@@ -215,10 +235,15 @@ export function DashboardsListPage() {
                   Галерея
                 </button>
                 <span className="db-toolbar__spacer" />
+                <ListSearchInput
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Поиск дашбордов"
+                />
               </DataTableToolbar>
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {data.items.map((dashboard) => (
+                {filteredDashboards.map((dashboard) => (
                   <Card key={dashboard.id} className="group transition-colors hover:border-primary/50">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-3">
@@ -253,6 +278,11 @@ export function DashboardsListPage() {
                   </Card>
                 ))}
               </div>
+              {filteredDashboards.length === 0 && searchQuery.trim() ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Ничего не найдено по запросу «{searchQuery}»
+                </p>
+              ) : null}
             </div>
           ) : null}
         </DocBlock>

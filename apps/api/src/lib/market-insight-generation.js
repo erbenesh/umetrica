@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { InsightBriefSchema, InsightEvaluationSchema, InsightSourceSchema, } from '@umetrica/core';
-import { buildMarketFallbackEvaluation, detectMarketSignals, } from '@umetrica/insights';
+import { InsightBriefSchema, InsightEvaluationSchema, InsightSourceSchema, } from '@sellerpool/core';
+import { buildMarketFallbackEvaluation, detectMarketSignals, } from '@sellerpool/insights';
 import { and, eq, gte } from 'drizzle-orm';
 import { insights } from '../db/insights.js';
 import { db } from '../db/index.js';

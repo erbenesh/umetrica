@@ -1,4 +1,5 @@
-import type { Insight } from '@umetrica/core';
+import type { Insight } from '@sellerpool/core';
+import { BRAND_NAME } from '@sellerpool/core';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../db/index.js';
@@ -38,8 +39,8 @@ function buildAlertEmail(input: {
   const count = input.insights.length;
   const subject =
     count === 1
-      ? `umetrica: высокая значимость — ${input.organizationName}`
-      : `umetrica: ${count} инсайта с высокой значимостью — ${input.organizationName}`;
+      ? `${BRAND_NAME}: высокая значимость — ${input.organizationName}`
+      : `${BRAND_NAME}: ${count} инсайта с высокой значимостью — ${input.organizationName}`;
 
   const text = [
     `В кабинете «${input.organizationName}» обнаружены аномалии с высокой значимостью:`,

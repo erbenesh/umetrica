@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { appToast } from '@/lib/app-toast';
 import {
   deleteInsight,
   fetchInsightHistory,
@@ -41,6 +42,7 @@ export function useUpdateInsightSettings() {
     mutationFn: updateInsightSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: insightSettingsQueryKey });
+      appToast.success('Настройки инсайтов сохранены');
     },
   });
 }
@@ -54,6 +56,7 @@ export function useGenerateInsight() {
       queryClient.invalidateQueries({ queryKey: insightsQueryKey });
       queryClient.invalidateQueries({ queryKey: insightHistoryQueryKey });
       queryClient.invalidateQueries({ queryKey: ['billing'] });
+      appToast.success('Инсайт сгенерирован');
     },
   });
 }
@@ -65,6 +68,7 @@ export function useDeleteInsight() {
     mutationFn: deleteInsight,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: insightsQueryKey });
+      appToast.success('Инсайт удалён');
     },
   });
 }

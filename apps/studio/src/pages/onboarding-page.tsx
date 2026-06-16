@@ -7,15 +7,14 @@ import { AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { useCreateOrganization } from '@/hooks/use-create-organization';
-
-const CATEGORIES = ['Дом и текстиль', 'Одежда', 'Красота', 'Электроника', 'Другое'];
+import { DEFAULT_MARKET_CATEGORY, MARKET_CATEGORIES } from '@/lib/market-categories';
 
 export function OnboardingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const createOrg = useCreateOrganization();
   const [name, setName] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(DEFAULT_MARKET_CATEGORY);
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
 
@@ -32,9 +31,9 @@ export function OnboardingPage() {
     setNameError(null);
 
     try {
-      await createOrg.mutateAsync(trimmed);
+      await createOrg.mutateAsync({ name: trimmed, marketCategory: category });
       await queryClient.invalidateQueries();
-      navigate('/onboarding/connect', { replace: true, state: { category } });
+      navigate('/onboarding/connect', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось создать компанию');
     }
@@ -77,7 +76,7 @@ export function OnboardingPage() {
             value={category}
             onChange={(event) => setCategory(event.target.value)}
           >
-            {CATEGORIES.map((item) => (
+            {MARKET_CATEGORIES.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>

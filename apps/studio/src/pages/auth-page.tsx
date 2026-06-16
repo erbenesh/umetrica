@@ -10,8 +10,11 @@ import { AuthLoadingStatus, AuthStatusMessage } from '@/components/auth/auth-sta
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { signIn, useSession } from '@/lib/auth-client';
+import { appToast } from '@/lib/app-toast';
 import { ensureActiveOrganization, isEmailVerificationError, syncSessionAfterLogin } from '@/lib/auth-helpers';
 import { registerFounder } from '@/lib/register-api';
+import { getErrorMessage } from '@/lib/api-client';
+import { REGISTRATION_SUCCESS_MESSAGE } from '@/pages/verify-email-page';
 
 const CATEGORIES = ['Дом и текстиль', 'Одежда', 'Красота и здоровье', 'Другое'];
 
@@ -20,10 +23,16 @@ const loginSchema = z.object({
   password: z.string().min(8, 'Пароль — минимум 8 символов'),
 });
 
-const registerSchema = loginSchema.extend({
-  name: z.string().min(2, 'Укажите имя'),
-  companyName: z.string().min(2, 'Укажите название компании').max(100, 'Слишком длинное название'),
-});
+const registerSchema = loginSchema
+  .extend({
+    name: z.string().min(2, 'Укажите имя'),
+    companyName: z.string().min(2, 'Укажите название компании').max(100, 'Слишком длинное название'),
+    confirmPassword: z.string().min(1, 'Повторите пароль'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -51,7 +60,10 @@ function AuthPageForm() {
 
   useEffect(() => {
     const stateMessage = (history.state as { usr?: { message?: string } } | null)?.usr?.message;
-    if (stateMessage) setInfo(stateMessage);
+    if (stateMessage) {
+      setInfo(stateMessage);
+      appToast.success(stateMessage);
+    }
   }, []);
 
   const schema = mode === 'login' ? loginSchema : registerSchema;
@@ -102,14 +114,13 @@ function AuthPageForm() {
         navigate('/verify-email', {
           replace: true,
           state: {
-            message:
-              'Аккаунт создан. Подтвердите email — после входа мы автоматически создадим вашу компанию.',
+            message: REGISTRATION_SUCCESS_MESSAGE,
             category,
           },
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка авторизации');
+      setError(getErrorMessage(err, 'Ошибка авторизации'));
     }
   };
 
@@ -230,6 +241,16 @@ function AuthPageForm() {
             error={errors.password?.message}
             {...register('password')}
           />
+          {!isLogin ? (
+            <PasswordField
+              id="confirmPassword"
+              label="Подтвердите пароль"
+              autoComplete="new-password"
+              required
+              error={registerErrors.confirmPassword?.message}
+              {...register('confirmPassword')}
+            />
+          ) : null}
         </div>
 
         {info ? <AuthStatusMessage variant="info">{info}</AuthStatusMessage> : null}

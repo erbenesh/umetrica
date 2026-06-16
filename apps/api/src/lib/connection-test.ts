@@ -1,4 +1,4 @@
-import type { ConnectionTestResult } from '@umetrica/core';
+import type { ConnectionTestResult } from '@sellerpool/core';
 import postgres from 'postgres';
 
 import { testOzonApiCredentials } from './ozon-sync.js';

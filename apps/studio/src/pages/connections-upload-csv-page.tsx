@@ -1,4 +1,4 @@
-import { Check, FileSpreadsheet, Minus, Upload } from 'lucide-react';
+import { FileSpreadsheet, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ import { DocPage } from '@/components/doc/doc-page';
 import { FormActions, FormField } from '@/components/doc/form-field';
 import { TrustPanel } from '@/components/doc/trust-panel';
 import { Button } from '@/components/ui/button';
+import { trustPanelItemsForPath } from '@/lib/trust-policy-ui';
 import { useReuploadCsvConnection, useUploadCsvConnection } from '@/hooks/use-connections';
 import { connectionProviderLabel } from '@/lib/connection-format';
 
@@ -158,16 +159,8 @@ function UploadCsvForm({ variant, connectionId, initialProvider, initialReportTy
       {!isUpdate ? (
         <TrustPanel
           className="mt-4"
-          title="Что будет дальше"
-          items={[
-            { icon: Check, text: 'Личные дашборды и инсайты по вашим продажам' },
-            { icon: Check, text: 'Сравнение с рынком — если подключена категория' },
-            {
-              icon: Minus,
-              text: 'Бенчмарк «среди конкурентов» — только с отдельным согласием',
-              muted: true,
-            },
-          ]}
+          title="Что включится"
+          items={trustPanelItemsForPath('file_import')}
         />
       ) : null}
 

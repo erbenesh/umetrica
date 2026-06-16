@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { BenchmarkSegmentSnapshot, MarketSegmentSnapshot } from '@umetrica/core';
+import type { BenchmarkSegmentSnapshot, MarketSegmentSnapshot } from '@sellerpool/core';
 import { eq } from 'drizzle-orm';
 
 import { marketSegmentSnapshots } from '../db/market-segments.js';

@@ -4,7 +4,7 @@ globs: apps/studio/**/*
 alwaysApply: false
 ---
 
-# Studio (`@umetrica/studio`)
+# Studio (`@sellerpool/studio`)
 
 ## Patterns
 

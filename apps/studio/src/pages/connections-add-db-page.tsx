@@ -7,9 +7,11 @@ import { DocBlock } from '@/components/doc/doc-block';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
 import { FormActions, FormField } from '@/components/doc/form-field';
+import { TrustPanel } from '@/components/doc/trust-panel';
 import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { trustPanelItemsForPath } from '@/lib/trust-policy-ui';
 import { useCreateDatabaseConnection, useTestDatabaseConnection } from '@/hooks/use-connections';
 
 export function ConnectionsAddDbPage() {
@@ -24,7 +26,7 @@ export function ConnectionsAddDbPage() {
   const [host, setHost] = useState('db.acme.internal');
   const [port, setPort] = useState('5432');
   const [database, setDatabase] = useState('analytics');
-  const [user, setUser] = useState('umetrica_ro');
+  const [user, setUser] = useState('sellerpool_ro');
   const [password, setPassword] = useState('');
   const [ssl, setSsl] = useState(true);
   const [testMessage, setTestMessage] = useState<string | null>(null);
@@ -137,6 +139,10 @@ export function ConnectionsAddDbPage() {
             <span>SSL (рекомендуется для production)</span>
           </CheckboxRow>
         </div>
+      </DocBlock>
+
+      <DocBlock title="Как мы работаем с БД">
+        <TrustPanel title="Принципы доступа" items={trustPanelItemsForPath('database')} />
       </DocBlock>
 
       <DocBlock title="Проверка">

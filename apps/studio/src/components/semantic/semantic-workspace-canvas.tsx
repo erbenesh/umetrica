@@ -1,6 +1,6 @@
-import type { SemanticCubeListItem, SemanticViewListItem, SemanticWorkspaceLayout } from '@umetrica/core';
-import { semanticCubeLabel } from '@umetrica/core';
-import { computeWorkspaceBounds } from '@umetrica/core';
+import type { SemanticCubeListItem, SemanticViewListItem, SemanticWorkspaceLayout } from '@sellerpool/core';
+import { semanticCubeLabel } from '@sellerpool/core';
+import { computeWorkspaceBounds } from '@sellerpool/core';
 import { Box, Eye, Loader2, Maximize2, Minus, Monitor, Plus, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';

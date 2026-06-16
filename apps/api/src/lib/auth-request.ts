@@ -4,11 +4,11 @@ import { auth } from '../auth.js';
 
 export async function buildWebRequest(request: FastifyRequest): Promise<Request> {
   const protocol = request.protocol;
-  const host = request.headers.host ?? 'localhost:3001';
+  const host = request.headers?.host ?? 'localhost:3001';
   const url = `${protocol}://${host}${request.url}`;
 
   const headers = new Headers();
-  for (const [key, value] of Object.entries(request.headers)) {
+  for (const [key, value] of Object.entries(request.headers ?? {})) {
     if (value === undefined) continue;
     headers.set(key, Array.isArray(value) ? value.join(', ') : value);
   }
@@ -22,6 +22,29 @@ export async function buildWebRequest(request: FastifyRequest): Promise<Request>
     method: request.method,
     headers,
     body,
+  });
+}
+
+/** Internal auth call with a different path/body — do not spread FastifyRequest (headers are getters). */
+export async function buildDerivedAuthRequest(
+  request: FastifyRequest,
+  path: string,
+  body: unknown,
+): Promise<Request> {
+  const protocol = request.protocol;
+  const host = request.headers?.host ?? 'localhost:3001';
+  const url = `${protocol}://${host}${path}`;
+
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(request.headers ?? {})) {
+    if (value === undefined) continue;
+    headers.set(key, Array.isArray(value) ? value.join(', ') : value);
+  }
+
+  return new Request(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
   });
 }
 

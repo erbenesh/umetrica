@@ -3,29 +3,9 @@ import type {
   InsightHistoryResponse,
   InsightSettings,
   UpdateInsightSettingsInput,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
-
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    const message =
-      typeof error.error === 'string' ? error.error : `Request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  return response.json() as Promise<T>;
-}
+import { apiFetch } from '@/lib/api-client';
 
 export interface InsightListResponse {
   items: Insight[];
@@ -50,14 +30,7 @@ export function generateInsight() {
 }
 
 export function deleteInsight(id: string) {
-  return fetch(`${API_BASE}/api/insights/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error('Failed to delete insight');
-    }
-  });
+  return apiFetch<void>(`/api/insights/${id}`, { method: 'DELETE' });
 }
 
 export const insightQueryKey = (id: string) => ['insights', id] as const;

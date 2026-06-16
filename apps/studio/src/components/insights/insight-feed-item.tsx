@@ -1,4 +1,4 @@
-import type { Insight } from '@umetrica/core';
+import type { Insight } from '@sellerpool/core';
 import { Link } from 'react-router-dom';
 
 import { InsightSourceBadge } from '@/components/doc/insight-source-badge';

@@ -5,7 +5,7 @@ import {
   type BillingInterval,
   type BillingPlan,
   type BillingPlanId,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 
 export function getPlanPriceDisplay(planId: BillingPlanId, period: BillingInterval) {
   const plan = getBillingPlan(planId);

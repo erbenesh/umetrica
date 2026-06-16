@@ -1,5 +1,5 @@
-import type { SemanticCubeDefinition, SemanticJoin } from '@umetrica/core';
-import { buildSuggestedJoinSql, semanticCubeLabel, semanticJoinId } from '@umetrica/core';
+import type { SemanticCubeDefinition, SemanticJoin } from '@sellerpool/core';
+import { buildSuggestedJoinSql, semanticCubeLabel, semanticJoinId } from '@sellerpool/core';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 

@@ -10,7 +10,8 @@ import {
   type CheckoutResponse,
   type CreditPackCheckoutResponse,
   type CreditPackId,
-} from '@umetrica/core';
+} from '@sellerpool/core';
+import { BRAND_NAME } from '@sellerpool/core';
 
 import {
   createCreditPackPaidInvoice,
@@ -124,7 +125,7 @@ async function createYooKassaCreditPackCheckout(
         type: 'redirect',
         return_url: input.returnUrl,
       },
-      description: `umetrica · +${pack.credits} AI-кредитов`,
+      description: `${BRAND_NAME} · +${pack.credits} AI-кредитов`,
       metadata: {
         organizationId: input.organizationId,
         packId: input.packId,
@@ -236,7 +237,7 @@ async function createYooKassaCheckout(input: CheckoutInput): Promise<CheckoutRes
         type: 'redirect',
         return_url: input.returnUrl,
       },
-      description: `umetrica · ${plan.name} · ${intervalLabel}`,
+      description: `${BRAND_NAME} · ${plan.name} · ${intervalLabel}`,
       metadata: {
         organizationId: input.organizationId,
         planId: input.planId,

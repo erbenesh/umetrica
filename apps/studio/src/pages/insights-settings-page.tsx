@@ -20,18 +20,19 @@ import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useInsightSettings, useUpdateInsightSettings } from '@/hooks/use-insights';
-import { useCanWriteDashboards } from '@/hooks/use-me';
+import { useCanWriteDashboards, useMe } from '@/hooks/use-me';
 import { usePrivacySettings } from '@/hooks/use-privacy';
 import { BENCHMARK_WARMUP_DAYS, formatParticipationDate } from '@/lib/benchmark-participation';
-import type { InsightSettings } from '@umetrica/core';
+import type { InsightSettings } from '@sellerpool/core';
 
 export function InsightsSettingsPage() {
   const canWrite = useCanWriteDashboards();
+  const { data: me } = useMe();
+  const personalInsightsAllowed = me?.trustCapabilities?.personalInsights ?? false;
   const { data, isLoading, error } = useInsightSettings();
   const { data: privacy } = usePrivacySettings();
   const updateSettings = useUpdateInsightSettings();
   const [form, setForm] = useState<InsightSettings | null>(null);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (data) setForm(data);
@@ -52,10 +53,7 @@ export function InsightsSettingsPage() {
 
   const handleSave = async () => {
     if (!form) return;
-    setSaved(false);
     await updateSettings.mutateAsync(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   return (
@@ -91,7 +89,7 @@ export function InsightsSettingsPage() {
                 <input
                   type="checkbox"
                   checked={form.sources.tenant}
-                  disabled={!canWrite}
+                  disabled={!canWrite || !personalInsightsAllowed}
                   onChange={(event) =>
                     setForm({
                       ...form,
@@ -103,6 +101,15 @@ export function InsightsSettingsPage() {
                   <InsightSourceBadge source="tenant" /> — аномалии по кабинету
                 </span>
               </CheckboxRow>
+              {!personalInsightsAllowed ? (
+                <p className="text-xs text-muted-foreground">
+                  Подключите{' '}
+                  <Link to="/onboarding/connect" className="text-primary hover:underline">
+                    файл, API или БД
+                  </Link>{' '}
+                  — без своих данных инсайты по кабинету недоступны.
+                </p>
+              ) : null}
               <CheckboxRow>
                 <input
                   type="checkbox"
@@ -134,7 +141,7 @@ export function InsightsSettingsPage() {
                   }
                 />
                 <span>
-                  <InsightSourceBadge source="benchmark" /> — сравнение с пулом селлеров (Pro)
+                  <InsightSourceBadge source="benchmark" /> — сравнение с пулом селлеров (при opt-in)
                 </span>
               </CheckboxRow>
               <p className="text-xs text-muted-foreground">
@@ -225,7 +232,6 @@ export function InsightsSettingsPage() {
           </DocBlock>
 
           <DocBlock>
-            {saved ? <p className="mb-3 text-xs text-muted-foreground">Сохранено</p> : null}
             <FormActions>
               <Button
                 type="button"

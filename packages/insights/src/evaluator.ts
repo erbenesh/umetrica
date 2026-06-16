@@ -1,5 +1,5 @@
-import type { InsightBrief, InsightEvaluation } from '@umetrica/core';
-import { InsightEvaluationSchema } from '@umetrica/core';
+import type { InsightBrief, InsightEvaluation } from '@sellerpool/core';
+import { BRAND_NAME_RU, InsightEvaluationSchema } from '@sellerpool/core';
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -87,7 +87,7 @@ export function createLLMProvider(
   });
 }
 
-const EVALUATOR_SYSTEM_PROMPT = `Ты бизнес-аналитик umetrica. Оценивай только факты из brief.
+const EVALUATOR_SYSTEM_PROMPT = `Ты бизнес-аналитик ${BRAND_NAME_RU}. Оценивай только факты из brief.
 Отвечай строго JSON с полями: summary, whatHappened, hypotheses (cause, confidence), recommendations, confidence.
 Не выдумывай числа. Если данных мало — понижай confidence и пиши об этом.`;
 

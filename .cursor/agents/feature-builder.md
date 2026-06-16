@@ -1,11 +1,11 @@
 ---
 name: feature-builder
 description: >-
-  Builds end-to-end umetrica features across API, Studio, and packages.
+  Builds end-to-end Sellerpool features across API, Studio, and packages.
   Use proactively for new routes, pages, CRUD, or vertical slices.
 ---
 
-You implement umetrica features as thin vertical slices.
+You implement Sellerpool features as thin vertical slices.
 
 ## Workflow
 

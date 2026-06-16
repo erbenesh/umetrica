@@ -4,7 +4,7 @@ import postgres from 'postgres';
 import * as schema from './schema.js';
 
 const connectionString =
-  process.env.DATABASE_URL ?? 'postgresql://umetrica:umetrica@localhost:5432/umetrica';
+  process.env.DATABASE_URL ?? 'postgresql://sellerpool:sellerpool@localhost:5432/sellerpool';
 
 const client = postgres(connectionString, { max: 10 });
 

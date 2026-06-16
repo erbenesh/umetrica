@@ -1,5 +1,5 @@
-import type { SemanticCubeDefinition, SemanticPreAggregation } from '@umetrica/core';
-import { semanticMemberLabel } from '@umetrica/core';
+import type { SemanticCubeDefinition, SemanticPreAggregation } from '@sellerpool/core';
+import { semanticMemberLabel } from '@sellerpool/core';
 import { ExternalLink, Plus, Trash2 } from 'lucide-react';
 
 import { DocCallout } from '@/components/doc/doc-callout';

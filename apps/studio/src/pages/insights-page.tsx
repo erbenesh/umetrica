@@ -1,5 +1,5 @@
-import { Loader2, RefreshCw, Settings, SlidersHorizontal, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { Loader2, RefreshCw, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import type { InsightSource } from '@/components/doc/insight-source-badge';
@@ -8,13 +8,16 @@ import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
 import { InsightFeedFilters } from '@/components/doc/insight-feed-filters';
 import { InsightFeedItem } from '@/components/insights/insight-feed-item';
+import { WorkspaceStatusCard } from '@/components/workspace/workspace-status-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useBilling } from '@/hooks/use-billing';
 import { useConnections } from '@/hooks/use-connections';
 import { useGenerateInsight, useInsights } from '@/hooks/use-insights';
-import { useMe } from '@/hooks/use-me';
+import { useCanWriteDashboards, useMe } from '@/hooks/use-me';
+import { usePrivacySettings } from '@/hooks/use-privacy';
 import { connectionCabinetLabel } from '@/lib/connection-format';
+import { buildWorkspaceStatusItems } from '@/lib/workspace-status';
 
 function FeedEmptyState({
   title,
@@ -40,12 +43,28 @@ function FeedEmptyState({
 
 export function InsightsPage() {
   const { data: me } = useMe();
+  const canManage = useCanWriteDashboards();
   const { data: connections } = useConnections();
+  const { data: privacy } = usePrivacySettings();
   const { data: billing } = useBilling();
   const { data, isLoading, error } = useInsights();
   const generate = useGenerateInsight();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<'all' | InsightSource>('all');
+  const isDemo = me?.dataMode !== 'live';
+
+  const statusItems = useMemo(
+    () =>
+      buildWorkspaceStatusItems({
+        dataMode: me?.dataMode,
+        connections,
+        privacy,
+        billing: billing ?? null,
+        capabilities: me?.trustCapabilities,
+        canManage,
+      }),
+    [me?.dataMode, me?.trustCapabilities, connections, privacy, billing, canManage]
+  );
 
   const orgName = me?.organization?.name ?? '—';
   const allItems = data?.items ?? [];
@@ -73,12 +92,14 @@ export function InsightsPage() {
 
   const desktopActions = (
     <>
-      <Link to="/insights/settings">
-        <Button variant="ghost" size="sm" type="button">
-          <SlidersHorizontal className="size-3.5" />
-          Настройки AI
-        </Button>
-      </Link>
+      {canManage ? (
+        <Link to="/insights/settings">
+          <Button variant="ghost" size="sm" type="button">
+            <SlidersHorizontal className="size-3.5" />
+            Настройки AI
+          </Button>
+        </Link>
+      ) : null}
       <Button onClick={handleGenerate} disabled={generate.isPending} type="button">
         {generate.isPending ? (
           <Loader2 className="size-3.5 animate-spin" />
@@ -92,11 +113,13 @@ export function InsightsPage() {
 
   const mobileActions = (
     <>
-      <Link to="/insights/settings" aria-label="Настройки AI">
-        <Button variant="ghost" size="icon-sm" type="button">
-          <SlidersHorizontal size={16} />
-        </Button>
-      </Link>
+      {canManage ? (
+        <Link to="/insights/settings" aria-label="Настройки AI">
+          <Button variant="ghost" size="icon-sm" type="button">
+            <SlidersHorizontal size={16} />
+          </Button>
+        </Link>
+      ) : null}
       <Button size="sm" onClick={handleGenerate} disabled={generate.isPending} type="button">
         {generate.isPending ? (
           <Loader2 className="size-3.5 animate-spin" />
@@ -104,11 +127,6 @@ export function InsightsPage() {
           <RefreshCw className="size-3.5" />
         )}
       </Button>
-      <Link to="/settings" aria-label="Настройки" className="md:hidden">
-        <Button variant="ghost" size="icon-sm" type="button">
-          <Settings size={16} />
-        </Button>
-      </Link>
     </>
   );
 
@@ -130,15 +148,39 @@ export function InsightsPage() {
         { label: 'История', value: '→', href: '/insights/history' },
       ]}
     >
+      <DocBlock title="Статус">
+        <WorkspaceStatusCard items={statusItems} />
+      </DocBlock>
+
+      {isDemo && canManage ? (
+        <DocCallout variant="info">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="m-0">
+              Инсайты по кабинету требуют своих данных. Рыночные сигналы доступны уже сейчас.
+            </p>
+            <Link to="/onboarding/connect">
+              <Button size="sm" type="button">
+                Подключить данные
+              </Button>
+            </Link>
+          </div>
+        </DocCallout>
+      ) : null}
+
       <DocCallout>
-        Рыночные инсайты — без API. Бенчмарки на Pro — только при участии в пуле:{' '}
+        Рыночные инсайты — без API. Бенчмарки — при подключении своих данных и участии в пуле:{' '}
         <Link to="/settings/privacy" className="font-medium text-primary hover:underline">
           получать и делиться
         </Link>
-        .{' '}
-        <Link to="/settings/billing" className="font-medium text-primary hover:underline">
-          Биллинг →
-        </Link>
+        .
+        {canManage ? (
+          <>
+            {' '}
+            <Link to="/settings/billing" className="font-medium text-primary hover:underline">
+              Биллинг →
+            </Link>
+          </>
+        ) : null}
       </DocCallout>
 
       <DocBlock>
@@ -184,7 +226,7 @@ export function InsightsPage() {
                   sourceFilter === 'market'
                     ? 'Нажмите «Проверить» — система добавит сигнал по выбранной категории (без API и без кредитов).'
                     : sourceFilter === 'benchmark'
-                      ? 'Включите участие в бенчмарк-пуле (Pro) и дождитесь окончания прогрева — затем нажмите «Проверить».'
+                      ? 'Включите участие в бенчмарк-пуле в настройках конфиденциальности и дождитесь окончания прогрева — затем нажмите «Проверить».'
                       : 'Нажмите «Проверить» — система сравнит выручку и число заказов за 7 дней с предыдущим периодом.'
                 }
                 action={
@@ -192,7 +234,9 @@ export function InsightsPage() {
                     ? { label: 'Бенчмарк-пул', href: '/settings/privacy' }
                     : sourceFilter === 'market'
                       ? { label: 'Категория для рынка', href: '/settings/privacy' }
-                      : { label: 'Подключить CSV или API', href: '/settings/connections' }
+                      : canManage
+                        ? { label: 'Подключить данные', href: '/onboarding/connect' }
+                        : undefined
                 }
               />
             </div>

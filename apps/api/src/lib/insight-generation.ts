@@ -1,12 +1,18 @@
 import { randomUUID } from 'node:crypto';
 
-import type { Insight, InsightBrief, InsightEvaluation, InsightRun } from '@umetrica/core';
+import {
+  PERSONAL_INSIGHTS_REQUIRES_SOURCE,
+  type Insight,
+  type InsightBrief,
+  type InsightEvaluation,
+  type InsightRun,
+} from '@sellerpool/core';
 import {
   buildFallbackEvaluation,
   createLLMProvider,
   detectAnomalies,
   evaluateInsight,
-} from '@umetrica/insights';
+} from '@sellerpool/insights';
 
 import { insightRuns } from '../db/insight-runs.js';
 import { db } from '../db/index.js';
@@ -17,6 +23,7 @@ import { shouldGenerateBenchmarkInsights } from './benchmark-access.js';
 import { generateMarketInsights, persistTenantInsight } from './market-insight-generation.js';
 import { notifyHighSeverityInsights } from './insight-email-alerts.js';
 import { getInsightSettings } from './org-metadata.js';
+import { canUsePersonalInsights } from './policy-gate.js';
 import { seedDemoSemanticForTenant } from './seed-demo-semantic.js';
 
 export type InsightGenerationResult =
@@ -186,6 +193,17 @@ export async function runInsightGeneration(input: {
   }
 
   if (settings.sources.tenant) {
+    const personalAllowed = await canUsePersonalInsights(input.organizationId);
+
+    if (!personalAllowed) {
+      if (items.length === 0) {
+        return {
+          ok: false,
+          status: 400,
+          error: PERSONAL_INSIGHTS_REQUIRES_SOURCE,
+        };
+      }
+    } else {
     const enabledMetrics = settings.metrics
       .filter((metric) => metric.enabled)
       .map((metric) => metric.key);
@@ -232,6 +250,7 @@ export async function runInsightGeneration(input: {
         tenantCreditsUsed = tenantResult.creditsUsed;
         tenantMessage = tenantResult.message;
       }
+    }
     }
   } else if (items.length === 0) {
     return {

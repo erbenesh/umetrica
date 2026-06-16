@@ -1,4 +1,4 @@
-import type { Insight } from '@umetrica/core';
+import type { Insight } from '@sellerpool/core';
 export declare function notifyHighSeverityInsights(input: {
     organizationId: string;
     items: Insight[];

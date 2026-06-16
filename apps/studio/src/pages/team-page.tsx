@@ -1,4 +1,4 @@
-import { Loader2, Settings, Users, X } from 'lucide-react';
+import { Loader2, Users, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -14,6 +14,7 @@ import {
 import { DocBlock } from '@/components/doc/doc-block';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
+import { ListSearchInput, matchesListQuery } from '@/components/doc/list-search-input';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   useAcceptInvitation,
@@ -86,6 +87,7 @@ export function TeamPage() {
   const [email, setEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'viewer' | 'admin'>('viewer');
   const [memberFilter, setMemberFilter] = useState<MemberFilter>('all');
+  const [memberSearch, setMemberSearch] = useState('');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const canManage = me?.role === 'owner' || me?.role === 'admin';
@@ -94,14 +96,18 @@ export function TeamPage() {
   const incomingInvites = (userInvitations ?? []).filter((item) => item.status === 'pending');
 
   const filteredMembers = useMemo(() => {
+    let result = members;
+
     if (memberFilter === 'admin') {
-      return members.filter((member) => member.role === 'admin' || member.role === 'owner');
+      result = result.filter((member) => member.role === 'admin' || member.role === 'owner');
+    } else if (memberFilter === 'viewer') {
+      result = result.filter((member) => member.role === 'viewer');
     }
-    if (memberFilter === 'viewer') {
-      return members.filter((member) => member.role === 'viewer');
-    }
-    return members;
-  }, [memberFilter, members]);
+
+    return result.filter((member) =>
+      matchesListQuery(memberSearch, member.user.name, member.user.email, roleLabel(member.role))
+    );
+  }, [memberFilter, memberSearch, members]);
 
   const handleInvite = async () => {
     setStatusMessage(null);
@@ -118,14 +124,6 @@ export function TeamPage() {
     }
   };
 
-  const settingsAction = (
-    <Link to="/settings" aria-label="Настройки">
-      <Button variant="ghost" size="icon-sm" type="button">
-        <Settings size={16} />
-      </Button>
-    </Link>
-  );
-
   return (
     <DocPage
       title="Команда"
@@ -133,7 +131,6 @@ export function TeamPage() {
       icon={Users}
       mobileTitle="Команда"
       mobileSubtitle={`${orgName} · ${myRole}`}
-      mobileActions={settingsAction}
       props={[
         { label: 'Участников', value: String(members.length) },
         { label: 'Приглашений', value: String(pendingInvites.length) },
@@ -287,6 +284,11 @@ export function TeamPage() {
                     Наблюдатели
                   </button>
                   <span className="db-toolbar__spacer" />
+                  <ListSearchInput
+                    value={memberSearch}
+                    onChange={setMemberSearch}
+                    placeholder="Поиск по имени или email"
+                  />
                   <span className="text-xs text-muted-foreground">
                     {filteredMembers.length}{' '}
                     {filteredMembers.length === 1 ? 'запись' : 'записей'}
@@ -323,7 +325,11 @@ export function TeamPage() {
                 {!membersLoading && !membersError && filteredMembers.length === 0 ? (
                   <DataTableRow>
                     <DataTableTd colSpan={4}>
-                      <div className="db-cell text-muted-foreground">Нет участников в этой группе</div>
+                      <div className="db-cell text-muted-foreground">
+                        {memberSearch.trim()
+                          ? `Ничего не найдено по запросу «${memberSearch}»`
+                          : 'Нет участников в этой группе'}
+                      </div>
                     </DataTableTd>
                   </DataTableRow>
                 ) : null}

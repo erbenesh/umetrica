@@ -1,4 +1,4 @@
-import type { InsightSchedule } from '@umetrica/core';
+import type { InsightSchedule } from '@sellerpool/core';
 import { and, eq } from 'drizzle-orm';
 
 import { db } from '../db/index.js';

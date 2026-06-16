@@ -8,6 +8,7 @@ import { DocPage } from '@/components/doc/doc-page';
 import { FormActions, FormField } from '@/components/doc/form-field';
 import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
 import { Button } from '@/components/ui/button';
+import { BRAND_APP_HOST_HINT } from '@/lib/brand';
 import { Input } from '@/components/ui/input';
 import { useMe, meQueryKey } from '@/hooks/use-me';
 import { authClient } from '@/lib/auth-client';
@@ -91,7 +92,7 @@ export function SettingsCompanyPage() {
           <FormField label="Название">
             <Input value={name} onChange={(event) => setName(event.target.value)} />
           </FormField>
-          <FormField label="Slug" hint={`app.umetrica.ru/o/${slugify(name || 'company')} · меняется редко`}>
+          <FormField label="Slug" hint={`${BRAND_APP_HOST_HINT}/o/${slugify(name || 'company')} · меняется редко`}>
             <Input value={slugify(name || orgName || 'company')} readOnly />
           </FormField>
           <FormField label="Маркетплейс">

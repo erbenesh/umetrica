@@ -1,5 +1,5 @@
-import type { BillingInterval, BillingPlanId } from '@umetrica/core';
-import { formatRubPrice, getBillingPlan } from '@umetrica/core';
+import type { BillingInterval, BillingPlanId } from '@sellerpool/core';
+import { formatRubPrice, getBillingPlan } from '@sellerpool/core';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';

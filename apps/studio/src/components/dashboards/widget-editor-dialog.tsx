@@ -1,4 +1,4 @@
-import type { ChartType, DateRangePreset, TimeGranularity, Widget } from '@umetrica/core';
+import type { ChartType, DateRangePreset, TimeGranularity, Widget } from '@sellerpool/core';
 import { useCubeMeta } from '@cubejs-client/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';

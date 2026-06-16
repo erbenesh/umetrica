@@ -6,8 +6,9 @@ import {
   SemanticWorkspaceLayoutSchema,
   UpdateSemanticDraftSchema,
   UpdateSemanticViewDraftSchema,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 import { listPostgresForeignKeys, listPostgresTableColumns, listPostgresTables } from '../lib/semantic-db.js';
 import { previewSemanticQuery } from '../lib/semantic-preview.js';
@@ -103,7 +104,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
 
     const parsed = SemanticWorkspaceLayoutSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     try {
@@ -120,7 +121,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
 
     const parsed = SemanticPreviewQueryInputSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     try {
@@ -153,7 +154,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
 
     const parsed = CreateSemanticViewSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     try {
@@ -191,7 +192,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
     const parsed = UpdateSemanticViewDraftSchema.safeParse(request.body);
 
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     try {
@@ -349,7 +350,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
 
     const parsed = CreateSemanticCubeSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const columnsResult = await listPostgresTableColumns(
@@ -460,7 +461,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
     const parsed = UpdateSemanticDraftSchema.safeParse(request.body);
 
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     try {
@@ -519,7 +520,7 @@ export async function registerSemanticRoutes(app: FastifyInstance) {
     const parsed = SemanticPublishInputSchema.safeParse(request.body ?? {});
 
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     try {

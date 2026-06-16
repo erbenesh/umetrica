@@ -52,7 +52,7 @@ export function InsightDetailPage() {
 
   if (isLoading) {
     return (
-      <DocPage title="Инсайт" back={{ to: '/insights', label: 'AI-инсайты' }} mobileTitle="Инсайт" headless>
+      <DocPage title="Инсайт" back="auto" mobileTitle="Инсайт" headless>
         <Card className="border-border">
           <CardContent className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
@@ -65,7 +65,7 @@ export function InsightDetailPage() {
 
   if (error || !insight) {
     return (
-      <DocPage title="Инсайт" back={{ to: '/insights', label: 'AI-инсайты' }} mobileTitle="Инсайт" headless>
+      <DocPage title="Инсайт" back="auto" mobileTitle="Инсайт" headless>
         <Card className="border-border">
           <CardContent className="p-4 text-sm text-destructive">
             {error instanceof Error ? error.message : 'Инсайт не найден'}
@@ -76,7 +76,7 @@ export function InsightDetailPage() {
   }
 
   return (
-    <DocPage title="Инсайт" back={{ to: '/insights', label: 'AI-инсайты' }} mobileTitle="Инсайт" headless>
+    <DocPage title="Инсайт" back="auto" mobileTitle="Инсайт" headless>
       <TenantInsightDetailView
         insight={insight}
         orgName={me?.organization?.name}

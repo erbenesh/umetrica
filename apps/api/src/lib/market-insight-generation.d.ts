@@ -1,4 +1,4 @@
-import { InsightEvaluationSchema, type Insight, type InsightBrief, type InsightSource } from '@umetrica/core';
+import { InsightEvaluationSchema, type Insight, type InsightBrief, type InsightSource } from '@sellerpool/core';
 import { insights } from '../db/insights.js';
 export declare function generateMarketInsights(input: {
     organizationId: string;

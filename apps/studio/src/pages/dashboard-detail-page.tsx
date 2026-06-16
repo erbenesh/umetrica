@@ -25,7 +25,7 @@ import { MenuItem } from '@/components/ui/menu-item';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboard, useDeleteDashboard, useUpdateDashboard } from '@/hooks/use-dashboards';
 import { useCanWriteDashboards } from '@/hooks/use-me';
-import type { Widget } from '@umetrica/core';
+import type { Widget } from '@sellerpool/core';
 import { cn } from '@/lib/utils';
 
 function formatDate(value: string) {
@@ -60,8 +60,12 @@ function DashboardEditorContent({
   }, [initialWidgets]);
 
   const persistWidgets = useCallback(
-    async (nextWidgets: Widget[]) => {
-      await updateMutation.mutateAsync({ widgets: nextWidgets });
+    async (nextWidgets: Widget[], options?: { successMessage?: string }) => {
+      await updateMutation.mutateAsync({
+        input: { widgets: nextWidgets },
+        silent: !options?.successMessage,
+        successMessage: options?.successMessage,
+      });
     },
     [updateMutation]
   );
@@ -86,13 +90,15 @@ function DashboardEditorContent({
       : [...current, widget];
 
     setWidgets(nextWidgets);
-    await persistWidgets(nextWidgets);
+    await persistWidgets(nextWidgets, {
+      successMessage: exists ? 'Виджет обновлён' : 'Виджет добавлен',
+    });
   };
 
   const handleDeleteWidget = async (widgetId: string) => {
     const nextWidgets = widgetsRef.current.filter((widget) => widget.id !== widgetId);
     setWidgets(nextWidgets);
-    await persistWidgets(nextWidgets);
+    await persistWidgets(nextWidgets, { successMessage: 'Виджет удалён' });
   };
 
   const openCreate = () => {
@@ -271,7 +277,10 @@ export function DashboardDetailPage() {
         initial={{ name: dashboard.name, description: dashboard.description }}
         onClose={() => setSettingsOpen(false)}
         onSubmit={async (payload) => {
-          await updateMutation.mutateAsync(payload);
+          await updateMutation.mutateAsync({
+            input: payload,
+            successMessage: 'Настройки дашборда сохранены',
+          });
         }}
         isSubmitting={updateMutation.isPending}
       />

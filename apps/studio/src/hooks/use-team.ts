@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { appToast } from '@/lib/app-toast';
 import { authClient } from '@/lib/auth-client';
 import { setActiveOrganization } from '@/lib/auth-helpers';
 import { meQueryKey } from '@/hooks/use-me';
@@ -58,6 +59,7 @@ export function useInviteMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: teamInvitationsQueryKey });
+      appToast.success('Приглашение отправлено');
     },
   });
 }
@@ -73,6 +75,7 @@ export function useCancelInvitation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: teamInvitationsQueryKey });
+      appToast.success('Приглашение отменено');
     },
   });
 }
@@ -88,6 +91,7 @@ export function useRemoveMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: teamMembersQueryKey });
+      appToast.success('Участник удалён');
     },
   });
 }
@@ -103,6 +107,7 @@ export function useUpdateMemberRole() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: teamMembersQueryKey });
+      appToast.success('Роль обновлена');
     },
   });
 }
@@ -131,6 +136,7 @@ export function useAcceptInvitation() {
       queryClient.invalidateQueries({ queryKey: meQueryKey });
       queryClient.invalidateQueries({ queryKey: organizationsQueryKey });
       queryClient.invalidateQueries();
+      appToast.success('Вы присоединились к команде');
     },
   });
 }
@@ -146,6 +152,7 @@ export function useRejectInvitation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userInvitationsQueryKey });
+      appToast.success('Приглашение отклонено');
     },
   });
 }

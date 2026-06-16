@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 const rootDir = fileURLToPath(new URL('../../..', import.meta.url));
 config({ path: resolve(rootDir, '.env') });
 
+import type { OrgDataMode, TrustCapabilities } from '@sellerpool/core';
+import { BRAND_NAME } from '@sellerpool/core';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import multipart from '@fastify/multipart';
@@ -17,7 +19,11 @@ import {
   listOrganizationsForUser,
   resolveActiveOrganizationId,
 } from './lib/org-context.js';
+import { updatePrivacySettings } from './lib/org-metadata.js';
 import { startInsightScheduler } from './lib/insight-scheduler.js';
+import { ensureBenchmarkPoolReady } from './lib/benchmark-pool.js';
+import { startBenchmarkPoolScheduler } from './lib/benchmark-pool-scheduler.js';
+import { getOrgPolicyContext } from './lib/policy-gate.js';
 import { ensureMarketSegmentSnapshots } from './lib/seed-market-segments.js';
 import { seedDemoSemanticForTenant } from './lib/seed-demo-semantic.js';
 import { registerBillingRoutes } from './routes/billing.js';
@@ -38,6 +44,7 @@ import { auth } from './auth.js';
 import { db } from './db/index.js';
 import { member, organization } from './db/schema.js';
 import { buildUniqueOrgSlug } from './lib/org-slug.js';
+import { registerHttpErrorHandler } from './lib/http-errors.js';
 
 const PORT = Number(process.env.API_PORT ?? 3001);
 const HOST = process.env.API_HOST ?? '0.0.0.0';
@@ -46,6 +53,8 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
 const app = Fastify({
   logger: true,
 });
+
+registerHttpErrorHandler(app);
 
 await app.register(cors, {
   origin: CORS_ORIGIN,
@@ -70,7 +79,7 @@ app.route({
   },
 });
 
-app.get('/api/health', async () => ({ status: 'ok', service: 'umetrica-api' }));
+app.get('/api/health', async () => ({ status: 'ok', service: 'sellerpool-api' }));
 
 app.get('/api/cube/token', async (request, reply) => {
   const session = await getSessionFromRequest(request);
@@ -128,7 +137,12 @@ app.post('/api/organizations', async (request, reply) => {
     return reply.status(401).send({ error: 'Unauthorized' });
   }
 
-  const body = z.object({ name: z.string().min(2).max(100) }).parse(request.body);
+  const body = z
+    .object({
+      name: z.string().min(2).max(100),
+      marketCategory: z.string().min(1).max(120).optional(),
+    })
+    .parse(request.body);
   const slug = await buildUniqueOrgSlug(body.name);
   const webRequest = await buildWebRequest(request);
 
@@ -148,6 +162,10 @@ app.post('/api/organizations', async (request, reply) => {
     });
 
     await seedDemoSemanticForTenant(created.id);
+
+    if (body.marketCategory) {
+      await updatePrivacySettings(created.id, { marketCategory: body.marketCategory });
+    }
 
     return {
       organization: {
@@ -176,6 +194,8 @@ app.get('/api/me', async (request, reply) => {
 
   let role: string | undefined;
   let activeOrganization: { id: string; name: string } | undefined;
+  let dataMode: OrgDataMode | undefined;
+  let trustCapabilities: TrustCapabilities | undefined;
 
   if (activeOrganizationId) {
     const [membership] = await db
@@ -196,6 +216,10 @@ app.get('/api/me', async (request, reply) => {
         id: activeOrganizationId,
         name: membership.name,
       };
+
+      const policy = await getOrgPolicyContext(activeOrganizationId);
+      dataMode = policy.dataMode;
+      trustCapabilities = policy.capabilities;
     }
   }
 
@@ -207,6 +231,8 @@ app.get('/api/me', async (request, reply) => {
     },
     role,
     organization: activeOrganization,
+    dataMode,
+    trustCapabilities,
   };
 });
 
@@ -232,9 +258,19 @@ try {
 }
 
 try {
+  await ensureBenchmarkPoolReady();
+} catch (error) {
+  app.log.warn(
+    { err: error },
+    'Не удалось инициализировать benchmark_pool_contributions — выполните pnpm db:push и перезапустите API'
+  );
+}
+
+try {
   await app.listen({ port: PORT, host: HOST });
-  app.log.info(`umetrica API listening on http://${HOST}:${PORT}`);
+  app.log.info(`${BRAND_NAME} API listening on http://${HOST}:${PORT}`);
   startInsightScheduler();
+  startBenchmarkPoolScheduler();
 } catch (error) {
   app.log.error(error);
   process.exit(1);

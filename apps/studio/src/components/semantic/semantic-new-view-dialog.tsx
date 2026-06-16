@@ -1,5 +1,5 @@
-import type { SemanticCubeListItem } from '@umetrica/core';
-import { semanticCubeLabel } from '@umetrica/core';
+import type { SemanticCubeListItem } from '@sellerpool/core';
+import { semanticCubeLabel } from '@sellerpool/core';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

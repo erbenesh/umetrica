@@ -7,37 +7,9 @@ import type {
   MarketplaceConnectResponse,
   TestDatabaseConnectionInput,
   TestMarketplaceApiConnectionInput,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
-
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      ...(init?.body instanceof FormData ? {} : init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    const message =
-      typeof error.error === 'string'
-        ? error.error
-        : typeof error.message === 'string'
-          ? error.message
-          : `Request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json() as Promise<T>;
-}
+import { API_BASE, ApiError, apiFetch } from '@/lib/api-client';
 
 export interface ConnectionListResponse {
   items: Connection[];
@@ -63,46 +35,34 @@ export function createDatabaseConnection(input: CreateDatabaseConnectionInput) {
 }
 
 export async function testDatabaseConnection(input: TestDatabaseConnectionInput) {
-  const response = await fetch(`${API_BASE}/api/connections/test-database`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-
-  const body = (await response.json().catch(() => ({}))) as ConnectionTestResult & { error?: unknown };
-
-  if (typeof body.message === 'string' && typeof body.ok === 'boolean') {
-    return { ok: body.ok, message: body.message, tableCount: body.tableCount };
-  }
-
-  if (!response.ok) {
-    const message =
-      typeof body.error === 'string' ? body.error : `Request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  return body;
+  return postConnectionTest('/api/connections/test-database', input);
 }
 
 export async function testMarketplaceApiConnection(input: TestMarketplaceApiConnectionInput) {
-  const response = await fetch(`${API_BASE}/api/connections/test-marketplace-api`, {
+  return postConnectionTest('/api/connections/test-marketplace-api', input);
+}
+
+async function postConnectionTest(
+  path: string,
+  input: TestDatabaseConnectionInput | TestMarketplaceApiConnectionInput,
+): Promise<ConnectionTestResult> {
+  const response = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
 
-  const body = (await response.json().catch(() => ({}))) as ConnectionTestResult & { error?: unknown };
+  const body = (await response.json().catch(() => ({}))) as ConnectionTestResult & {
+    error?: unknown;
+  };
 
-  if (typeof body.message === 'string' && typeof body.ok === 'boolean') {
+  if (typeof body.ok === 'boolean' && typeof body.message === 'string') {
     return { ok: body.ok, message: body.message, tableCount: body.tableCount };
   }
 
   if (!response.ok) {
-    const message =
-      typeof body.error === 'string' ? body.error : `Request failed (${response.status})`;
-    throw new Error(message);
+    throw new ApiError(response.status, body);
   }
 
   return body;

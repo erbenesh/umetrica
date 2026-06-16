@@ -1,7 +1,9 @@
-import { UpdatePrivacySettingsSchema, buildBenchmarkParticipationView } from '@umetrica/core';
+import { UpdatePrivacySettingsSchema } from '@sellerpool/core';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
-import { resolveBenchmarkParticipants } from '../lib/market-aggregates.js';
+import { getBenchmarkOptInBlockReason, getOrgPolicyContext } from '../lib/policy-gate.js';
+import { queueBenchmarkContributionCollect } from '../lib/benchmark-pool.js';
 import {
   getInsightSettings,
   getPrivacySettings,
@@ -11,10 +13,8 @@ import {
 import { canWriteDashboards, getAuthContext } from '../lib/request-auth.js';
 
 async function toPrivacyView(organizationId: string) {
-  const settings = await getPrivacySettings(organizationId);
-  const benchmarkPoolParticipants = await resolveBenchmarkParticipants(settings.marketCategory);
-
-  return buildBenchmarkParticipationView(settings, benchmarkPoolParticipants);
+  const { privacy, trustPolicy } = await getOrgPolicyContext(organizationId);
+  return { ...privacy, trustPolicy };
 }
 
 export async function registerPrivacyRoutes(app: FastifyInstance) {
@@ -35,11 +35,23 @@ export async function registerPrivacyRoutes(app: FastifyInstance) {
 
     const parsed = UpdatePrivacySettingsSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
+    }
+
+    if (parsed.data.benchmarkOptIn === true) {
+      const policy = await getOrgPolicyContext(auth.organizationId);
+      const blockReason = getBenchmarkOptInBlockReason(policy.connections);
+      if (blockReason) {
+        return reply.status(400).send({ error: blockReason });
+      }
     }
 
     const previous = await getPrivacySettings(auth.organizationId);
     await updatePrivacySettings(auth.organizationId, parsed.data);
+
+    if (parsed.data.benchmarkOptIn === true) {
+      queueBenchmarkContributionCollect(auth.organizationId);
+    }
 
     if (parsed.data.benchmarkOptIn !== undefined) {
       const insightSettings = await getInsightSettings(auth.organizationId);

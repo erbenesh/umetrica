@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'node:crypto';
 
-const SCRYPT_SALT = 'umetrica-connections-v1';
+const SCRYPT_SALT = 'umetrica-connections-v1'; // legacy id — do not change (breaks stored credentials)
 
 function getEncryptionKey(): Buffer {
   const secret = process.env.CONNECTIONS_ENCRYPTION_KEY ?? process.env.BETTER_AUTH_SECRET;

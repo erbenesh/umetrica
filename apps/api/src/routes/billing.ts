@@ -9,8 +9,10 @@ import {
   enrichBillingPlan,
   getBillingPlan,
   type BillingPlanId,
-} from '@umetrica/core';
+} from '@sellerpool/core';
+import { BRAND_NAME } from '@sellerpool/core';
 import type { FastifyInstance } from 'fastify';
+import { sendValidationError } from '../lib/http-errors.js';
 
 import { getBillingOverview, isPaidPlan } from '../lib/billing.js';
 import { listBillingInvoices } from '../lib/billing-invoices.js';
@@ -66,7 +68,7 @@ export async function registerBillingRoutes(app: FastifyInstance) {
 
     const parsed = UpdateBillingPaymentSettingsSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     return updateBillingPaymentSettings(auth.organizationId, parsed.data);
@@ -107,7 +109,7 @@ export async function registerBillingRoutes(app: FastifyInstance) {
 
     const parsed = CreateCheckoutSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     if (!isPaidPlan(parsed.data.planId)) {
@@ -151,15 +153,15 @@ export async function registerBillingRoutes(app: FastifyInstance) {
 
     const parsed = EnterpriseInquirySchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     await saveEnterpriseInquiry(auth.organizationId, parsed.data);
 
-    const salesEmail = process.env.SALES_EMAIL ?? 'sales@umetrica.ru';
+    const salesEmail = process.env.SALES_EMAIL ?? 'sales@sellerpool.ru';
     await sendEmail({
       to: salesEmail,
-      subject: 'Заявка на Enterprise — umetrica',
+      subject: `Заявка на Enterprise — ${BRAND_NAME}`,
       text: [
         `Организация: ${auth.organizationId}`,
         `Контакт: ${parsed.data.email}`,
@@ -189,7 +191,7 @@ export async function registerBillingRoutes(app: FastifyInstance) {
 
     const parsed = CreateCreditPackCheckoutSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     const studioUrl = process.env.STUDIO_URL ?? 'http://localhost:5173';
@@ -221,7 +223,7 @@ export async function registerBillingRoutes(app: FastifyInstance) {
 
     const parsed = UpdateBillingPlanSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ error: parsed.error.flatten() });
+      return sendValidationError(reply, parsed.error);
     }
 
     if (isPaidPlan(parsed.data.planId)) {

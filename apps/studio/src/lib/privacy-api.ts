@@ -1,41 +1,34 @@
 import {
   PrivacySettingsSchema,
   PrivacySettingsViewSchema,
+  TrustPolicyViewSchema,
   buildBenchmarkParticipationView,
   type PrivacySettingsView,
+  type TrustPolicyView,
   type UpdatePrivacySettingsInput,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
+import { apiFetch } from '@/lib/api-client';
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    const message =
-      typeof error.error === 'string' ? error.error : `Request failed (${response.status})`;
-    throw new Error(message);
-  }
-
-  return response.json() as Promise<T>;
-}
+export type PrivacySettingsResponse = PrivacySettingsView & {
+  trustPolicy?: TrustPolicyView;
+};
 
 /** Older API builds may return bare PrivacySettings without pool stats — normalize client-side. */
-function normalizePrivacySettings(raw: unknown): PrivacySettingsView {
-  const parsed = PrivacySettingsViewSchema.safeParse(raw);
+function normalizePrivacySettings(raw: unknown): PrivacySettingsResponse {
+  const record = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+  const { trustPolicy: trustPolicyRaw, ...rest } = record;
+
+  const parsed = PrivacySettingsViewSchema.safeParse(rest);
   if (parsed.success) {
-    return parsed.data;
+    const trustPolicy = TrustPolicyViewSchema.safeParse(trustPolicyRaw);
+    return {
+      ...parsed.data,
+      ...(trustPolicy.success ? { trustPolicy: trustPolicy.data } : {}),
+    };
   }
 
-  const privacyOnly = PrivacySettingsSchema.safeParse(raw);
+  const privacyOnly = PrivacySettingsSchema.safeParse(rest);
   if (privacyOnly.success) {
     return buildBenchmarkParticipationView(privacyOnly.data, 0);
   }
@@ -53,7 +46,7 @@ export function updatePrivacySettings(input: UpdatePrivacySettingsInput) {
   return updatePrivacySettingsWithNotice(input);
 }
 
-export type PrivacySettingsUpdateResult = PrivacySettingsView & { notice?: string };
+export type PrivacySettingsUpdateResult = PrivacySettingsResponse & { notice?: string };
 
 export function updatePrivacySettingsWithNotice(input: UpdatePrivacySettingsInput) {
   return apiFetch<unknown>('/api/privacy', {

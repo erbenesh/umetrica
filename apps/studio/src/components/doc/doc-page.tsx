@@ -5,8 +5,9 @@ import { useLocation } from 'react-router-dom';
 import { DocHead } from '@/components/doc/doc-head';
 import type { DocPropItem } from '@/components/doc/doc-props';
 import { DocProps } from '@/components/doc/doc-props';
+import { DocBreadcrumb } from '@/components/doc/doc-breadcrumb';
 import { MobilePageHeader } from '@/components/layout/mobile-page-header';
-import { resolveMobileBack } from '@/lib/mobile-back';
+import { resolveAncestorTrail, resolveMobileBack } from '@/lib/navigation-trail';
 import { cn } from '@/lib/utils';
 
 export function DocPage({
@@ -41,6 +42,8 @@ export function DocPage({
   const resolvedBack =
     back === 'auto' ? resolveMobileBack(pathname) : back === false ? null : (back ?? null);
 
+  const ancestorTrail = back === false ? [] : resolveAncestorTrail(pathname);
+
   const headerActions = actions ?? mobileActions;
   const mobileHeaderActions = mobileActions ?? actions;
 
@@ -57,6 +60,7 @@ export function DocPage({
         <article className={cn('doc', className)}>
           {!headless ? (
             <>
+              <DocBreadcrumb ancestors={ancestorTrail} current={title} />
               <DocHead title={title} lead={lead} icon={icon} actions={headerActions} />
               {props ? <DocProps items={props} /> : null}
             </>

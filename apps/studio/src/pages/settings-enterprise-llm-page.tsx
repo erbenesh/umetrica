@@ -1,4 +1,4 @@
-import type { EnterpriseLlmProvider } from '@umetrica/core';
+import type { EnterpriseLlmProvider } from '@sellerpool/core';
 
 import { Loader2, Shield } from 'lucide-react';
 
@@ -29,6 +29,7 @@ import { useEnterpriseLlmSettings, useUpdateEnterpriseLlmSettings } from '@/hook
 import { useBilling } from '@/hooks/use-billing';
 
 import { useCanWriteDashboards } from '@/hooks/use-me';
+import { BRAND_NAME_RU } from '@/lib/brand';
 
 
 
@@ -51,8 +52,6 @@ export function SettingsEnterpriseLlmPage() {
   const [apiKey, setApiKey] = useState('');
 
   const [baseUrl, setBaseUrl] = useState('');
-
-  const [saved, setSaved] = useState(false);
 
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -84,8 +83,6 @@ export function SettingsEnterpriseLlmPage() {
 
     setSaveError(null);
 
-    setSaved(false);
-
 
 
     try {
@@ -104,10 +101,6 @@ export function SettingsEnterpriseLlmPage() {
 
       setApiKey('');
 
-      setSaved(true);
-
-      setTimeout(() => setSaved(false), 2000);
-
     } catch (err) {
 
       setSaveError(err instanceof Error ? err.message : 'Не удалось сохранить');
@@ -124,7 +117,7 @@ export function SettingsEnterpriseLlmPage() {
 
       title="Свой LLM-провайдер"
 
-      lead="Опция для Enterprise: запросы к LLM идут через ваш ключ, а не через квоту umetrica"
+      lead={`Опция для Enterprise: запросы к LLM идут через ваш ключ, а не через квоту ${BRAND_NAME_RU}`}
 
       icon={Shield}
 
@@ -166,7 +159,7 @@ export function SettingsEnterpriseLlmPage() {
 
             После включения BYOK кредиты AI-инсайтов платформы не используются. Оплата LLM — напрямую
 
-            провайдеру. Тариф umetrica остаётся без скидки.
+            провайдеру. Тариф ${BRAND_NAME_RU} остаётся без скидки.
 
           </DocCallout>
 
@@ -329,8 +322,6 @@ export function SettingsEnterpriseLlmPage() {
               </DocBlock>
 
 
-
-              {saved ? <p className="text-xs text-muted-foreground">Сохранено</p> : null}
 
               {saveError ? <p className="text-xs text-destructive">{saveError}</p> : null}
 

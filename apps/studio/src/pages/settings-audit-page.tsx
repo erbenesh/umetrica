@@ -1,4 +1,4 @@
-import type { AuditFilter } from '@umetrica/core';
+import type { AuditFilter } from '@sellerpool/core';
 import { Loader2, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';

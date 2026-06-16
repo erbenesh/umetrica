@@ -1,6 +1,6 @@
-# umetrica — Agent Guide
+# Sellerpool (Селлерпул) — Agent Guide
 
-Embedded analytics + AI insights. Clean-room project (not BoostixERP).
+Embedded analytics + AI insights for marketplace sellers. Clean-room project (not BoostixERP).
 
 ## Stack
 
@@ -42,6 +42,7 @@ pnpm is not global — always use `npx pnpm@9.15.4`.
 | Widget/query | `packages/core/src/schemas.ts`, `build-widget-query.ts` |
 | Cube model | `cube/model/cubes/*.yml` (not `schema/`) |
 | LLM insights | `packages/insights/src/` |
+| Brand strings | `packages/core/src/brand.ts`, `apps/studio/src/lib/brand.ts` |
 
 ## Subagents (`.cursor/agents/`)
 
@@ -49,12 +50,12 @@ pnpm is not global — always use `npx pnpm@9.15.4`.
 |-------|----------|
 | `feature-builder` | New vertical slice (API + UI + schema) |
 | `cube-analyst` | Cube queries, models, widget data issues |
-| `umetrica-debugger` | 400/500, auth, tenant, Docker |
+| `sellerpool-debugger` | 400/500, auth, tenant, Docker |
 
 ## Rules (`.cursor/rules/`)
 
 | Rule | Scope |
-|------|-------|
+|-------|------|
 | `project.mdc` | Always — monorepo layout, commands |
 | `clean-room.mdc` | Always — no BoostixERP copying |
 | `api.mdc` | `apps/api/**` |
@@ -67,9 +68,9 @@ pnpm is not global — always use `npx pnpm@9.15.4`.
 
 | Skill | When |
 |-------|------|
-| `umetrica-dev` | Setup, docker, pnpm, troubleshooting |
-| `umetrica-cube` | Models, tenant JWT, widget queries |
-| `umetrica-auth` | Orgs, invites, roles, verification |
+| `sellerpool-dev` | Setup, docker, pnpm, troubleshooting |
+| `sellerpool-cube` | Models, tenant JWT, widget queries |
+| `sellerpool-auth` | Orgs, invites, roles, verification |
 
 ## MCP
 

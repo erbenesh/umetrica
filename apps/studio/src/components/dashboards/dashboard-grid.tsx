@@ -1,7 +1,7 @@
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
-import type { Widget } from '@umetrica/core';
+import type { Widget } from '@sellerpool/core';
 import type { Layout } from 'react-grid-layout';
 
 import { Edit2, Trash2 } from 'lucide-react';

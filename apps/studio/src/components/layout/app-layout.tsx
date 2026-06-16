@@ -1,10 +1,11 @@
-import { Home, Layers, LayoutDashboard, LogOut, Settings, Sparkles, Users } from 'lucide-react';
+import { Home, LayoutDashboard, LogOut, Settings, Sparkles, Users } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
 import { EmailVerificationBanner } from '@/components/auth/email-verification-banner';
 import { OrgSwitcher } from '@/components/layout/org-switcher';
 import { useMe } from '@/hooks/use-me';
 import { signOut } from '@/lib/auth-client';
+import { BRAND_MARK, BRAND_NAME } from '@/lib/brand';
 import { cn } from '@/lib/utils';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -18,12 +19,9 @@ const navItems = [
   { to: '/', label: 'Главная', icon: Home, end: true },
   { to: '/insights', label: 'AI-инсайты', icon: Sparkles },
   { to: '/dashboards', label: 'Дашборды', icon: LayoutDashboard },
-  { to: '/semantic', label: 'Семантика', icon: Layers },
   { to: '/team', label: 'Команда', icon: Users },
   { to: '/settings', label: 'Настройки', icon: Settings },
 ];
-
-const tabNavItems = navItems.filter((item) => item.to !== '/settings');
 
 function roleLabel(role?: string) {
   if (!role) return 'Участник';
@@ -67,8 +65,8 @@ export function DesktopSidebar() {
     <aside className="sidebar">
       <div className="sidebar__top">
         <Link to="/" className="sidebar-app-link">
-          <span className="brand__mark">u</span>
-          <span className="brand__name">umetrica</span>
+          <span className="brand__mark">{BRAND_MARK}</span>
+          <span className="brand__name">{BRAND_NAME}</span>
         </Link>
         <OrgSwitcher />
       </div>
@@ -107,7 +105,7 @@ export function MobileNav() {
   return (
     <nav className="tabbar" aria-label="Основная навигация">
       <div className="tabbar__inner">
-        {tabNavItems.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

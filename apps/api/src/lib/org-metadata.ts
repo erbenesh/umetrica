@@ -23,7 +23,7 @@ import {
   type UpdateInsightSettingsInput,
   type UpdatePrivacySettingsInput,
   type UpdateSsoSettingsInput,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../db/index.js';
@@ -299,7 +299,7 @@ async function getOrgSlug(organizationId: string) {
 
 export async function getSsoSettings(organizationId: string): Promise<SsoSettings> {
   const metadata = await readOrgMetadata(organizationId);
-  const entityId = `umetrica-${await getOrgSlug(organizationId)}`;
+  const entityId = `sellerpool-${await getOrgSlug(organizationId)}`;
   const base: SsoSettings = {
     enabled: false,
     requireForAll: false,

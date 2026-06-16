@@ -1,31 +1,29 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
 import { auth } from '../auth.js';
-import { buildWebRequest, sendAuthResponse } from '../lib/auth-request.js';
+import { buildDerivedAuthRequest, sendAuthResponse } from '../lib/auth-request.js';
 import { completeFounderSetup, savePendingFounderCompany } from '../lib/founder-setup.js';
-
-async function buildAuthSubRequest(request: FastifyRequest, path: string, body: unknown) {
-  return buildWebRequest({
-    ...request,
-    method: 'POST',
-    url: path,
-    body,
-  } as FastifyRequest);
-}
+import { sendValidationError } from '../lib/http-errors.js';
 
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.post('/api/register', async (request, reply) => {
-    const body = z
+    const parsed = z
       .object({
         email: z.string().email(),
         password: z.string().min(8),
         name: z.string().min(2),
         companyName: z.string().min(2).max(100),
       })
-      .parse(request.body);
+      .safeParse(request.body);
 
-    const signUpRequest = await buildAuthSubRequest(request, '/api/auth/sign-up/email', {
+    if (!parsed.success) {
+      return sendValidationError(reply, parsed.error);
+    }
+
+    const body = parsed.data;
+
+    const signUpRequest = await buildDerivedAuthRequest(request, '/api/auth/sign-up/email', {
       email: body.email,
       password: body.password,
       name: body.name,

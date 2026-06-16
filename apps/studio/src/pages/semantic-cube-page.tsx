@@ -1,5 +1,5 @@
-import type { SemanticCubeDefinition, SemanticGraphLayout } from '@umetrica/core';
-import { DEFAULT_ORDERS_GRAPH_LAYOUT, semanticCubeLabel } from '@umetrica/core';
+import type { SemanticCubeDefinition, SemanticGraphLayout } from '@sellerpool/core';
+import { DEFAULT_ORDERS_GRAPH_LAYOUT, semanticCubeLabel } from '@sellerpool/core';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';

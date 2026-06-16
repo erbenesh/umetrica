@@ -1,4 +1,4 @@
-import type { InsightRun } from '@umetrica/core';
+import type { InsightRun } from '@sellerpool/core';
 import { History, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

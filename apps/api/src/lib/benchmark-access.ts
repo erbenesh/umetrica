@@ -1,26 +1,25 @@
 import {
-  applyBenchmarkOptInChange,
   canReceiveBenchmarkParticipation,
-  isBenchmarkPlanAllowed,
-} from '@umetrica/core';
+  hasPersonalDataSource,
+} from '@sellerpool/core';
 
-import { getInsightSettings, getOrgPlanId, getPrivacySettings } from './org-metadata.js';
+import { getOrgConnectionProfile } from './org-connections-profile.js';
+import { getInsightSettings, getPrivacySettings } from './org-metadata.js';
 
 export {
   applyBenchmarkOptInChange,
   canReceiveBenchmarkParticipation,
   isBenchmarkContributor,
-  isBenchmarkPlanAllowed,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 
 export async function canReceiveBenchmarkInsights(organizationId: string) {
-  const [privacy, planId, insightSettings] = await Promise.all([
+  const [privacy, connections, insightSettings] = await Promise.all([
     getPrivacySettings(organizationId),
-    getOrgPlanId(organizationId),
+    getOrgConnectionProfile(organizationId),
     getInsightSettings(organizationId),
   ]);
 
-  if (!isBenchmarkPlanAllowed(planId)) {
+  if (!hasPersonalDataSource(connections)) {
     return false;
   }
 

@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Компания — umetrica mockup</title>
+    <title>Компания — Sellerpool mockup</title>
     <link rel="stylesheet" href="assets/mockup.css" />
     <script>
       (function () {
-        var t = localStorage.getItem('umetrica-mockup-theme');
+        var t = (localStorage.getItem('sellerpool-mockup-theme') || localStorage.getItem('umetrica-mockup-theme'));
         if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
@@ -48,7 +48,7 @@
               <h2 class="doc-h2">Реквизиты</h2>
               <form class="form-fields">
                 <div class="field"><label for="org-name">Название</label><input class="input" id="org-name" type="text" value="HomeStyle" /></div>
-                <div class="field"><label for="org-slug">Slug</label><input class="input" id="org-slug" type="text" value="homestyle" readonly /><p class="field__hint">app.umetrica.ru/o/homestyle · меняется редко</p></div>
+                <div class="field"><label for="org-slug">Slug</label><input class="input" id="org-slug" type="text" value="homestyle" readonly /><p class="field__hint">app.sellerpool.ru/o/homestyle · меняется редко</p></div>
                 <div class="field"><label for="org-mp">Маркетплейс</label><select class="input" id="org-mp"><option selected>Wildberries</option><option>Ozon</option><option>Несколько</option></select></div>
                 <div class="field"><label for="org-cat">Категория (рыночные инсайты)</label><select class="input" id="org-cat"><option selected>Дом и текстиль</option><option>Одежда</option></select></div>
                 <div class="field"><label for="org-site">Сайт</label><input class="input" id="org-site" type="url" placeholder="https://acme.ru" value="https://acme.ru" /></div>

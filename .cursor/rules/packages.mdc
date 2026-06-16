@@ -4,7 +4,7 @@ globs: packages/core/**/*
 alwaysApply: false
 ---
 
-# Core (`@umetrica/core`)
+# Core (`@sellerpool/core`)
 
 ## Role
 

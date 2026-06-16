@@ -8,7 +8,7 @@ import {
   type BillingInterval,
   type BillingPlanId,
   type CreditPackId,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import { desc, eq } from 'drizzle-orm';
 
 import { billingInvoices } from '../db/billing-invoices.js';

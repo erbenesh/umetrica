@@ -9,11 +9,11 @@ import {
   type InsightBrief,
   type InsightEvaluation,
   type InsightSource,
-} from '@umetrica/core';
+} from '@sellerpool/core';
 import {
   buildMarketBriefFromSnapshot,
   buildMarketFallbackEvaluation,
-} from '@umetrica/insights';
+} from '@sellerpool/insights';
 import { and, eq, gte } from 'drizzle-orm';
 
 import { insights } from '../db/insights.js';

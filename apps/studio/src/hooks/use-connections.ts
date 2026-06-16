@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { appToast } from '@/lib/app-toast';
 import {
   createDatabaseConnection,
   createMarketplaceApiConnection,
@@ -25,7 +26,10 @@ export function useCreateMarketplaceConnection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createMarketplaceApiConnection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: connectionsQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectionsQueryKey });
+      appToast.success('Подключение создано');
+    },
   });
 }
 
@@ -33,7 +37,10 @@ export function useCreateDatabaseConnection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDatabaseConnection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: connectionsQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectionsQueryKey });
+      appToast.success('Подключение к БД создано');
+    },
   });
 }
 
@@ -41,7 +48,10 @@ export function useUploadCsvConnection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: uploadCsvConnection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: connectionsQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectionsQueryKey });
+      appToast.success('Файл загружен');
+    },
   });
 }
 
@@ -58,7 +68,10 @@ export function useReuploadCsvConnection() {
       reportType: string;
       deleteAfterImport: boolean;
     }) => reuploadCsvConnection(connectionId, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: connectionsQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectionsQueryKey });
+      appToast.success('Данные обновлены');
+    },
   });
 }
 
@@ -78,7 +91,10 @@ export function useDeleteConnection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteConnection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: connectionsQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectionsQueryKey });
+      appToast.success('Подключение удалено');
+    },
   });
 }
 
@@ -86,6 +102,9 @@ export function useSyncConnection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: syncConnection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: connectionsQueryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectionsQueryKey });
+      appToast.success('Синхронизация запущена');
+    },
   });
 }

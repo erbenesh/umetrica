@@ -1,4 +1,4 @@
-import type { InsightRun } from '@umetrica/core';
+import type { InsightRun } from '@sellerpool/core';
 
 export function formatInsightRunDate(value: string) {
   return new Intl.DateTimeFormat('ru-RU', {

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AuditFilter } from '@umetrica/core';
+import type { AuditFilter } from '@sellerpool/core';
 
+import { appToast } from '@/lib/app-toast';
 import {
   exportAuditCsv,
   fetchAuditEvents,
@@ -38,6 +39,7 @@ export function useUpdateSsoSettings() {
     mutationFn: updateSsoSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ssoQueryKey });
+      appToast.success('Настройки SSO сохранены');
     },
   });
 }
@@ -57,6 +59,7 @@ export function useUpdateEnterpriseLlmSettings() {
     mutationFn: updateEnterpriseLlmSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: enterpriseLlmQueryKey });
+      appToast.success('Настройки LLM сохранены');
     },
   });
 }
