@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { getAuthErrorMessage } from '@/lib/auth-messages';
 import { appToast } from '@/lib/app-toast';
 import { authClient } from '@/lib/auth-client';
 import { setActiveOrganization } from '@/lib/auth-helpers';
@@ -16,7 +17,7 @@ export function useTeamMembers(enabled = true) {
     enabled,
     queryFn: async () => {
       const result = await authClient.organization.listMembers();
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
   });
@@ -28,7 +29,7 @@ export function useTeamInvitations(enabled = true) {
     enabled,
     queryFn: async () => {
       const result = await authClient.organization.listInvitations();
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data ?? [];
     },
   });
@@ -39,7 +40,7 @@ export function useUserInvitations() {
     queryKey: userInvitationsQueryKey,
     queryFn: async () => {
       const result = await authClient.organization.listUserInvitations();
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data ?? [];
     },
   });
@@ -54,7 +55,7 @@ export function useInviteMember() {
         email: payload.email,
         role: payload.role,
       });
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
     onSuccess: () => {
@@ -70,7 +71,7 @@ export function useCancelInvitation() {
   return useMutation({
     mutationFn: async (invitationId: string) => {
       const result = await authClient.organization.cancelInvitation({ invitationId });
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
     onSuccess: () => {
@@ -86,7 +87,7 @@ export function useRemoveMember() {
   return useMutation({
     mutationFn: async (memberId: string) => {
       const result = await authClient.organization.removeMember({ memberIdOrEmail: memberId });
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
     onSuccess: () => {
@@ -102,7 +103,7 @@ export function useUpdateMemberRole() {
   return useMutation({
     mutationFn: async (payload: { memberId: string; role: 'viewer' | 'admin' }) => {
       const result = await authClient.organization.updateMemberRole(payload);
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
     onSuccess: () => {
@@ -118,7 +119,7 @@ export function useAcceptInvitation() {
   return useMutation({
     mutationFn: async (invitationId: string) => {
       const result = await authClient.organization.acceptInvitation({ invitationId });
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
     onSuccess: async (data) => {
@@ -147,7 +148,7 @@ export function useRejectInvitation() {
   return useMutation({
     mutationFn: async (invitationId: string) => {
       const result = await authClient.organization.rejectInvitation({ invitationId });
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error));
       return result.data;
     },
     onSuccess: () => {

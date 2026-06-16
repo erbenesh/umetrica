@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { AuthLoadingStatus, AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { useMe } from '@/hooks/use-me';
 import { sendVerificationEmail } from '@/lib/auth-client';
+import { ApiError } from '@/lib/api-client';
 import { appToast } from '@/lib/app-toast';
+import { SESSION_REQUIRED_MESSAGE, getAuthErrorMessage } from '@/lib/auth-messages';
 import { BRAND_NAME_RU } from '@/lib/brand';
 
 const REGISTRATION_SUCCESS_MESSAGE =
@@ -17,7 +19,7 @@ export { REGISTRATION_SUCCESS_MESSAGE };
 export function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: me, refetch, isLoading } = useMe();
+  const { data: me, refetch, isLoading, error: meError } = useMe();
   const registrationToastShown = useRef(false);
   const initialMessage = (location.state as { message?: string } | null)?.message ?? null;
   const isRegistrationSuccess = initialMessage === REGISTRATION_SUCCESS_MESSAGE;
@@ -46,16 +48,25 @@ export function VerifyEmailPage() {
         email: me.user.email,
         callbackURL: `${window.location.origin}/`,
       });
-      if (result.error) throw new Error(result.error.message);
+      if (result.error) throw new Error(getAuthErrorMessage(result.error, 'Не удалось отправить письмо'));
       const message = 'Письмо отправлено. Проверьте почту или консоль API в dev-режиме.';
       setStatus(message);
       appToast.success(message);
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Не удалось отправить письмо');
+      const message = getAuthErrorMessage(
+        err instanceof Error ? { message: err.message } : null,
+        'Не удалось отправить письмо',
+      );
+      setStatus(message);
+      appToast.error(message);
     } finally {
       setIsSending(false);
     }
   };
+
+  if (meError instanceof ApiError && meError.status === 401) {
+    return <Navigate to="/auth" replace state={{ message: SESSION_REQUIRED_MESSAGE }} />;
+  }
 
   if (isLoading) {
     return (

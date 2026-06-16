@@ -281,7 +281,7 @@ export function useApplySemanticCubeYaml(name: string) {
       queryClient.setQueryData(semanticCubeQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticCubesQueryKey });
       queryClient.invalidateQueries({ queryKey: [...semanticCubeQueryKey(name), 'yaml'] });
-      appToast.success('YAML применён');
+      appToast.success('Изменения из YAML применены');
     },
   });
 }
@@ -302,7 +302,7 @@ export function useApplySemanticViewYaml(name: string) {
     onSuccess: (data) => {
       queryClient.setQueryData(semanticViewQueryKey(name), data);
       queryClient.invalidateQueries({ queryKey: semanticViewsQueryKey });
-      appToast.success('YAML применён');
+      appToast.success('Изменения из YAML применены');
     },
   });
 }

@@ -14,7 +14,9 @@ import { Button } from '@/components/ui/button';
 import { useAcceptInvitation } from '@/hooks/use-team';
 import { useInvitationPreview } from '@/hooks/use-invitation-preview';
 import { signIn, signOut, signUp, useSession } from '@/lib/auth-client';
-import { isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpers';
+import { syncSessionAfterAuth } from '@/lib/auth-helpers';
+import { EMAIL_NOT_VERIFIED_MESSAGE, getAuthErrorMessage, isEmailVerificationError } from '@/lib/auth-messages';
+import { appToast } from '@/lib/app-toast';
 import { confirmInvitationSignupEmail, prepareInvitationAccept } from '@/lib/invitations-api';
 
 const loginSchema = z.object({
@@ -124,7 +126,7 @@ export function AcceptInvitationPage() {
     } catch (err) {
       acceptStartedRef.current = false;
       setJoining(false);
-      setError(err instanceof Error ? err.message : 'Не удалось принять приглашение');
+      setError(getAuthErrorMessage(err instanceof Error ? { message: err.message } : null, 'Не удалось принять приглашение'));
     }
   }, [invitationId, acceptInvitation, queryClient, navigate]);
 
@@ -150,22 +152,22 @@ export function AcceptInvitationPage() {
           password: data.password,
         });
         if (result.error) {
-          if (isEmailVerificationError(result.error.message ?? '')) {
-            await prepareInvitationAccept(invitationId);
-            await syncSessionAfterAuth();
-            await completeInvitation();
+          if (isEmailVerificationError(result.error)) {
+            const message = getAuthErrorMessage(result.error, EMAIL_NOT_VERIFIED_MESSAGE);
+            setError(message);
+            appToast.error(message);
             return;
           }
-          throw new Error(result.error.message);
+          throw new Error(getAuthErrorMessage(result.error));
         }
       } else {
         const registerData = data as RegisterFormData;
         const result = await signUp.email({
           email: registerData.email,
           password: registerData.password,
-          name: registerData.name ?? registerData.email.split('@')[0] ?? 'User',
+          name: registerData.name ?? registerData.email.split('@')[0] ?? 'Пользователь',
         });
-        if (result.error) throw new Error(result.error.message);
+        if (result.error) throw new Error(getAuthErrorMessage(result.error));
 
         await confirmInvitationSignupEmail(invitationId, data.email);
 
@@ -174,14 +176,14 @@ export function AcceptInvitationPage() {
           password: data.password,
         });
         if (signInResult.error) {
-          throw new Error(signInResult.error.message ?? 'Войдите с созданным паролем');
+          throw new Error(getAuthErrorMessage(signInResult.error, 'Войдите с созданным паролем'));
         }
       }
 
       await syncSessionAfterAuth();
       await completeInvitation();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка авторизации');
+      setError(getAuthErrorMessage(err instanceof Error ? { message: err.message } : null, 'Ошибка авторизации'));
     }
   };
 

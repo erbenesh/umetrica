@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppLayout } from '@/components/layout/app-layout';
+import { EmailVerificationGate } from '@/components/auth/email-verification-gate';
 import { ManageOrgRoute } from '@/components/auth/manage-org-route';
 import { OrgGate } from '@/components/auth/org-gate';
 import { ProtectedRoute } from '@/components/auth/protected-route';
@@ -79,6 +80,7 @@ createRoot(document.getElementById('root')!).render(
           <Route element={<ProtectedRoute />}>
             <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route element={<EmailVerificationGate />}>
             <Route element={<OrgGate />}>
               <Route element={<ManageOrgRoute />}>
                 <Route path="/onboarding/connect" element={<OnboardingConnectPage />} />
@@ -126,6 +128,7 @@ createRoot(document.getElementById('root')!).render(
                 </Route>
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
+            </Route>
             </Route>
           </Route>
           <Route path="*" element={<NotFoundPage />} />

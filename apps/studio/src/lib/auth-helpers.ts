@@ -1,12 +1,15 @@
 import { authClient } from '@/lib/auth-client';
+import { getAuthErrorMessage, isEmailVerificationError } from '@/lib/auth-messages';
 import { fetchMe } from '@/lib/me-api';
 import { fetchOrganizations } from '@/lib/organizations-api';
 import { completeFounderSetup } from '@/lib/register-api';
 
+export { getAuthErrorMessage, isEmailVerificationError };
+
 export async function syncSessionAfterAuth() {
   const result = await authClient.getSession();
   if (result.error) {
-    throw new Error(result.error.message ?? 'Не удалось обновить сессию');
+    throw new Error(getAuthErrorMessage(result.error, 'Не удалось обновить сессию'));
   }
   return result.data;
 }
@@ -32,7 +35,7 @@ export async function ensureActiveOrganization() {
 
   const result = await authClient.organization.setActive({ organizationId: firstOrg.id });
   if (result.error) {
-    throw new Error(result.error.message);
+    throw new Error(getAuthErrorMessage(result.error, 'Не удалось выбрать компанию'));
   }
 
   return firstOrg.id;
@@ -41,10 +44,10 @@ export async function ensureActiveOrganization() {
 export async function setActiveOrganization(organizationId: string) {
   const result = await authClient.organization.setActive({ organizationId });
   if (result.error) {
-    throw new Error(result.error.message);
+    throw new Error(getAuthErrorMessage(result.error, 'Не удалось выбрать компанию'));
   }
 }
 
-export function isEmailVerificationError(message: string) {
-  return /email.*verif|verif.*email|EMAIL_NOT_VERIFIED/i.test(message);
+export function isSessionEmailVerified(session: { user: { emailVerified?: boolean } } | null | undefined) {
+  return session?.user.emailVerified !== false;
 }

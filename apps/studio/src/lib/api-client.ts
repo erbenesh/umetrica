@@ -28,7 +28,12 @@ export class ApiError extends Error {
 }
 
 export function getErrorMessage(error: unknown, fallback = 'Ошибка запроса'): string {
-  if (error instanceof ApiError) return error.message;
+  if (error instanceof ApiError) {
+    if (error.status === 401) return 'Требуется вход в аккаунт';
+    if (error.status === 403) return 'Недостаточно прав для этого действия';
+    if (error.status === 404) return 'Данные не найдены';
+    return error.message;
+  }
   if (error instanceof Error && error.message) return error.message;
   return fallback;
 }

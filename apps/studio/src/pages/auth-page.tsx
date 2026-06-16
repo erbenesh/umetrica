@@ -2,16 +2,17 @@ import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { AuthField, AuthSelectField } from '@/components/auth/auth-field';
 import { PasswordField } from '@/components/auth/password-field';
 import { AuthLoadingStatus, AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { signIn, useSession } from '@/lib/auth-client';
+import { signIn, useSession, authClient } from '@/lib/auth-client';
 import { appToast } from '@/lib/app-toast';
-import { ensureActiveOrganization, isEmailVerificationError, syncSessionAfterLogin } from '@/lib/auth-helpers';
+import { ensureActiveOrganization, isSessionEmailVerified, syncSessionAfterLogin } from '@/lib/auth-helpers';
+import { EMAIL_NOT_VERIFIED_MESSAGE, getAuthErrorMessage, isEmailVerificationError } from '@/lib/auth-messages';
 import { registerFounder } from '@/lib/register-api';
 import { getErrorMessage } from '@/lib/api-client';
 import { REGISTRATION_SUCCESS_MESSAGE } from '@/pages/verify-email-page';
@@ -50,6 +51,7 @@ export function AuthPage() {
 
 function AuthPageForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { data: session, isPending: sessionPending, refetch: refetchSession } = useSession();
   const mode = searchParams.get('mode') === 'register' ? 'register' : 'login';
@@ -59,12 +61,12 @@ function AuthPageForm() {
   const [info, setInfo] = useState<string | null>(null);
 
   useEffect(() => {
-    const stateMessage = (history.state as { usr?: { message?: string } } | null)?.usr?.message;
+    const stateMessage = (location.state as { message?: string } | null)?.message;
     if (stateMessage) {
       setInfo(stateMessage);
-      appToast.success(stateMessage);
+      appToast.info(stateMessage);
     }
-  }, []);
+  }, [location.state]);
 
   const schema = mode === 'login' ? loginSchema : registerSchema;
 
@@ -94,13 +96,23 @@ function AuthPageForm() {
           password: loginData.password,
         });
         if (result.error) {
-          if (isEmailVerificationError(result.error.message ?? '')) {
-            navigate('/verify-email', { replace: true });
+          if (isEmailVerificationError(result.error)) {
+            const message = getAuthErrorMessage(result.error, EMAIL_NOT_VERIFIED_MESSAGE);
+            setError(message);
+            appToast.error(message);
             return;
           }
-          throw new Error(result.error.message);
+          throw new Error(getAuthErrorMessage(result.error));
         }
         await syncSessionAfterLogin(refetchSession);
+        const refreshed = await authClient.getSession();
+        if (!isSessionEmailVerified(refreshed.data)) {
+          navigate('/verify-email', {
+            replace: true,
+            state: { message: EMAIL_NOT_VERIFIED_MESSAGE },
+          });
+          return;
+        }
         await ensureActiveOrganization();
         navigate('/');
       } else {
@@ -142,6 +154,9 @@ function AuthPageForm() {
   }
 
   if (session?.user) {
+    if (!isSessionEmailVerified(session)) {
+      return <Navigate to="/verify-email" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 
