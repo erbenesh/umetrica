@@ -72,6 +72,7 @@ export interface BuildBriefOptions {
   cubeUrl: string;
   token: string;
   minChangePct?: number;
+  enabledMetrics?: string[];
 }
 
 interface MetricPeriodSnapshot {
@@ -157,11 +158,42 @@ export async function buildOrdersCountBrief(
   return buildBriefFromMetricChange('Orders.count', countChange, current, previous, drivers);
 }
 
-export async function detectAnomalies(options: BuildBriefOptions): Promise<InsightBrief[]> {
-  const [revenueBrief, ordersBrief] = await Promise.all([
-    buildRevenueBrief(options),
-    buildOrdersCountBrief(options),
+export async function buildAvgOrderBrief(
+  options: BuildBriefOptions
+): Promise<InsightBrief | null> {
+  const { cubeUrl, token, minChangePct = 5 } = options;
+
+  const [current, previous] = await Promise.all([
+    loadPeriodMetrics(cubeUrl, token, 'last 7 days'),
+    loadPeriodMetrics(cubeUrl, token, 'from 14 days ago to 7 days ago'),
   ]);
 
-  return [revenueBrief, ordersBrief].filter((brief): brief is InsightBrief => brief !== null);
+  const avgOrderChange = changePct(current.avgOrder, previous.avgOrder);
+  if (Math.abs(avgOrderChange) < minChangePct) {
+    return null;
+  }
+
+  const drivers = await loadDriversByStatus(cubeUrl, token, 'Orders.revenue');
+  return buildBriefFromMetricChange('Orders.avgOrder', avgOrderChange, current, previous, drivers);
+}
+
+export async function detectAnomalies(options: BuildBriefOptions): Promise<InsightBrief[]> {
+  const enabled = new Set(
+    options.enabledMetrics ?? ['Orders.revenue', 'Orders.count', 'Orders.avgOrder']
+  );
+
+  const tasks: Promise<InsightBrief | null>[] = [];
+
+  if (enabled.has('Orders.revenue')) {
+    tasks.push(buildRevenueBrief(options));
+  }
+  if (enabled.has('Orders.count')) {
+    tasks.push(buildOrdersCountBrief(options));
+  }
+  if (enabled.has('Orders.avgOrder')) {
+    tasks.push(buildAvgOrderBrief(options));
+  }
+
+  const results = await Promise.all(tasks);
+  return results.filter((brief): brief is InsightBrief => brief !== null);
 }

@@ -1,6 +1,8 @@
 import type { Insight } from '@umetrica/core';
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Sparkles, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
+import { InsightSourceBadge } from '@/components/doc/insight-source-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -29,13 +31,17 @@ export function InsightCard({ insight, onDelete, isDeleting }: InsightCardProps)
   const isUp = anomaly.direction === 'up';
 
   return (
-    <Card>
+    <Card className="border-l-2 border-l-insight-info">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="size-4 text-insight-info" />
-              {evaluation.summary}
+            <div className="mb-1">
+              <InsightSourceBadge source="tenant" />
+            </div>
+            <CardTitle className="text-base">
+              <Link to={`/insights/${insight.id}`} className="hover:text-primary">
+                {evaluation.summary}
+              </Link>
             </CardTitle>
             <CardDescription>
               {new Date(insight.createdAt).toLocaleString('ru-RU')}
@@ -124,6 +130,12 @@ export function InsightCard({ insight, onDelete, isDeleting }: InsightCardProps)
         <p className="text-xs text-muted-foreground">
           Общая уверенность оценки: {Math.round(evaluation.confidence * 100)}%
         </p>
+        <Link
+          to={`/insights/${insight.id}`}
+          className="inline-block text-xs font-medium text-primary hover:underline"
+        >
+          Подробнее →
+        </Link>
       </CardContent>
     </Card>
   );

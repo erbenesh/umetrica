@@ -1,7 +1,6 @@
 import type { Query } from '@cubejs-client/core';
 import { useCubeQuery } from '@cubejs-client/react';
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { ReactNode } from 'react';
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('ru-RU', {
@@ -32,24 +31,24 @@ export function MetricKpi({
   const rawValue = rows[0]?.[measureKey];
   const value = Number(rawValue ?? 0);
 
+  const display = isLoading
+    ? '…'
+    : error
+      ? '—'
+      : format === 'currency'
+        ? formatCurrency(value)
+        : value.toLocaleString('ru-RU');
+
   return (
-    <Card>
-      <CardHeader className="pb-1">
-        <CardDescription>{title}</CardDescription>
-        <CardTitle className="text-xl tabular-nums">
-          {isLoading
-            ? '...'
-            : error
-              ? '—'
-              : format === 'currency'
-                ? formatCurrency(value)
-                : value.toLocaleString('ru-RU')}
-        </CardTitle>
-      </CardHeader>
-      {description && <CardContent className="text-xs text-muted-foreground">{description}</CardContent>}
-      {error && (
-        <CardContent className="text-xs text-insight-warning">Ошибка загрузки метрики</CardContent>
-      )}
-    </Card>
+    <div className="stat-strip__item">
+      <p className="stat-strip__label">{title}</p>
+      <p className="stat-strip__value">{display}</p>
+      {description ? <p className="stat-strip__note">{description}</p> : null}
+      {error ? <p className="stat-strip__note text-insight-warning">Ошибка загрузки</p> : null}
+    </div>
   );
+}
+
+export function StatStrip({ children }: { children: ReactNode }) {
+  return <div className="stat-strip">{children}</div>;
 }

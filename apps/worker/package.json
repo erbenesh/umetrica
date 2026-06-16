@@ -1,0 +1,21 @@
+{
+  "name": "@umetrica/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "node -e \"console.log('@umetrica/worker: no compile step (runs via tsx)')\"",
+    "start": "tsx src/index.ts",
+    "typecheck": "node -e \"console.log('skip')\""
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "@umetrica/tsconfig": "workspace:*",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

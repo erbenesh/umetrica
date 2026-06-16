@@ -2,11 +2,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { AuthLayout, AuthModeSwitch } from '@/components/layout/auth-layout';
+import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAcceptInvitation } from '@/hooks/use-team';
@@ -33,24 +34,33 @@ function roleLabel(role: string) {
   return ROLE_LABELS[role] ?? role;
 }
 
-function AuthStatus({
-  title,
-  description,
-  loading = false,
+function InvitationAuthShell({
+  brandTitle,
+  brandDescription,
+  panelTitle,
+  panelDescription,
+  footer,
+  children,
 }: {
-  title: string;
-  description?: string;
-  loading?: boolean;
+  brandTitle: string;
+  brandDescription?: string;
+  panelTitle: string;
+  panelDescription?: string;
+  footer?: ReactNode;
+  children?: ReactNode;
 }) {
   return (
-    <AuthLayout title={title} description={description}>
-      {loading ? (
-        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
-          <Loader2 className="mr-2 size-3.5 animate-spin" />
-          Подождите...
-        </div>
-      ) : null}
-    </AuthLayout>
+    <AuthSplitLayout
+      topbar="mark"
+      showBrandBlock={false}
+      brandTitle={brandTitle}
+      brandDescription={brandDescription ?? ''}
+      panelTitle={panelTitle}
+      panelDescription={panelDescription}
+      footer={footer}
+    >
+      {children}
+    </AuthSplitLayout>
   );
 }
 
@@ -163,81 +173,135 @@ export function AcceptInvitationPage() {
   };
 
   if (previewLoading || sessionPending) {
-    return <AuthStatus title="Загрузка приглашения" loading />;
+    return (
+      <InvitationAuthShell
+        brandTitle="Загрузка приглашения"
+        brandDescription="Проверяем ссылку и данные компании"
+        panelTitle="Подождите"
+        panelDescription="Загружаем приглашение..."
+      >
+        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+          <Loader2 className="mr-2 size-3.5 animate-spin" />
+          Подождите...
+        </div>
+      </InvitationAuthShell>
+    );
   }
 
   if (previewError || !preview) {
     return (
-      <AuthStatus
-        title="Приглашение не найдено"
-        description="Ссылка недействительна или уже использована."
+      <InvitationAuthShell
+        brandTitle="Приглашение не найдено"
+        brandDescription="Ссылка недействительна или уже использована."
+        panelTitle="Не удалось открыть"
+        panelDescription="Попросите администратора отправить новое приглашение."
       />
     );
   }
 
   if (preview.expired) {
     return (
-      <AuthStatus
-        title="Приглашение устарело"
-        description={`Попросите администратора компании «${preview.organizationName}» отправить новое приглашение.`}
+      <InvitationAuthShell
+        brandTitle={`Приглашение в «${preview.organizationName}»`}
+        brandDescription="Срок действия ссылки истёк."
+        panelTitle="Приглашение устарело"
+        panelDescription={`Попросите администратора компании «${preview.organizationName}» отправить новое приглашение.`}
       />
     );
   }
 
   if (joining) {
     return (
-      <AuthStatus
-        title={`Присоединяем к «${preview.organizationName}»`}
-        description="Добавляем вас в компанию"
-        loading
-      />
+      <InvitationAuthShell
+        brandTitle={`Вас ждут в «${preview.organizationName}»`}
+        brandDescription="Добавляем вас в команду"
+        panelTitle={`Присоединяем к «${preview.organizationName}»`}
+        panelDescription="Добавляем вас в компанию"
+      >
+        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+          <Loader2 className="mr-2 size-3.5 animate-spin" />
+          Подождите...
+        </div>
+      </InvitationAuthShell>
     );
   }
 
   const showAuthForm = !session || !sessionEmailMatches;
 
   if (!showAuthForm) {
-    return <AuthStatus title="Принимаем приглашение" loading />;
+    return (
+      <InvitationAuthShell
+        brandTitle={`Вас ждут в «${preview.organizationName}»`}
+        brandDescription={`Роль: ${roleLabel(preview.role)}`}
+        panelTitle="Принимаем приглашение"
+        panelDescription="Почти готово"
+      >
+        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
+          <Loader2 className="mr-2 size-3.5 animate-spin" />
+          Подождите...
+        </div>
+      </InvitationAuthShell>
+    );
   }
 
   return (
-    <AuthLayout
-      title={`Приглашение в «${preview.organizationName}»`}
-      description={`Роль: ${roleLabel(preview.role)}. Создайте аккаунт или войдите — вы сразу попадёте в компанию.`}
+    <InvitationAuthShell
+      brandTitle={`Вас ждут в «${preview.organizationName}»`}
+      brandDescription={`Роль: ${roleLabel(preview.role)}. Без отдельной компании — сразу в команду пригласившего.`}
+      panelTitle="Присоединиться"
+      panelDescription={`Email из приглашения: ${preview.email}`}
       footer={
-        <AuthModeSwitch
-          label={mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
+        <button
+          type="button"
+          className="font-semibold text-primary hover:underline"
           onClick={() => setMode((current) => (current === 'login' ? 'register' : 'login'))}
-        />
+        >
+          {mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
+        </button>
       }
     >
       {session && !sessionEmailMatches && (
-        <div className="mb-3 space-y-2 rounded-md border border-border bg-muted/40 p-2.5 text-xs">
+        <div className="mb-4 space-y-2 rounded-md border border-border bg-muted/40 p-2.5 text-xs">
           <p className="text-muted-foreground">
             Вы вошли как <span className="text-foreground">{session.user.email}</span>. Для
             приглашения нужен <span className="text-foreground">{preview.email}</span>.
           </p>
-          <Button variant="outline" size="sm" onClick={() => signOut()}>
+          <Button variant="outline" size="sm" onClick={() => signOut()} type="button">
             Выйти и войти другим аккаунтом
           </Button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        {mode === 'register' && <Input placeholder="Имя" {...register('name')} />}
-        <Input type="email" placeholder="Email" readOnly {...register('email')} />
-        <Input type="password" placeholder="Пароль" {...register('password')} />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="form-fields">
+          {mode === 'register' && (
+            <div className="field">
+              <label htmlFor="name">Имя</label>
+              <Input id="name" placeholder="Анна" {...register('name')} />
+            </div>
+          )}
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <Input id="email" type="email" readOnly {...register('email')} />
+          </div>
+          <div className="field">
+            <label htmlFor="password">Пароль</label>
+            <Input id="password" type="password" autoComplete="new-password" {...register('password')} />
+          </div>
+        </div>
 
-        {error && <p className="text-xs text-insight-warning">{error}</p>}
+        {error ? <p className="mt-3 text-xs text-insight-warning">{error}</p> : null}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || joining}>
-          {isSubmitting
-            ? 'Загрузка...'
-            : mode === 'login'
-              ? 'Войти и присоединиться'
-              : 'Зарегистрироваться и присоединиться'}
-        </Button>
+        <div className="form-actions">
+          <Button type="submit" className="w-full" disabled={isSubmitting || joining}>
+            {isSubmitting
+              ? 'Загрузка...'
+              : mode === 'login'
+                ? 'Войти и присоединиться'
+                : 'Зарегистрироваться и присоединиться'}
+          </Button>
+        </div>
       </form>
-    </AuthLayout>
+    </InvitationAuthShell>
   );
 }

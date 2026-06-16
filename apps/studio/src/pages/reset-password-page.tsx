@@ -2,11 +2,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { AuthLayout } from '@/components/layout/auth-layout';
+import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { resetPassword } from '@/lib/auth-client';
 
 const schema = z
@@ -48,7 +47,10 @@ export function ResetPasswordPage() {
         token,
       });
       if (result.error) throw new Error(result.error.message);
-      navigate('/auth', { replace: true, state: { message: 'Пароль обновлён. Войдите с новым паролем.' } });
+      navigate('/auth', {
+        replace: true,
+        state: { message: 'Пароль обновлён. Войдите с новым паролем.' },
+      });
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Не удалось обновить пароль');
     }
@@ -56,27 +58,68 @@ export function ResetPasswordPage() {
 
   if (error === 'INVALID_TOKEN' || !token) {
     return (
-      <AuthLayout title="Ссылка устарела" description="Запросите сброс пароля ещё раз">
-        <Button className="w-full" onClick={() => navigate('/forgot-password')}>
-          Запросить снова
-        </Button>
-      </AuthLayout>
+      <AuthSplitLayout
+        topbar="mark"
+        showBrandBlock={false}
+        brandTitle="Ссылка устарела"
+        brandDescription="Запросите новое письмо — мы отправим свежую ссылку для сброса пароля."
+        panelTitle="Ссылка недействительна"
+        panelDescription="Запросите сброс пароля ещё раз"
+        footer={<Link to="/auth">Вернуться ко входу</Link>}
+      >
+        <div className="form-actions form-actions--tight">
+          <Button className="h-11 w-full text-base" onClick={() => navigate('/forgot-password')} type="button">
+            Запросить снова
+          </Button>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   return (
-    <AuthLayout title="Новый пароль" description="Задайте новый пароль для аккаунта">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        <Input type="password" placeholder="Новый пароль" {...register('password')} />
-        <Input type="password" placeholder="Повторите пароль" {...register('confirmPassword')} />
-        {errors.confirmPassword && (
+    <AuthSplitLayout
+      topbar="mark"
+      showBrandBlock={false}
+      brandTitle="Новый пароль"
+      brandDescription="Минимум 8 символов, используйте уникальный пароль."
+      panelTitle="Задайте пароль"
+      panelDescription="После сохранения войдите с новым паролем"
+    >
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="form-fields">
+          <div className="field">
+            <label htmlFor="password">Новый пароль</label>
+            <input
+              id="password"
+              type="password"
+              className="input"
+              autoComplete="new-password"
+              {...register('password')}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="confirmPassword">Повторите</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              className="input"
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+            />
+          </div>
+        </div>
+
+        {errors.confirmPassword ? (
           <p className="text-xs text-insight-warning">{errors.confirmPassword.message}</p>
-        )}
-        {message && <p className="text-xs text-insight-warning">{message}</p>}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Сохранение...' : 'Сохранить пароль'}
-        </Button>
+        ) : null}
+        {message ? <p className="text-xs text-insight-warning">{message}</p> : null}
+
+        <div className="form-actions">
+          <Button type="submit" className="h-11 w-full text-base" disabled={isSubmitting}>
+            {isSubmitting ? 'Сохранение...' : 'Сохранить пароль'}
+          </Button>
+        </div>
       </form>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

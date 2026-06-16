@@ -1,16 +1,41 @@
-import { ArrowLeft, BarChart3, Pencil, Plus } from 'lucide-react';
+import {
+  BarChart3,
+  CalendarClock,
+  Ellipsis,
+  Filter,
+  Loader2,
+  Plus,
+  Share2,
+  Trash2,
+  Type,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-
+import { useNavigate, useParams } from 'react-router-dom';
 import { CubeApiProvider } from '@/components/cube/cube-provider';
 import { DashboardFormDialog } from '@/components/dashboards/dashboard-form-dialog';
 import { DashboardGrid } from '@/components/dashboards/dashboard-grid';
+import { DashboardToolbar } from '@/components/dashboards/dashboard-toolbar';
 import { WidgetEditorDialog } from '@/components/dashboards/widget-editor-dialog';
-import { Button } from '@/components/ui/button';
+import { DocBlock } from '@/components/doc/doc-block';
+import { DocBlockHead } from '@/components/doc/doc-block-head';
+import { DocPage } from '@/components/doc/doc-page';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Dropdown, DropdownMenu, DropdownTrigger } from '@/components/ui/dropdown';
+import { MenuItem } from '@/components/ui/menu-item';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDashboard, useUpdateDashboard } from '@/hooks/use-dashboards';
+import { useDashboard, useDeleteDashboard, useUpdateDashboard } from '@/hooks/use-dashboards';
 import { useCanWriteDashboards } from '@/hooks/use-me';
 import type { Widget } from '@umetrica/core';
+import { cn } from '@/lib/utils';
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
 
 function DashboardEditorContent({
   dashboardId,
@@ -80,19 +105,37 @@ function DashboardEditorContent({
     setEditorOpen(true);
   };
 
+  const addButton = !readOnly ? (
+    <Dropdown>
+      <DropdownTrigger className={cn(buttonVariants({ size: 'sm' }))}>
+        <Plus size={14} />
+        Добавить
+      </DropdownTrigger>
+      <DropdownMenu align="end">
+        <MenuItem icon={BarChart3} onClick={openCreate}>
+          График
+        </MenuItem>
+        <MenuItem icon={Filter} onClick={openCreate}>
+          Фильтр
+        </MenuItem>
+        <MenuItem icon={CalendarClock} onClick={openCreate}>
+          Детализация
+        </MenuItem>
+        <MenuItem icon={Type} onClick={openCreate}>
+          Текст
+        </MenuItem>
+      </DropdownMenu>
+    </Dropdown>
+  ) : null;
+
   return (
-    <div className="space-y-4">
-      {!readOnly && (
-        <div className="flex justify-end">
-          <Button onClick={openCreate}>
-            <Plus size={16} />
-            Добавить виджет
-          </Button>
-        </div>
-      )}
+    <>
+      <DocBlockHead title="Метрики" actions={addButton} />
+
+      {widgets.length > 0 ? <DashboardToolbar /> : null}
 
       {widgets.length === 0 ? (
-        <Card>
+        <Card className="border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <BarChart3 size={18} />
@@ -106,7 +149,7 @@ function DashboardEditorContent({
           </CardHeader>
           {!readOnly && (
             <CardContent>
-              <Button onClick={openCreate}>
+              <Button onClick={openCreate} type="button">
                 <Plus size={16} />
                 Добавить первый виджет
               </Button>
@@ -133,61 +176,93 @@ function DashboardEditorContent({
           isSubmitting={updateMutation.isPending}
         />
       )}
-    </div>
+    </>
   );
 }
 
 export function DashboardDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: dashboard, isLoading, error } = useDashboard(id);
   const updateMutation = useUpdateDashboard(id ?? '');
+  const deleteMutation = useDeleteDashboard();
   const canWrite = useCanWriteDashboards();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const handleDeleteDashboard = async () => {
+    if (!dashboard || !id) return;
+    if (!confirm(`Удалить дашборд «${dashboard.name}»?`)) return;
+    await deleteMutation.mutateAsync(id);
+    navigate('/dashboards');
+  };
+
   if (isLoading) {
-    return <div className="text-muted-foreground">Загрузка дашборда...</div>;
+    return (
+      <DocPage title="Дашборд" back="auto" mobileTitle="Дашборд">
+        <Card className="border-border">
+          <CardContent className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Загрузка дашборда...
+          </CardContent>
+        </Card>
+      </DocPage>
+    );
   }
 
   if (error || !dashboard || !id) {
     return (
-      <Card className="border-insight-warning/40">
-        <CardContent className="pt-6 text-sm text-insight-warning">
-          Дашборд не найден
-        </CardContent>
-      </Card>
+      <DocPage title="Дашборд" back="auto" mobileTitle="Дашборд">
+        <Card className="border-insight-warning/40">
+          <CardContent className="pt-6 text-sm text-insight-warning">Дашборд не найден</CardContent>
+        </Card>
+      </DocPage>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link to="/dashboards">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft size={16} />
-            Назад
-          </Button>
-        </Link>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold">{dashboard.name}</h1>
-          {dashboard.description && (
-            <p className="text-sm text-muted-foreground">{dashboard.description}</p>
-          )}
-        </div>
-        {canWrite && (
-          <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-            <Pencil size={14} />
-            Настройки
-          </Button>
-        )}
-      </div>
+  const headerMenu = canWrite ? (
+    <Dropdown>
+      <DropdownTrigger
+        className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
+        aria-label="Действия"
+      >
+        <Ellipsis className="size-4" />
+      </DropdownTrigger>
+      <DropdownMenu align="end">
+        <MenuItem icon={Share2} onClick={() => setSettingsOpen(true)}>
+          Embed и доступ
+        </MenuItem>
+        <MenuItem icon={Trash2} variant="danger" onClick={() => void handleDeleteDashboard()}>
+          Удалить
+        </MenuItem>
+      </DropdownMenu>
+    </Dropdown>
+  ) : null;
 
-      <CubeApiProvider>
-        <DashboardEditorContent
-          dashboardId={id}
-          initialWidgets={dashboard.widgets}
-          readOnly={!canWrite}
-        />
-      </CubeApiProvider>
+  return (
+    <>
+      <DocPage
+        title={dashboard.name}
+        lead={dashboard.description ?? 'Ежедневный мониторинг KPI'}
+        icon={BarChart3}
+        back="auto"
+        actions={headerMenu}
+        mobileActions={headerMenu}
+        props={[
+          { label: 'Виджетов', value: String(dashboard.widgets.length) },
+          { label: 'Обновлён', value: formatDate(dashboard.updatedAt) },
+          { label: 'Период', value: '7 дней' },
+        ]}
+      >
+        <DocBlock>
+          <CubeApiProvider>
+            <DashboardEditorContent
+              dashboardId={id}
+              initialWidgets={dashboard.widgets}
+              readOnly={!canWrite}
+            />
+          </CubeApiProvider>
+        </DocBlock>
+      </DocPage>
 
       <DashboardFormDialog
         open={settingsOpen}
@@ -200,6 +275,6 @@ export function DashboardDetailPage() {
         }}
         isSubmitting={updateMutation.isPending}
       />
-    </div>
+    </>
   );
 }

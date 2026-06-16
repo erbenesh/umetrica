@@ -1,79 +1,147 @@
-import { randomUUID } from 'node:crypto';
-
 import {
-  InsightBriefSchema,
-  InsightEvaluationSchema,
+  BENCHMARK_WARMUP_DAYS,
+  UpdateInsightSettingsSchema,
   type Insight,
-  type InsightBrief,
-  type InsightEvaluation,
+  type InsightRun,
 } from '@umetrica/core';
-import {
-  buildFallbackEvaluation,
-  detectAnomalies,
-  createLLMProvider,
-  evaluateInsight,
-} from '@umetrica/insights';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 
+import { insightRuns } from '../db/insight-runs.js';
 import { insights } from '../db/insights.js';
 import { db } from '../db/index.js';
-import { createCubeToken } from '../lib/cube-token.js';
-import { getAuthContext } from '../lib/request-auth.js';
-import { seedDemoOrdersForTenant } from '../lib/seed-demo-orders.js';
+import { user } from '../db/schema.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
+import {
+  canReceiveBenchmarkInsights,
+  canReceiveBenchmarkParticipation,
+} from '../lib/benchmark-access.js';
+import { runInsightGeneration } from '../lib/insight-generation.js';
+import { toInsightRow } from '../lib/market-insight-generation.js';
+import { getInsightSettings, getPrivacySettings, updateInsightSettings } from '../lib/org-metadata.js';
+import { canWriteDashboards, getAuthContext } from '../lib/request-auth.js';
 
-function toInsight(row: typeof insights.$inferSelect): Insight {
+function toInsightRun(
+  row: typeof insightRuns.$inferSelect,
+  triggeredByName?: string | null
+): InsightRun {
   return {
     id: row.id,
     organizationId: row.organizationId,
-    brief: InsightBriefSchema.parse(row.brief),
-    evaluation: InsightEvaluationSchema.parse(row.evaluation),
-    provider: row.provider ?? undefined,
+    trigger: row.trigger as InsightRun['trigger'],
+    triggeredByName: triggeredByName ?? undefined,
+    insightCount: row.insightCount,
+    creditsUsed: row.creditsUsed,
+    result: row.result as InsightRun['result'],
+    message: row.message ?? undefined,
+    firstInsightId: row.firstInsightId ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };
 }
 
-async function evaluateBrief(brief: InsightBrief): Promise<{
-  evaluation: InsightEvaluation;
-  provider: string;
-}> {
-  const hasDeepseek = Boolean(process.env.DEEPSEEK_API_KEY);
-  const hasQwen = Boolean(process.env.QWEN_API_KEY);
-
-  if (!hasDeepseek && !hasQwen) {
-    return {
-      evaluation: buildFallbackEvaluation(brief),
-      provider: 'rule-based',
-    };
-  }
-
-  const preferredProvider = hasDeepseek ? 'deepseek' : 'qwen';
-
-  try {
-    const llm = createLLMProvider(preferredProvider, {
-      deepseekApiKey: process.env.DEEPSEEK_API_KEY,
-      deepseekBaseUrl: process.env.DEEPSEEK_BASE_URL,
-      qwenApiKey: process.env.QWEN_API_KEY,
-      qwenBaseUrl: process.env.QWEN_BASE_URL,
-    });
-
-    const evaluation = await evaluateInsight(llm, brief);
-    return { evaluation, provider: llm.name };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'LLM evaluation failed';
-    console.warn(`[insights] LLM failed, using fallback: ${message}`);
-
-    return {
-      evaluation: buildFallbackEvaluation(brief),
-      provider: 'rule-based-fallback',
-    };
-  }
+function monthStart() {
+  const date = new Date();
+  date.setDate(1);
+  date.setHours(0, 0, 0, 0);
+  return date;
 }
 
 export async function registerInsightRoutes(app: FastifyInstance) {
+  app.get('/api/insights/history', async (request, reply) => {
+    const auth = await getAuthContext(request, reply);
+    if (!auth) return;
+
+    const rows = await db
+      .select({
+        run: insightRuns,
+        userName: user.name,
+      })
+      .from(insightRuns)
+      .leftJoin(user, eq(insightRuns.triggeredBy, user.id))
+      .where(eq(insightRuns.organizationId, auth.organizationId))
+      .orderBy(desc(insightRuns.createdAt))
+      .limit(100);
+
+    const monthRows = await db
+      .select({
+        creditsUsed: insightRuns.creditsUsed,
+        insightCount: insightRuns.insightCount,
+      })
+      .from(insightRuns)
+      .where(
+        and(
+          eq(insightRuns.organizationId, auth.organizationId),
+          gte(insightRuns.createdAt, monthStart())
+        )
+      );
+
+    const monthCredits = monthRows.reduce((sum, row) => sum + row.creditsUsed, 0);
+    const monthInsights = monthRows.reduce((sum, row) => sum + row.insightCount, 0);
+
+    return {
+      items: rows.map(({ run, userName }) => toInsightRun(run, userName)),
+      total: rows.length,
+      monthCredits,
+      monthInsights,
+    };
+  });
+
+  app.get('/api/insights/settings', async (request, reply) => {
+    const auth = await getAuthContext(request, reply);
+    if (!auth) return;
+
+    return getInsightSettings(auth.organizationId);
+  });
+
+  app.patch('/api/insights/settings', async (request, reply) => {
+    const auth = await getAuthContext(request, reply);
+    if (!auth) return;
+
+    if (!canWriteDashboards(auth.role)) {
+      return reply.status(403).send({ error: 'Insufficient permissions' });
+    }
+
+    const parsed = UpdateInsightSettingsSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() });
+    }
+
+    if (parsed.data.sources?.benchmark === true) {
+      const privacy = await getPrivacySettings(auth.organizationId);
+      if (!privacy.benchmarkOptIn) {
+        return reply.status(400).send({
+          error:
+            'Бенчмарки доступны только при участии в пуле. Включите «Получать и делиться» в настройках конфиденциальности.',
+        });
+      }
+      if (!canReceiveBenchmarkParticipation(privacy)) {
+        return reply.status(400).send({
+          error: `Бенчмарк-инсайты появятся через ${BENCHMARK_WARMUP_DAYS} дн. после включения участия — идёт период прогрева.`,
+        });
+      }
+    }
+
+    const next = await updateInsightSettings(auth.organizationId, parsed.data);
+
+    await recordAuditEvent({
+      organizationId: auth.organizationId,
+      userId: auth.userId,
+      actorName: auth.userName,
+      action: 'insights.settings',
+      objectLabel: `Расписание: ${next.schedule}`,
+      category: 'system',
+    });
+
+    return next;
+  });
+
   app.get('/api/insights', async (request, reply) => {
     const auth = await getAuthContext(request, reply);
     if (!auth) return;
+
+    const source = (request.query as { source?: string }).source;
+
+    const receiveBenchmarks = await canReceiveBenchmarkInsights(auth.organizationId);
 
     const rows = await db
       .select()
@@ -81,59 +149,67 @@ export async function registerInsightRoutes(app: FastifyInstance) {
       .where(eq(insights.organizationId, auth.organizationId))
       .orderBy(desc(insights.createdAt));
 
+    const items = rows
+      .map(toInsightRow)
+      .filter((item) => !source || item.source === source)
+      .filter((item) => item.source !== 'benchmark' || receiveBenchmarks);
+
     return {
-      items: rows.map(toInsight),
-      total: rows.length,
+      items,
+      total: items.length,
     };
+  });
+
+  app.get('/api/insights/:id', async (request, reply) => {
+    const auth = await getAuthContext(request, reply);
+    if (!auth) return;
+
+    const { id } = request.params as { id: string };
+
+    const [row] = await db
+      .select()
+      .from(insights)
+      .where(and(eq(insights.id, id), eq(insights.organizationId, auth.organizationId)))
+      .limit(1);
+
+    if (!row) {
+      return reply.status(404).send({ error: 'Insight not found' });
+    }
+
+    return toInsightRow(row);
   });
 
   app.post('/api/insights/generate', async (request, reply) => {
     const auth = await getAuthContext(request, reply);
     if (!auth) return;
 
-    await seedDemoOrdersForTenant(auth.organizationId);
-
-    const cubeUrl = process.env.CUBE_URL ?? 'http://localhost:4000';
-    const token = await createCubeToken({
-      tenantId: auth.organizationId,
+    const result = await runInsightGeneration({
+      organizationId: auth.organizationId,
       userId: auth.userId,
+      trigger: 'manual',
     });
 
-    const briefs = await detectAnomalies({ cubeUrl, token });
-    if (briefs.length === 0) {
-      return reply.status(200).send({
-        generated: false,
-        items: [],
-        message: 'Значимых аномалий за последние 7 дней не обнаружено',
+    if (!result.ok) {
+      return reply.status(result.status).send({
+        error: result.error,
+        creditsUsed: result.creditsUsed,
+        creditsTotal: result.creditsTotal,
+        requiredCredits: result.requiredCredits,
       });
     }
 
-    const now = new Date();
-    const items: Insight[] = [];
-
-    for (const brief of briefs) {
-      const { evaluation, provider } = await evaluateBrief(brief);
-      const id = randomUUID();
-
-      const [row] = await db
-        .insert(insights)
-        .values({
-          id,
-          organizationId: auth.organizationId,
-          brief,
-          evaluation,
-          provider,
-          createdAt: now,
-        })
-        .returning();
-
-      items.push(toInsight(row!));
+    if (!result.generated) {
+      return reply.status(200).send({
+        generated: false,
+        items: [],
+        message: result.message,
+      });
     }
 
     return reply.status(201).send({
       generated: true,
-      items,
-      count: items.length,
+      items: result.items,
+      count: result.count,
     });
   });
 

@@ -1,9 +1,10 @@
-import { Building2, Loader2 } from 'lucide-react';
+import { Building2, ChevronDown, Loader2, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { Dropdown, DropdownDivider, DropdownMenu, DropdownTrigger } from '@/components/ui/dropdown';
+import { MenuItem } from '@/components/ui/menu-item';
 import { useMe } from '@/hooks/use-me';
 import { useOrganizations, useSwitchOrganization } from '@/hooks/use-organizations';
-import { cn } from '@/lib/utils';
 
 export function OrgSwitcher() {
   const { data: me } = useMe();
@@ -12,7 +13,7 @@ export function OrgSwitcher() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-1.5 px-1.5 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-1.5 px-2.5 py-2 text-[11px] text-muted-foreground">
         <Loader2 className="size-3 animate-spin" />
         Компании...
       </div>
@@ -21,37 +22,57 @@ export function OrgSwitcher() {
 
   if (!orgs?.organizations.length) {
     return (
-      <div className="px-1.5 text-[11px] text-muted-foreground">
-        <Link to="/onboarding" className="inline-flex items-center gap-1 hover:text-foreground">
-          <Building2 className="size-3" />
-          Создать компанию
-        </Link>
-      </div>
+      <Link
+        to="/onboarding"
+        className="workspace-switcher"
+      >
+        <span className="workspace-switcher__icon">
+          <Building2 className="size-[18px]" strokeWidth={1.75} />
+        </span>
+        <span className="workspace-switcher__body">
+          <span className="workspace-switcher__name">Новая компания</span>
+          <span className="workspace-switcher__hint">Создать workspace</span>
+        </span>
+      </Link>
     );
   }
 
   const activeId = me?.session.activeOrganizationId ?? orgs.organizations[0]?.id;
+  const activeOrg = orgs.organizations.find((org) => org.id === activeId) ?? orgs.organizations[0]!;
+  const hasMultiple = orgs.organizations.length > 1;
 
   return (
-    <label className="block px-1.5">
-      <span className="mb-1 block text-[10px] uppercase tracking-wide text-muted-foreground">
-        Компания
-      </span>
-      <select
-        className={cn(
-          'h-7 w-full rounded-md border border-border bg-card px-2 text-xs text-foreground',
-          switchOrg.isPending && 'opacity-60'
-        )}
-        value={activeId}
-        disabled={switchOrg.isPending || orgs.organizations.length <= 1}
-        onChange={(event) => switchOrg.mutate(event.target.value)}
-      >
-        {orgs.organizations.map((org) => (
-          <option key={org.id} value={org.id}>
-            {org.name}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Dropdown block>
+      <DropdownTrigger className="workspace-switcher" disabled={switchOrg.isPending}>
+        <span className="workspace-switcher__icon">
+          <Building2 className="size-[18px]" strokeWidth={1.75} />
+        </span>
+        <span className="workspace-switcher__body">
+          <span className="workspace-switcher__name">{activeOrg.name}</span>
+          <span className="workspace-switcher__hint">Компания</span>
+        </span>
+        <ChevronDown className="workspace-switcher__chev" strokeWidth={1.75} />
+      </DropdownTrigger>
+
+      <DropdownMenu>
+        {hasMultiple
+          ? orgs.organizations.map((org) => (
+              <MenuItem
+                key={org.id}
+                icon={Building2}
+                active={org.id === activeId}
+                disabled={switchOrg.isPending}
+                onClick={() => switchOrg.mutate(org.id)}
+              >
+                {org.name}
+              </MenuItem>
+            ))
+          : null}
+        {hasMultiple ? <DropdownDivider /> : null}
+        <MenuItem icon={Plus} variant="muted" to="/onboarding">
+          Новая компания
+        </MenuItem>
+      </DropdownMenu>
+    </Dropdown>
   );
 }

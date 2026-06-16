@@ -15,8 +15,6 @@ import { useMemo } from 'react';
 import { Bar, Doughnut, Line, Pie } from 'react-chartjs-2';
 import { useCubeQuery } from '@cubejs-client/react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,7 +27,7 @@ ChartJS.register(
 );
 
 const PIE_COLORS = [
-  '#3b82f6',
+  '#2383e2',
   '#22c55e',
   '#f59e0b',
   '#ef4444',
@@ -66,6 +64,15 @@ function getDimensionLabel(widget: Widget, dimensionKey: string, raw: unknown) {
   return String(raw ?? '—');
 }
 
+function WidgetShell({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="canvas-cell">
+      <p className="kpi__label">{title}</p>
+      {children}
+    </div>
+  );
+}
+
 function KpiWidget({ widget }: { widget: Widget }) {
   const query = buildWidgetQuery(widget) as Query | null;
   const { isLoading, error, resultSet } = useCubeQuery(query ?? { measures: [] }, { skip: !query });
@@ -75,16 +82,11 @@ function KpiWidget({ widget }: { widget: Widget }) {
   const value = Number(rows[0]?.[measureKey] ?? 0);
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{widget.title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold">
-          {isLoading ? '...' : error ? '—' : formatValue(value, measureKey)}
-        </div>
-      </CardContent>
-    </Card>
+    <WidgetShell title={widget.title}>
+      <p className="kpi__value">
+        {isLoading ? '…' : error ? '—' : formatValue(value, measureKey)}
+      </p>
+    </WidgetShell>
   );
 }
 
@@ -105,8 +107,8 @@ function ChartWidget({ widget }: { widget: Widget }) {
         {
           label: widget.title,
           data: rows.map((row) => Number(row[measureKey] ?? 0)),
-          backgroundColor: widget.chartType === 'line' ? 'rgba(59, 130, 246, 0.2)' : '#3b82f6',
-          borderColor: '#3b82f6',
+          backgroundColor: widget.chartType === 'line' ? 'rgba(35, 131, 226, 0.2)' : '#2383e2',
+          borderColor: '#2383e2',
           borderWidth: 2,
           tension: 0.3,
           fill: widget.chartType === 'area',
@@ -122,12 +124,14 @@ function ChartWidget({ widget }: { widget: Widget }) {
       plugins: { legend: { display: false } },
       scales: {
         y: {
-          ticks: { color: '#94a3b8' },
-          grid: { color: '#334155' },
+          ticks: { color: '#9b9a97', font: { size: 11 } },
+          grid: { color: 'rgba(55, 53, 47, 0.09)' },
+          border: { display: false },
         },
         x: {
-          ticks: { color: '#94a3b8' },
+          ticks: { color: '#9b9a97', font: { size: 11 } },
           grid: { display: false },
+          border: { display: false },
         },
       },
     }),
@@ -137,20 +141,17 @@ function ChartWidget({ widget }: { widget: Widget }) {
   const ChartComponent = widget.chartType === 'line' || widget.chartType === 'area' ? Line : Bar;
 
   return (
-    <Card className="flex h-full flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{widget.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="min-h-0 flex-1">
+    <WidgetShell title={widget.title}>
+      <div className="kpi__chart">
         {isLoading && <div className="text-sm text-muted-foreground">Загрузка...</div>}
         {error && <div className="text-sm text-insight-warning">Ошибка загрузки</div>}
         {!isLoading && !error && chartData && (
-          <div className="h-full min-h-[180px]">
+          <div className="h-full min-h-[140px]">
             <ChartComponent data={chartData} options={options} />
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </WidgetShell>
   );
 }
 
@@ -172,8 +173,8 @@ function PieWidget({ widget }: { widget: Widget }) {
         {
           data: rows.map((row) => Number(row[measureKey] ?? 0)),
           backgroundColor: rows.map((_, index) => PIE_COLORS[index % PIE_COLORS.length]),
-          borderColor: '#1e293b',
-          borderWidth: 1,
+          borderColor: 'transparent',
+          borderWidth: 0,
         },
       ],
     };
@@ -187,7 +188,7 @@ function PieWidget({ widget }: { widget: Widget }) {
         legend: {
           display: true,
           position: 'right' as const,
-          labels: { color: '#94a3b8', boxWidth: 12 },
+          labels: { color: '#9b9a97', boxWidth: 12, font: { size: 11 } },
         },
       },
       cutout: isDonut ? '55%' : undefined,
@@ -198,20 +199,17 @@ function PieWidget({ widget }: { widget: Widget }) {
   const ChartComponent = isDonut ? Doughnut : Pie;
 
   return (
-    <Card className="flex h-full flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{widget.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="min-h-0 flex-1">
+    <WidgetShell title={widget.title}>
+      <div className="kpi__chart">
         {isLoading && <div className="text-sm text-muted-foreground">Загрузка...</div>}
         {error && <div className="text-sm text-insight-warning">Ошибка загрузки</div>}
         {!isLoading && !error && chartData && (
-          <div className="h-full min-h-[180px]">
+          <div className="h-full min-h-[140px]">
             <ChartComponent data={chartData} options={options} />
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </WidgetShell>
   );
 }
 
@@ -229,10 +227,8 @@ export function WidgetRenderer({ widget }: { widget: Widget }) {
   }
 
   return (
-    <Card className="h-full">
-      <CardContent className="pt-6 text-sm text-muted-foreground">
-        Тип «{widget.chartType}» пока не поддерживается
-      </CardContent>
-    </Card>
+    <WidgetShell title={widget.title}>
+      <p className="text-sm text-muted-foreground">Тип «{widget.chartType}» пока не поддерживается</p>
+    </WidgetShell>
   );
 }

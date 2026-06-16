@@ -7,6 +7,7 @@ config({ path: resolve(rootDir, '.env') });
 
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
+import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 
 import { getSessionFromRequest, handleAuthRequest, buildWebRequest, sendAuthResponse } from './lib/auth-request.js';
@@ -16,11 +17,20 @@ import {
   listOrganizationsForUser,
   resolveActiveOrganizationId,
 } from './lib/org-context.js';
+import { startInsightScheduler } from './lib/insight-scheduler.js';
+import { ensureMarketSegmentSnapshots } from './lib/seed-market-segments.js';
 import { seedDemoOrdersForTenant } from './lib/seed-demo-orders.js';
+import { registerBillingRoutes } from './routes/billing.js';
+import { registerConnectionRoutes } from './routes/connections.js';
 import { registerDashboardRoutes } from './routes/dashboards.js';
 import { registerInsightRoutes } from './routes/insights.js';
 import { registerInvitationRoutes } from './routes/invitations.js';
+import { registerPrivacyRoutes } from './routes/privacy.js';
 import { registerAuthRoutes } from './routes/register.js';
+import { registerAuditRoutes } from './routes/audit.js';
+import { registerEnterpriseLlmRoutes } from './routes/enterprise-llm.js';
+import { registerSemanticRoutes } from './routes/semantic.js';
+import { registerSsoRoutes } from './routes/sso.js';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -44,6 +54,12 @@ await app.register(cors, {
 });
 
 await app.register(cookie);
+await app.register(multipart, {
+  limits: {
+    fileSize: 20 * 1024 * 1024,
+    files: 1,
+  },
+});
 
 app.route({
   method: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
@@ -198,10 +214,27 @@ await registerDashboardRoutes(app);
 await registerInsightRoutes(app);
 await registerInvitationRoutes(app);
 await registerAuthRoutes(app);
+await registerConnectionRoutes(app);
+await registerBillingRoutes(app);
+await registerPrivacyRoutes(app);
+await registerSemanticRoutes(app);
+await registerAuditRoutes(app);
+await registerSsoRoutes(app);
+await registerEnterpriseLlmRoutes(app);
+
+try {
+  await ensureMarketSegmentSnapshots();
+} catch (error) {
+  app.log.warn(
+    { err: error },
+    'Не удалось загрузить market_segment_snapshots — выполните pnpm db:push и перезапустите API'
+  );
+}
 
 try {
   await app.listen({ port: PORT, host: HOST });
   app.log.info(`umetrica API listening on http://${HOST}:${PORT}`);
+  startInsightScheduler();
 } catch (error) {
   app.log.error(error);
   process.exit(1);

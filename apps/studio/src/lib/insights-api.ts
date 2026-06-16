@@ -1,4 +1,9 @@
-import type { Insight } from '@umetrica/core';
+import type {
+  Insight,
+  InsightHistoryResponse,
+  InsightSettings,
+  UpdateInsightSettingsInput,
+} from '@umetrica/core';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
@@ -52,5 +57,26 @@ export function deleteInsight(id: string) {
     if (!response.ok) {
       throw new Error('Failed to delete insight');
     }
+  });
+}
+
+export const insightQueryKey = (id: string) => ['insights', id] as const;
+
+export function fetchInsight(id: string) {
+  return apiFetch<Insight>(`/api/insights/${id}`);
+}
+
+export function fetchInsightHistory() {
+  return apiFetch<InsightHistoryResponse>('/api/insights/history');
+}
+
+export function fetchInsightSettings() {
+  return apiFetch<InsightSettings>('/api/insights/settings');
+}
+
+export function updateInsightSettings(input: UpdateInsightSettingsInput) {
+  return apiFetch<InsightSettings>('/api/insights/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(input),
   });
 }

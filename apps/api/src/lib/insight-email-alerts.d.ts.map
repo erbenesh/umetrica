@@ -1,0 +1,1 @@
+{"version":3,"file":"insight-email-alerts.d.ts","sourceRoot":"","sources":["insight-email-alerts.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,gBAAgB,CAAC;AA+E9C,wBAAsB,0BAA0B,CAAC,KAAK,EAAE;IACtD,cAAc,EAAE,MAAM,CAAC;IACvB,KAAK,EAAE,OAAO,EAAE,CAAC;IACjB,WAAW,EAAE,OAAO,CAAC;CACtB,iBAqCA"}

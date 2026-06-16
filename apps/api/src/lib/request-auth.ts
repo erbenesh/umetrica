@@ -8,6 +8,7 @@ import { resolveActiveOrganizationId } from './org-context.js';
 
 export type AuthContext = {
   userId: string;
+  userName: string;
   organizationId: string;
   role: string;
 };
@@ -42,6 +43,7 @@ export async function getAuthContext(
 
   return {
     userId: session.user.id,
+    userName: session.user.name ?? session.user.email,
     organizationId,
     role: membership.role,
   };

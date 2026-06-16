@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { AuthLayout } from '@/components/layout/auth-layout';
+import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { useMe } from '@/hooks/use-me';
 import { sendVerificationEmail } from '@/lib/auth-client';
@@ -11,7 +11,7 @@ export function VerifyEmailPage() {
   const location = useLocation();
   const { data: me, refetch } = useMe();
   const [status, setStatus] = useState<string | null>(
-    (location.state as { message?: string } | null)?.message ?? null,
+    (location.state as { message?: string } | null)?.message ?? null
   );
   const [isSending, setIsSending] = useState(false);
 
@@ -42,34 +42,58 @@ export function VerifyEmailPage() {
 
   if (me?.user.emailVerified) {
     return (
-      <AuthLayout title="Email подтверждён" description="Можно продолжать работу в umetrica">
-        <Button className="w-full" onClick={() => navigate('/')}>
-          На главную
-        </Button>
-      </AuthLayout>
+      <AuthSplitLayout
+        topbar="mark"
+        showBrandBlock={false}
+        brandTitle="Доступ открыт"
+        brandDescription="Email подтверждён — можно работать с дашбордами и инсайтами."
+        panelTitle="Email подтверждён"
+        panelDescription="Можно продолжать работу в umetrica"
+      >
+        <div className="form-actions form-actions--tight">
+          <Button className="h-11 w-full text-base" onClick={() => navigate('/')} type="button">
+            На главную
+          </Button>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   return (
-    <AuthLayout
-      title="Подтвердите email"
-      description={`Мы отправили письмо на ${me?.user.email ?? 'ваш адрес'}. Подтверждение нужно для входа в компанию и приёма приглашений.`}
+    <AuthSplitLayout
+      topbar="mark"
+      showBrandBlock={false}
+      brandTitle="Почти готово"
+      brandDescription="Подтверждение email защищает ваш аккаунт и компанию."
+      panelTitle="Подтвердите email"
+      panelDescription={
+        <>
+          Письмо отправлено на <strong>{me?.user.email ?? 'ваш адрес'}</strong>
+        </>
+      }
     >
-      <div className="space-y-3">
-        <p className="text-xs text-muted-foreground">
-          В dev-режиме ссылка печатается в консоли API-сервера.
-        </p>
-        {status && <p className="text-xs text-insight-info">{status}</p>}
-        <Button className="w-full" disabled={isSending} onClick={handleResend}>
+      <p className="m-0 text-sm text-foreground-secondary">
+        После подтверждения и входа компания создастся автоматически.
+      </p>
+
+      {status ? <p className="text-xs text-insight-info">{status}</p> : null}
+
+      <div className="form-actions form-actions--tight">
+        <Button className="h-11 w-full text-base" disabled={isSending} onClick={handleResend} type="button">
           {isSending ? 'Отправка...' : 'Отправить письмо снова'}
         </Button>
-        <Button variant="secondary" className="w-full" onClick={() => refetch()}>
-          Я подтвердил — обновить статус
+        <Button
+          variant="secondary"
+          className="h-11 w-full text-base"
+          onClick={() => refetch()}
+          type="button"
+        >
+          Я подтвердил — обновить
         </Button>
-        <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
+        <Button variant="outline" className="h-11 w-full text-base" onClick={() => navigate('/')} type="button">
           На главную
         </Button>
       </div>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

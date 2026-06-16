@@ -74,7 +74,7 @@ export function DashboardGrid({
       breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
       cols={{ lg: 12, md: 10, sm: 6, xs: 4 }}
       rowHeight={72}
-      margin={[16, 16]}
+      margin={[1, 1]}
       containerPadding={[0, 0]}
       isDraggable={!readOnly}
       isResizable={!readOnly}

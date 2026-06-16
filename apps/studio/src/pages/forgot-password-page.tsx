@@ -2,10 +2,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import { AuthFooterLink, AuthLayout } from '@/components/layout/auth-layout';
+import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { requestPasswordReset } from '@/lib/auth-client';
 
 const schema = z.object({
@@ -38,18 +38,37 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <AuthLayout
-      title="Сброс пароля"
-      description="Введите email — пришлём ссылку для нового пароля"
-      footer={<AuthFooterLink to="/auth">Вернуться ко входу</AuthFooterLink>}
+    <AuthSplitLayout
+      topbar="mark"
+      showBrandBlock={false}
+      brandTitle="Восстановление доступа"
+      brandDescription="Отправим безопасную ссылку на ваш email."
+      panelTitle="Сброс пароля"
+      panelDescription="Введите email аккаунта"
+      footer={<Link to="/auth">Вернуться ко входу</Link>}
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        <Input type="email" placeholder="Email" {...register('email')} />
-        {message && <p className="text-xs text-muted-foreground">{message}</p>}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Отправка...' : 'Отправить ссылку'}
-        </Button>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="form-fields">
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              className="input"
+              autoComplete="email"
+              {...register('email')}
+            />
+          </div>
+        </div>
+
+        {message ? <p className="text-xs text-muted-foreground">{message}</p> : null}
+
+        <div className="form-actions">
+          <Button type="submit" className="h-11 w-full text-base" disabled={isSubmitting}>
+            {isSubmitting ? 'Отправка...' : 'Отправить ссылку'}
+          </Button>
+        </div>
       </form>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }

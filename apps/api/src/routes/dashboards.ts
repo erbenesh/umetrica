@@ -12,6 +12,7 @@ import type { FastifyInstance } from 'fastify';
 
 import { dashboards } from '../db/dashboards.js';
 import { db } from '../db/index.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 import { canWriteDashboards, getAuthContext } from '../lib/request-auth.js';
 
 function toDashboard(row: typeof dashboards.$inferSelect): Dashboard {
@@ -96,6 +97,15 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
       })
       .returning();
 
+    await recordAuditEvent({
+      organizationId: auth.organizationId,
+      userId: auth.userId,
+      actorName: auth.userName,
+      action: 'dashboard.create',
+      objectLabel: parsed.data.name,
+      category: 'semantics',
+    });
+
     return reply.status(201).send(toDashboard(row!));
   });
 
@@ -135,6 +145,17 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
       .where(eq(dashboards.id, id))
       .returning();
 
+    const label = parsed.data.name ?? existing.name;
+
+    await recordAuditEvent({
+      organizationId: auth.organizationId,
+      userId: auth.userId,
+      actorName: auth.userName,
+      action: 'dashboard.update',
+      objectLabel: label,
+      category: 'semantics',
+    });
+
     return toDashboard(row!);
   });
 
@@ -148,14 +169,33 @@ export async function registerDashboardRoutes(app: FastifyInstance) {
 
     const { id } = request.params as { id: string };
 
+    const [existing] = await db
+      .select()
+      .from(dashboards)
+      .where(and(eq(dashboards.id, id), eq(dashboards.organizationId, auth.organizationId)))
+      .limit(1);
+
+    if (!existing) {
+      return reply.status(404).send({ error: 'Dashboard not found' });
+    }
+
     const [deleted] = await db
       .delete(dashboards)
       .where(and(eq(dashboards.id, id), eq(dashboards.organizationId, auth.organizationId)))
-      .returning({ id: dashboards.id });
+      .returning({ id: dashboards.id, name: dashboards.name });
 
     if (!deleted) {
       return reply.status(404).send({ error: 'Dashboard not found' });
     }
+
+    await recordAuditEvent({
+      organizationId: auth.organizationId,
+      userId: auth.userId,
+      actorName: auth.userName,
+      action: 'dashboard.delete',
+      objectLabel: deleted.name,
+      category: 'semantics',
+    });
 
     return reply.status(204).send();
   });

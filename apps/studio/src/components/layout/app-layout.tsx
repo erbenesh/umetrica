@@ -1,89 +1,102 @@
-import { BarChart3, Home, Lightbulb, LogOut, Menu, Users, X } from 'lucide-react';
-import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Home, Layers, LayoutDashboard, LogOut, Settings, Sparkles, Users } from 'lucide-react';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 
 import { EmailVerificationBanner } from '@/components/auth/email-verification-banner';
 import { OrgSwitcher } from '@/components/layout/org-switcher';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { Button } from '@/components/ui/button';
+import { useMe } from '@/hooks/use-me';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
+const ROLE_LABELS: Record<string, string> = {
+  owner: 'Владелец',
+  admin: 'Админ',
+  viewer: 'Наблюдатель',
+  member: 'Участник',
+};
+
 const navItems = [
-  { to: '/', label: 'Главная', icon: Home },
-  { to: '/insights', label: 'Инсайты', icon: Lightbulb },
-  { to: '/dashboards', label: 'Дашборды', icon: BarChart3 },
+  { to: '/', label: 'Главная', icon: Home, end: true },
+  { to: '/insights', label: 'AI-инсайты', icon: Sparkles },
+  { to: '/dashboards', label: 'Дашборды', icon: LayoutDashboard },
+  { to: '/semantic', label: 'Семантика', icon: Layers },
   { to: '/team', label: 'Команда', icon: Users },
+  { to: '/settings', label: 'Настройки', icon: Settings },
 ];
 
-function BrandMark({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-        u
-      </span>
-      {!compact && (
-        <div className="leading-none">
-          <div className="text-sm font-semibold tracking-tight">umetrica</div>
-          <div className="text-[10px] text-muted-foreground">Данные → Ответы</div>
-        </div>
-      )}
-    </div>
-  );
+const tabNavItems = navItems.filter((item) => item.to !== '/settings');
+
+function roleLabel(role?: string) {
+  if (!role) return 'Участник';
+  return ROLE_LABELS[role] ?? role;
 }
 
-function NavItem({
+function userInitial(name?: string, email?: string) {
+  const source = name?.trim() || email?.trim() || '?';
+  return source.charAt(0).toUpperCase();
+}
+
+function SidebarNavItem({
   to,
   label,
   icon: Icon,
-  onClick,
+  end,
 }: {
   to: string;
   label: string;
   icon: typeof Home;
-  onClick?: () => void;
+  end?: boolean;
 }) {
   return (
     <NavLink
       to={to}
-      end={to === '/'}
-      onClick={onClick}
-      className={({ isActive }) =>
-        cn(
-          'flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
-          isActive
-            ? 'bg-sidebar-accent font-medium text-foreground'
-            : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground'
-        )
-      }
+      end={end}
+      className={({ isActive }) => cn('nav__item', isActive && 'is-active')}
     >
-      <Icon size={15} strokeWidth={1.75} />
-      {label}
+      <Icon className="nav__icon" strokeWidth={1.75} />
+      <span className="nav__label">{label}</span>
     </NavLink>
   );
 }
 
 export function DesktopSidebar() {
+  const { data: me } = useMe();
+  const userName = me?.user?.name ?? 'Профиль';
+  const userEmail = me?.user?.email ?? '';
+
   return (
-    <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-      <div className="flex h-11 items-center border-b border-sidebar-border px-3">
-        <BrandMark />
+    <aside className="sidebar">
+      <div className="sidebar__top">
+        <Link to="/" className="sidebar-app-link">
+          <span className="brand__mark">u</span>
+          <span className="brand__name">umetrica</span>
+        </Link>
+        <OrgSwitcher />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 p-2">
-        {navItems.map((item) => (
-          <NavItem key={item.to} {...item} />
-        ))}
-      </nav>
+      <div className="sidebar__scroll">
+        <p className="sidebar__section-label">Навигация</p>
+        <nav className="nav">
+          {navItems.map((item) => (
+            <SidebarNavItem key={item.to} {...item} />
+          ))}
+        </nav>
+      </div>
 
-      <div className="space-y-2 border-t border-sidebar-border p-2">
-        <OrgSwitcher />
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="flex-1 justify-start px-2" onClick={() => signOut()}>
-            <LogOut size={14} />
-            Выйти
-          </Button>
-          <ThemeToggle />
+      <div className="sidebar__footer">
+        <div className="sidebar-user">
+          <span className="sidebar-user__avatar">{userInitial(userName, userEmail)}</span>
+          <div className="sidebar-user__meta">
+            <span className="sidebar-user__name">{userName}</span>
+            <span className="sidebar-user__role">{roleLabel(me?.role)}</span>
+          </div>
+          <button
+            type="button"
+            className="sidebar-user__action"
+            aria-label="Выйти"
+            onClick={() => signOut()}
+          >
+            <LogOut className="size-[18px]" strokeWidth={1.75} />
+          </button>
         </div>
       </div>
     </aside>
@@ -91,69 +104,35 @@ export function DesktopSidebar() {
 }
 
 export function MobileNav() {
-  const [open, setOpen] = useState(false);
-
   return (
-    <>
-      <header className="flex h-11 items-center justify-between border-b border-border bg-card px-3 md:hidden">
-        <BrandMark compact />
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <Button variant="ghost" size="icon-sm" onClick={() => setOpen((value) => !value)}>
-            {open ? <X size={16} /> : <Menu size={16} />}
-          </Button>
-        </div>
-      </header>
-
-      {open && (
-        <div className="border-b border-border bg-card p-2 md:hidden">
-          <div className="mb-2">
-            <OrgSwitcher />
-          </div>
-          <nav className="flex flex-col gap-0.5">
-            {navItems.map((item) => (
-              <NavItem key={item.to} {...item} onClick={() => setOpen(false)} />
-            ))}
-            <Button variant="ghost" size="sm" className="mt-1 justify-start px-2.5" onClick={() => signOut()}>
-              <LogOut size={14} />
-              Выйти
-            </Button>
-          </nav>
-        </div>
-      )}
-
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-border bg-card md:hidden">
-        {navItems.map((item) => (
+    <nav className="tabbar" aria-label="Основная навигация">
+      <div className="tabbar__inner">
+        {tabNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              cn(
-                'flex flex-1 flex-col items-center gap-0.5 py-1.5 text-[10px]',
-                isActive ? 'font-medium text-primary' : 'text-muted-foreground'
-              )
-            }
+            end={item.end}
+            className={({ isActive }) => cn('tabbar__item', isActive && 'is-active')}
           >
-            <item.icon size={16} strokeWidth={1.75} />
-            {item.label}
+            <item.icon className="tabbar__icon" strokeWidth={1.75} />
+            <span>{item.label === 'AI-инсайты' ? 'Инсайты' : item.label}</span>
           </NavLink>
         ))}
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }
 
 export function AppLayout() {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="app-frame">
       <DesktopSidebar />
-      <div className="flex min-h-screen flex-1 flex-col pb-12 md:pb-0">
-        <MobileNav />
-        <main className="flex-1 p-3 md:p-4">
-          <EmailVerificationBanner />
+      <div className="app-main">
+        <EmailVerificationBanner />
+        <main className="app-content">
           <Outlet />
         </main>
+        <MobileNav />
       </div>
     </div>
   );

@@ -132,9 +132,13 @@ export const InsightEvaluationSchema = z.object({
 
 export type InsightEvaluation = z.infer<typeof InsightEvaluationSchema>;
 
+export const InsightSourceSchema = z.enum(['tenant', 'market', 'benchmark']);
+export type InsightSource = z.infer<typeof InsightSourceSchema>;
+
 export const InsightSchema = z.object({
   id: z.string().uuid(),
   organizationId: z.string(),
+  source: InsightSourceSchema.default('tenant'),
   brief: InsightBriefSchema,
   evaluation: InsightEvaluationSchema,
   provider: z.string().optional(),
@@ -142,3 +146,106 @@ export const InsightSchema = z.object({
 });
 
 export type Insight = z.infer<typeof InsightSchema>;
+
+export const InsightRunTriggerSchema = z.enum(['manual', 'scheduled']);
+export type InsightRunTrigger = z.infer<typeof InsightRunTriggerSchema>;
+
+export const InsightRunResultSchema = z.enum(['insights', 'no_anomalies', 'error']);
+export type InsightRunResult = z.infer<typeof InsightRunResultSchema>;
+
+export const InsightRunSchema = z.object({
+  id: z.string().uuid(),
+  organizationId: z.string(),
+  trigger: InsightRunTriggerSchema,
+  triggeredByName: z.string().optional(),
+  insightCount: z.number().int().nonnegative(),
+  creditsUsed: z.number().int().positive(),
+  result: InsightRunResultSchema,
+  message: z.string().optional(),
+  firstInsightId: z.string().uuid().optional(),
+  createdAt: z.string().datetime(),
+});
+
+export type InsightRun = z.infer<typeof InsightRunSchema>;
+
+export const InsightHistoryResponseSchema = z.object({
+  items: z.array(InsightRunSchema),
+  total: z.number().int().nonnegative(),
+  monthCredits: z.number().int().nonnegative(),
+  monthInsights: z.number().int().nonnegative(),
+});
+
+export type InsightHistoryResponse = z.infer<typeof InsightHistoryResponseSchema>;
+
+export const InsightScheduleSchema = z.enum(['daily', '12h', 'manual']);
+export type InsightSchedule = z.infer<typeof InsightScheduleSchema>;
+
+export const InsightMetricSettingSchema = z.object({
+  key: z.string().min(1),
+  enabled: z.boolean(),
+});
+
+export type InsightMetricSetting = z.infer<typeof InsightMetricSettingSchema>;
+
+export const InsightSettingsSchema = z.object({
+  sources: z.object({
+    tenant: z.boolean(),
+    market: z.boolean(),
+    benchmark: z.boolean(),
+  }),
+  schedule: InsightScheduleSchema,
+  emailAlerts: z.boolean(),
+  metrics: z.array(InsightMetricSettingSchema),
+});
+
+export type InsightSettings = z.infer<typeof InsightSettingsSchema>;
+
+export const UpdateInsightSettingsSchema = InsightSettingsSchema.partial().deepPartial();
+
+export type UpdateInsightSettingsInput = z.infer<typeof UpdateInsightSettingsSchema>;
+
+export const PrivacySettingsSchema = z.object({
+  marketCategory: z.string().min(1).max(120),
+  benchmarkOptIn: z.boolean(),
+  benchmarkOptInAt: z.string().datetime().nullable().optional(),
+  benchmarkOptOutUntil: z.string().datetime().nullable().optional(),
+});
+
+export type PrivacySettings = z.infer<typeof PrivacySettingsSchema>;
+
+/** API view: privacy prefs + live benchmark pool stats for the org category */
+export const PrivacySettingsViewSchema = PrivacySettingsSchema.extend({
+  benchmarkPoolParticipants: z.number().int().nonnegative(),
+  benchmarkContributing: z.boolean(),
+  benchmarkReceiving: z.boolean(),
+  benchmarkWarmupEndsAt: z.string().datetime().nullable(),
+  benchmarkContributionEndsAt: z.string().datetime().nullable(),
+});
+
+export type PrivacySettingsView = z.infer<typeof PrivacySettingsViewSchema>;
+
+export const UpdatePrivacySettingsSchema = PrivacySettingsSchema.partial();
+
+export type UpdatePrivacySettingsInput = z.infer<typeof UpdatePrivacySettingsSchema>;
+
+export const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
+  marketCategory: 'Дом и текстиль',
+  benchmarkOptIn: false,
+  benchmarkOptInAt: null,
+  benchmarkOptOutUntil: null,
+};
+
+export const DEFAULT_INSIGHT_SETTINGS: InsightSettings = {
+  sources: {
+    tenant: true,
+    market: true,
+    benchmark: false,
+  },
+  schedule: 'manual',
+  emailAlerts: true,
+  metrics: [
+    { key: 'Orders.revenue', enabled: true },
+    { key: 'Orders.count', enabled: true },
+    { key: 'Orders.avgOrder', enabled: false },
+  ],
+};

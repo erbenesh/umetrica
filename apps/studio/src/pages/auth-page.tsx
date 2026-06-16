@@ -2,14 +2,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { AuthFooterLink, AuthLayout, AuthModeSwitch } from '@/components/layout/auth-layout';
+import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { signIn } from '@/lib/auth-client';
 import { ensureActiveOrganization, isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpers';
 import { registerFounder } from '@/lib/register-api';
+import { cn } from '@/lib/utils';
+
+const CATEGORIES = ['Дом и текстиль', 'Одежда', 'Красота и здоровье', 'Другое'];
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -38,9 +40,9 @@ export function AuthPage() {
 function AuthPageForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
+  const mode = searchParams.get('mode') === 'register' ? 'register' : 'login';
 
-  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const [category, setCategory] = useState(CATEGORIES[0]);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
@@ -99,6 +101,7 @@ function AuthPageForm() {
           state: {
             message:
               'Аккаунт создан. Подтвердите email — после входа мы автоматически создадим вашу компанию.',
+            category,
           },
         });
       }
@@ -107,43 +110,112 @@ function AuthPageForm() {
     }
   };
 
+  const isLogin = mode === 'login';
+
   return (
-    <AuthLayout
-      title={mode === 'login' ? 'Вход' : 'Регистрация'}
-      description={
-        mode === 'login'
-          ? 'Войдите в рабочее пространство компании'
-          : 'Создайте аккаунт и укажите компанию'
+    <AuthSplitLayout
+      topbar="full"
+      brandTag={isLogin ? 'Аналитика для селлеров' : undefined}
+      brandTitle={
+        isLogin
+          ? 'Аналитика селлера, которая знает рынок'
+          : 'Аналитика маркетплейсов с рыночным контекстом'
       }
+      brandDescription={
+        isLogin
+          ? 'Дашборды по вашему кабинету, рыночные тренды и бенчмарки среди похожих продавцов — без обязательного API на старте.'
+          : 'Создайте компанию — сначала рыночные инсайты по категории, потом подключите кабинет CSV или API.'
+      }
+      brandStats={
+        isLogin
+          ? [
+              { value: '3', label: 'уровня инсайтов' },
+              { value: '0', label: 'ключей для старта' },
+            ]
+          : [
+              { value: 'WB', label: 'Ozon · Маркет' },
+              { value: '152-ФЗ', label: 'данные в РФ' },
+            ]
+      }
+      panelTitle={isLogin ? 'Добро пожаловать' : 'Создать аккаунт'}
+      panelDescription={isLogin ? 'Войдите в рабочее пространство компании' : 'Для основателя компании'}
       footer={
-        <div className="space-y-2 pt-1">
-          {mode === 'login' ? (
-            <AuthFooterLink to="/forgot-password">Забыли пароль?</AuthFooterLink>
-          ) : null}
-          <AuthModeSwitch
-            label={mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
-            onClick={() => setMode((current) => (current === 'login' ? 'register' : 'login'))}
-          />
-        </div>
+        <>
+          {isLogin ? <Link to="/forgot-password">Забыли пароль?</Link> : null}
+          <span>
+            {isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? '}
+            <Link to={isLogin ? '/auth?mode=register' : '/auth'}>
+              {isLogin ? 'Регистрация' : 'Войти'}
+            </Link>
+          </span>
+        </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        {mode === 'register' && (
-          <>
-            <Input placeholder="Имя" {...register('name')} />
-            <Input placeholder="Название компании" {...register('companyName')} />
-          </>
-        )}
-        <Input type="email" placeholder="Email" {...register('email')} />
-        <Input type="password" placeholder="Пароль" {...register('password')} />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="form-fields">
+          {!isLogin ? (
+            <>
+              <div className="field">
+                <label htmlFor="name">Имя</label>
+                <input id="name" className="input" placeholder="Егор" {...register('name')} />
+              </div>
+              <div className="field">
+                <label htmlFor="company">Магазин / компания</label>
+                <input
+                  id="company"
+                  className="input"
+                  placeholder="HomeStyle"
+                  {...register('companyName')}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="category">Категория (для рыночных инсайтов)</label>
+                <select
+                  id="category"
+                  className={cn('input')}
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                >
+                  {CATEGORIES.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : null}
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              className="input"
+              autoComplete="email"
+              {...register('email')}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="password">Пароль</label>
+            <input
+              id="password"
+              type="password"
+              className="input"
+              autoComplete={isLogin ? 'current-password' : 'new-password'}
+              {...register('password')}
+            />
+          </div>
+        </div>
 
-        {info && <p className="text-xs text-insight-info">{info}</p>}
-        {error && <p className="text-xs text-insight-warning">{error}</p>}
+        {info ? <p className="text-xs text-insight-info">{info}</p> : null}
+        {error ? <p className="text-xs text-insight-warning">{error}</p> : null}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Загрузка...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-        </Button>
+        <div className="form-actions">
+          <Button type="submit" className="h-11 w-full text-base" disabled={isSubmitting}>
+            {isSubmitting ? 'Загрузка...' : isLogin ? 'Войти' : 'Зарегистрироваться'}
+          </Button>
+        </div>
       </form>
-    </AuthLayout>
+    </AuthSplitLayout>
   );
 }
