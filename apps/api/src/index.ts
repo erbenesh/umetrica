@@ -19,7 +19,7 @@ import {
 } from './lib/org-context.js';
 import { startInsightScheduler } from './lib/insight-scheduler.js';
 import { ensureMarketSegmentSnapshots } from './lib/seed-market-segments.js';
-import { seedDemoOrdersForTenant } from './lib/seed-demo-orders.js';
+import { seedDemoSemanticForTenant } from './lib/seed-demo-semantic.js';
 import { registerBillingRoutes } from './routes/billing.js';
 import { registerConnectionRoutes } from './routes/connections.js';
 import { registerDashboardRoutes } from './routes/dashboards.js';
@@ -84,7 +84,7 @@ app.get('/api/cube/token', async (request, reply) => {
     return reply.status(400).send({ error: 'No organization found. Create or join an organization first.' });
   }
 
-  await seedDemoOrdersForTenant(tenantId);
+  await seedDemoSemanticForTenant(tenantId);
 
   const token = await createCubeToken({
     tenantId,
@@ -147,7 +147,7 @@ app.post('/api/organizations', async (request, reply) => {
       body: { organizationId: created.id },
     });
 
-    await seedDemoOrdersForTenant(created.id);
+    await seedDemoSemanticForTenant(created.id);
 
     return {
       organization: {

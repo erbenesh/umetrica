@@ -1,3 +1,16 @@
+x-cube-environment: &cube-environment
+  CUBEJS_DEV_MODE: "true"
+  CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:-umetrica-cube-secret-change-me}
+  CUBEJS_CORS_ORIGIN: http://localhost:5173
+  CUBEJS_DB_TYPE: postgres
+  CUBEJS_DB_HOST: postgres
+  CUBEJS_DB_PORT: 5432
+  CUBEJS_DB_NAME: umetrica
+  CUBEJS_DB_USER: umetrica
+  CUBEJS_DB_PASS: umetrica
+  CUBEJS_CUBESTORE_HOST: cubestore
+  CUBEJS_SCHEDULED_REFRESH_TIMER: "true"
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -29,27 +42,46 @@ services:
       timeout: 3s
       retries: 5
 
+  cubestore:
+    image: cubejs/cubestore:latest
+    restart: unless-stopped
+    environment:
+      CUBESTORE_REMOTE_DIR: /cube/data
+    volumes:
+      - cubestore_data:/cube/data
+
   cube:
     image: cubejs/cube:latest
     restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
-      CUBEJS_DEV_MODE: "true"
-      CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:-umetrica-cube-secret-change-me}
-      CUBEJS_CORS_ORIGIN: http://localhost:5173
-      CUBEJS_DB_TYPE: postgres
-      CUBEJS_DB_HOST: postgres
-      CUBEJS_DB_PORT: 5432
-      CUBEJS_DB_NAME: umetrica
-      CUBEJS_DB_USER: umetrica
-      CUBEJS_DB_PASS: umetrica
+      <<: *cube-environment
     volumes:
       - ./cube:/cube/conf
     depends_on:
       postgres:
         condition: service_healthy
+      cubestore:
+        condition: service_started
+
+  cube_refresh_worker:
+    image: cubejs/cube:latest
+    restart: unless-stopped
+    environment:
+      <<: *cube-environment
+      CUBEJS_REFRESH_WORKER: "true"
+    volumes:
+      - ./cube:/cube/conf
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cubestore:
+        condition: service_started
+      cube:
+        condition: service_started
 
 volumes:
   postgres_data:
   redis_data:
+  cubestore_data:

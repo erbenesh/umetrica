@@ -45,3 +45,10 @@ Token from `createCubeToken({ tenantId, userId })`.
 ## Date ranges (Cube syntax)
 
 `last 7 days`, `last 30 days`, `from 14 days ago to 7 days ago`
+
+## Pre-aggregations
+
+- Определяются в Studio → куб → вкладка **Rollups**, публикуются в YAML как `pre_aggregations`
+- Dev: `docker compose up -d` поднимает `cubestore` + `cube_refresh_worker`
+- Статус сборки: Cube Playground http://localhost:4000 → Pre-aggregations
+- После publish: `docker compose restart cube cube_refresh_worker` если meta не обновилась

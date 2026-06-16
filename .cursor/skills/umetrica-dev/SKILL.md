@@ -23,7 +23,19 @@ npx pnpm@9.15.4 dev
 
 - API: http://localhost:3001
 - Studio: http://localhost:5173
-- Cube: http://localhost:4000
+- Cube: http://localhost:4000 (Playground — статус pre-aggregations)
+
+## Docker services
+
+| Service | Purpose |
+|---------|---------|
+| `postgres` | App DB + Cube source |
+| `redis` | Queues / cache |
+| `cubestore` | Pre-aggregation storage |
+| `cube` | Cube API + dev playground |
+| `cube_refresh_worker` | Фоновая сборка rollups |
+
+После publish семантики перезапустите `cube` и `cube_refresh_worker`, если модель не подхватилась: `docker compose restart cube cube_refresh_worker`.
 
 ## Common commands
 
@@ -45,6 +57,7 @@ npx pnpm@9.15.4 dev
 | Issue | Fix |
 |-------|-----|
 | Cube 400 "cube not found" | Models must be in `cube/model/cubes/` |
+| Pre-aggregations не строятся | `docker compose ps` — нужны `cubestore` + `cube_refresh_worker` |
 | `process is not defined` | Vite `define` in `vite.config.ts` |
 | pnpm import error | Add transitive dep directly to package |
 | Empty JSON body 400 | Only set Content-Type when body exists |

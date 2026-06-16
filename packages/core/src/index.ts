@@ -5,4 +5,5 @@ export * from './billing-schemas.js';
 export * from './market-schemas.js';
 export * from './enterprise-schemas.js';
 export * from './semantic-schemas.js';
+export * from './semantic-demo-seeds.js';
 export * from './build-widget-query.js';

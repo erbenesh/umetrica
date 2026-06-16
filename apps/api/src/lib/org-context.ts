@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { member, organization, session } from '../db/schema.js';
 import { getSessionFromRequest } from './auth-request.js';
-import { seedDemoOrdersForTenant } from './seed-demo-orders.js';
+import { seedDemoSemanticForTenant } from './seed-demo-semantic.js';
 import type { FastifyRequest } from 'fastify';
 
 export async function resolveActiveOrganizationId(request: FastifyRequest): Promise<string | null> {
@@ -34,7 +34,7 @@ export async function ensureDemoDataForRequest(request: FastifyRequest) {
   const tenantId = await resolveActiveOrganizationId(request);
   if (!tenantId) return null;
 
-  const result = await seedDemoOrdersForTenant(tenantId);
+  const result = await seedDemoSemanticForTenant(tenantId);
   return { tenantId, ...result };
 }
 

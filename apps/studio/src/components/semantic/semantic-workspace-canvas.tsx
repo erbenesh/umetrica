@@ -1,4 +1,5 @@
 import type { SemanticCubeListItem, SemanticViewListItem, SemanticWorkspaceLayout } from '@umetrica/core';
+import { semanticCubeLabel } from '@umetrica/core';
 import { computeWorkspaceBounds } from '@umetrica/core';
 import { Box, Eye, Loader2, Maximize2, Minus, Monitor, Plus, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
@@ -132,7 +133,10 @@ export function SemanticWorkspaceCanvas({
     if (!query) return cubes;
     return cubes.filter(
       (cube) =>
-        cube.name.toLowerCase().includes(query) || cube.subtitle.toLowerCase().includes(query)
+        cube.name.toLowerCase().includes(query) ||
+        cube.title.toLowerCase().includes(query) ||
+        (cube.shortTitle?.toLowerCase().includes(query) ?? false) ||
+        cube.subtitle.toLowerCase().includes(query)
     );
   }, [cubes, search]);
 
@@ -701,7 +705,7 @@ export function SemanticWorkspaceCanvas({
                           <Box size={14} />
                         </span>
                         <div>
-                          <h3 className="workspace-card__title">{cube.name}</h3>
+                          <h3 className="workspace-card__title">{semanticCubeLabel(cube)}</h3>
                           <p className="workspace-card__meta">{cube.subtitle}</p>
                         </div>
                       </header>
@@ -744,8 +748,8 @@ export function SemanticWorkspaceCanvas({
                           <Eye size={14} />
                         </span>
                         <div>
-                          <h3 className="workspace-card__title">{view.name}</h3>
-                          <p className="workspace-card__meta">{view.title}</p>
+                          <h3 className="workspace-card__title">{view.title}</h3>
+                          <p className="workspace-card__meta">{view.name}</p>
                         </div>
                       </header>
                       <p className="workspace-card__stats">

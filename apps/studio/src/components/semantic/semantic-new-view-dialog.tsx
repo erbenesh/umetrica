@@ -1,4 +1,5 @@
 import type { SemanticCubeListItem } from '@umetrica/core';
+import { semanticCubeLabel } from '@umetrica/core';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -74,7 +75,7 @@ export function SemanticNewViewDialog({ open, onClose, cubes }: SemanticNewViewD
               >
                 {cubes.map((cube) => (
                   <option key={cube.name} value={cube.name}>
-                    {cube.name}
+                    {semanticCubeLabel(cube)}
                   </option>
                 ))}
               </select>

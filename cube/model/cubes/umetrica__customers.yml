@@ -1,0 +1,40 @@
+cubes:
+  - name: Customers
+    title: "Клиенты"
+    sql: "SELECT * FROM public.customers"
+    measures:
+      - name: count
+        title: "Количество клиентов"
+        type: count
+    dimensions:
+      - name: email
+        title: Email
+        sql: email
+        type: string
+      - name: city
+        title: "Город"
+        sql: city
+        type: string
+      - name: segment
+        title: "Сегмент"
+        sql: segment
+        type: string
+      - name: createdAt
+        title: "Дата регистрации"
+        sql: created_at
+        type: time
+        granularity: day
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string
+    segments:
+      - name: vip
+        title: VIP
+        sql: "segment = 'vip'"
+    hierarchies:
+      - name: geo
+        title: "География"
+        levels:
+          - segment
+          - city

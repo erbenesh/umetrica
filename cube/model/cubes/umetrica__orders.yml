@@ -1,0 +1,64 @@
+cubes:
+  - name: Orders
+    title: "Заказы"
+    sql: "SELECT * FROM public.orders"
+    joins:
+      - name: Customers
+        relationship: belongsTo
+        sql: "${Orders}.customer_id = ${Customers}.id"
+    measures:
+      - name: revenue
+        title: "Выручка"
+        sql: amount
+        type: sum
+        format: currency
+      - name: count
+        title: "Количество заказов"
+        type: count
+      - name: avgOrder
+        title: "Средний чек"
+        sql: amount
+        type: avg
+        format: currency
+    dimensions:
+      - name: status
+        title: "Статус"
+        sql: status
+        type: string
+      - name: createdAt
+        title: "Дата заказа"
+        sql: created_at
+        type: time
+        granularity: day
+      - name: customerId
+        title: "Клиент"
+        sql: customer_id
+        type: string
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string
+    segments:
+      - name: completed
+        title: "Завершённые"
+        sql: "status = 'completed'"
+      - name: pending
+        title: "В обработке"
+        sql: "status = 'pending'"
+    hierarchies:
+      - name: status_time
+        title: "Статус и дата"
+        levels:
+          - status
+          - createdAt
+    pre_aggregations:
+      - name: orders_by_day
+        measures:
+          - count
+          - revenue
+        dimensions:
+          - status
+        time_dimension: createdAt
+        granularity: day
+        refresh_key:
+          every: "1 hour"

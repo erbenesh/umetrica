@@ -7,7 +7,7 @@ import { pendingFounderCompany } from '../db/schema.js';
 import { buildUniqueOrgSlug } from './org-slug.js';
 import { listOrganizationsForUser } from './org-context.js';
 import { getSessionFromRequest, buildWebRequest } from './auth-request.js';
-import { seedDemoOrdersForTenant } from './seed-demo-orders.js';
+import { seedDemoSemanticForTenant } from './seed-demo-semantic.js';
 
 export async function savePendingFounderCompany(email: string, companyName: string) {
   const normalizedEmail = email.toLowerCase();
@@ -61,7 +61,7 @@ export async function completeFounderSetup(request: FastifyRequest) {
     body: { organizationId: created.id },
   });
 
-  await seedDemoOrdersForTenant(created.id);
+  await seedDemoSemanticForTenant(created.id);
   await deletePendingFounderCompany(session.user.email);
 
   return {

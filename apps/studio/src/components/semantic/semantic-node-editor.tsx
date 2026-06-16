@@ -4,7 +4,7 @@ import type {
   SemanticGraphLayout,
   SemanticMeasure,
 } from '@umetrica/core';
-import { buildMemberPreviewQuery, semanticCubeNodeId, semanticSourceNodeId } from '@umetrica/core';
+import { buildMemberPreviewQuery, semanticCubeLabel, semanticCubeNodeId, semanticMemberLabel, semanticSourceNodeId } from '@umetrica/core';
 import {
   Box,
   Calendar,
@@ -20,7 +20,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 
 import { FormField } from '@/components/doc/form-field';
 import { Button } from '@/components/ui/button';
@@ -221,7 +221,7 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Куб · {draft.name}</h2>
+          <h2 className="semantic-panel__title">Куб · {semanticCubeLabel(draft)}</h2>
           <p className="semantic-panel__desc">Центральная нода semantic layer</p>
         </div>
         <div className="form-fields max-w-none">
@@ -231,6 +231,19 @@ function SemanticInspectorPanel({
               disabled={!canWrite}
               onChange={(event) =>
                 onDraftChange({ ...draft, displayTitle: event.target.value })
+              }
+            />
+          </FormField>
+          <FormField label="Краткий заголовок" hint="Для виджетов и компактного UI">
+            <Input
+              value={draft.displayShortTitle ?? ''}
+              disabled={!canWrite}
+              placeholder={draft.displayTitle}
+              onChange={(event) =>
+                onDraftChange({
+                  ...draft,
+                  displayShortTitle: event.target.value.trim() || undefined,
+                })
               }
             />
           </FormField>
@@ -295,7 +308,7 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Мера · {measure.name}</h2>
+          <h2 className="semantic-panel__title">Мера · {semanticMemberLabel(measure)}</h2>
           <p className="semantic-panel__desc">{measure.description ?? measure.title}</p>
         </div>
         <div className="form-fields max-w-none">
@@ -308,6 +321,20 @@ function SemanticInspectorPanel({
               disabled={!canWrite}
               onChange={(event) =>
                 onDraftChange(updateMeasure(draft, measure.id, { title: event.target.value }))
+              }
+            />
+          </FormField>
+          <FormField label="Краткий заголовок" hint="Для виджетов и осей графиков">
+            <Input
+              value={measure.shortTitle ?? ''}
+              disabled={!canWrite}
+              placeholder={measure.title}
+              onChange={(event) =>
+                onDraftChange(
+                  updateMeasure(draft, measure.id, {
+                    shortTitle: event.target.value.trim() || undefined,
+                  })
+                )
               }
             />
           </FormField>
@@ -382,7 +409,7 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Измерение · {dimension.name}</h2>
+          <h2 className="semantic-panel__title">Измерение · {semanticMemberLabel(dimension)}</h2>
           <p className="semantic-panel__desc">{dimension.description ?? dimension.title}</p>
         </div>
         <div className="form-fields max-w-none">
@@ -395,6 +422,20 @@ function SemanticInspectorPanel({
               disabled={!canWrite || dimension.locked}
               onChange={(event) =>
                 onDraftChange(updateDimension(draft, dimension.id, { title: event.target.value }))
+              }
+            />
+          </FormField>
+          <FormField label="Краткий заголовок" hint="Для виджетов и фильтров">
+            <Input
+              value={dimension.shortTitle ?? ''}
+              disabled={!canWrite || dimension.locked}
+              placeholder={dimension.title}
+              onChange={(event) =>
+                onDraftChange(
+                  updateDimension(draft, dimension.id, {
+                    shortTitle: event.target.value.trim() || undefined,
+                  })
+                )
               }
             />
           </FormField>
@@ -575,6 +616,12 @@ export function SemanticNodeEditor({
   const [canvasSelection, setCanvasSelection] = useState<Set<string>>(new Set());
   const [marqueeRect, setMarqueeRect] = useState<CanvasRect | null>(null);
   const [isPanning, setIsPanning] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    nodeIds: Set<string>;
+    anchorId: string;
+  } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef(1);
   const panStateRef = useRef({ x: 0, y: 0 });
@@ -583,6 +630,8 @@ export function SemanticNodeEditor({
     startY: number;
     moved: boolean;
     origins: Map<string, { x: number; y: number }>;
+    openNodeId: string | null;
+    selectionOnly: boolean;
   } | null>(null);
   const canvasPointerRef = useRef<{
     startX: number;
@@ -593,8 +642,7 @@ export function SemanticNodeEditor({
     additive: boolean;
     baseSelection: Set<string>;
   } | null>(null);
-  const selectionClickRef = useRef<'toggle' | 'additive' | null>(null);
-  const skipClickRef = useRef(false);
+  const skipOpenRef = useRef(false);
 
   zoomRef.current = zoom;
   panStateRef.current = pan;
@@ -609,11 +657,23 @@ export function SemanticNodeEditor({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setCanvasSelection(new Set());
+        setContextMenu(null);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    window.addEventListener('pointerdown', close);
+    window.addEventListener('scroll', close, true);
+    return () => {
+      window.removeEventListener('pointerdown', close);
+      window.removeEventListener('scroll', close, true);
+    };
+  }, [contextMenu]);
 
   const getNodeHeight = useCallback(
     (nodeId: string) => {
@@ -662,34 +722,42 @@ export function SemanticNodeEditor({
   const edges = buildEdges(draft, layout, selected, sourceNodeId, cubeNodeId);
 
   const beginNodePointer = (nodeId: string, event: PointerEvent<HTMLElement>) => {
+    if (event.button !== 0) return;
     event.stopPropagation();
+    skipOpenRef.current = false;
+    setContextMenu(null);
 
-    let nextSelection = canvasSelection;
+    let selectionOnly = false;
+    let activeSelection = canvasSelection;
 
     if (isToggleSelectPointer(event)) {
       event.preventDefault();
-      selectionClickRef.current = 'toggle';
-      nextSelection = toggleSetMember(canvasSelection, nodeId);
-      setCanvasSelection(nextSelection);
-      if (!nextSelection.has(nodeId)) return;
+      activeSelection = toggleSetMember(canvasSelection, nodeId);
+      setCanvasSelection(activeSelection);
+      if (!activeSelection.has(nodeId)) return;
+      selectionOnly = true;
     } else if (event.shiftKey) {
-      selectionClickRef.current = 'additive';
-      nextSelection = new Set([...canvasSelection, nodeId]);
-      setCanvasSelection(nextSelection);
-    } else if (!canvasSelection.has(nodeId)) {
-      selectionClickRef.current = null;
-      nextSelection = new Set([nodeId]);
-      setCanvasSelection(nextSelection);
-    } else {
-      selectionClickRef.current = null;
-      nextSelection = canvasSelection;
+      activeSelection = new Set([...canvasSelection, nodeId]);
+      setCanvasSelection(activeSelection);
+      selectionOnly = true;
     }
 
-    onSelect(nodeId);
+    const moveIds =
+      activeSelection.has(nodeId) && activeSelection.size > 0 ? activeSelection : new Set([nodeId]);
 
-    if (!canWrite || !onLayoutChange) return;
+    if (!canWrite || !onLayoutChange) {
+      dragRef.current = {
+        startX: event.clientX,
+        startY: event.clientY,
+        moved: false,
+        origins: new Map(),
+        openNodeId: selectionOnly ? null : nodeId,
+        selectionOnly,
+      };
+      canvasRef.current?.setPointerCapture(event.pointerId);
+      return;
+    }
 
-    const moveIds = nextSelection.has(nodeId) ? nextSelection : new Set([nodeId]);
     const origins = new Map<string, { x: number; y: number }>();
     for (const id of moveIds) {
       origins.set(id, layout[id] ?? { x: 0, y: 0 });
@@ -700,25 +768,36 @@ export function SemanticNodeEditor({
       startY: event.clientY,
       moved: false,
       origins,
+      openNodeId: selectionOnly ? null : nodeId,
+      selectionOnly,
     };
     setDraggingCanvas(true);
     canvasRef.current?.setPointerCapture(event.pointerId);
   };
 
-  const handleNodeClick = (nodeId: SemanticNodeId) => {
-    if (skipClickRef.current) {
-      skipClickRef.current = false;
-      return;
+  const handleNodeContextMenu = (nodeId: string, event: MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    dragRef.current = null;
+    setDraggingCanvas(false);
+
+    const nodeIds = canvasSelection.has(nodeId) ? new Set(canvasSelection) : new Set([nodeId]);
+    if (!canvasSelection.has(nodeId)) {
+      setCanvasSelection(nodeIds);
     }
-    if (selectionClickRef.current) {
-      selectionClickRef.current = null;
-      return;
-    }
-    if (canvasSelection.size > 1) return;
-    onSelect(nodeId);
+
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      nodeIds,
+      anchorId: nodeId,
+    });
   };
 
   const beginCanvasPointer = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
     const target = event.target as HTMLElement;
     if (target.closest('.node')) return;
 
@@ -747,7 +826,7 @@ export function SemanticNodeEditor({
       if (!dragRef.current.moved && Math.hypot(dx, dy) < CANVAS_DRAG_THRESHOLD_PX) return;
 
       dragRef.current.moved = true;
-      skipClickRef.current = true;
+      skipOpenRef.current = true;
       const offsetX = dx / zoomRef.current;
       const offsetY = dy / zoomRef.current;
       const nextLayout = { ...layoutRef.current };
@@ -805,9 +884,20 @@ export function SemanticNodeEditor({
 
   const endCanvasPointer = (event: PointerEvent<HTMLDivElement>) => {
     if (dragRef.current) {
+      const drag = dragRef.current;
       dragRef.current = null;
       setDraggingCanvas(false);
       canvasRef.current?.releasePointerCapture(event.pointerId);
+
+      if (event.button !== 0) {
+        skipOpenRef.current = false;
+        return;
+      }
+
+      if (!drag.moved && drag.openNodeId && !drag.selectionOnly && !skipOpenRef.current) {
+        onSelect(drag.openNodeId);
+      }
+      skipOpenRef.current = false;
       return;
     }
 
@@ -864,9 +954,39 @@ export function SemanticNodeEditor({
     return () => canvas.removeEventListener('wheel', onWheel);
   }, [applyZoomAtPoint]);
 
-  const nodeDragProps = (nodeId: string) => ({
+  const nodePointerProps = (nodeId: string) => ({
     onPointerDown: (event: PointerEvent<HTMLElement>) => beginNodePointer(nodeId, event),
+    onContextMenu: (event: MouseEvent<HTMLElement>) => handleNodeContextMenu(nodeId, event),
   });
+
+  const contextMenuActions = useMemo(() => {
+    if (!contextMenu) return null;
+
+    const { anchorId, nodeIds } = contextMenu;
+    const measure = draft.measures.find((item) => item.id === anchorId);
+    const dimension = draft.dimensions.find((item) => item.id === anchorId);
+    const canDeleteMeasure =
+      canWrite &&
+      Boolean(measure) &&
+      draft.measures.length > 1 &&
+      Boolean(onDeleteMeasure);
+    const canDeleteDimension =
+      canWrite &&
+      Boolean(dimension) &&
+      !dimension?.locked &&
+      draft.dimensions.filter((item) => !item.locked).length > 0 &&
+      draft.dimensions.length > 1 &&
+      Boolean(onDeleteDimension);
+
+    return {
+      anchorId,
+      selectionCount: nodeIds.size,
+      canDeleteMeasure,
+      canDeleteDimension,
+      measureId: measure?.id,
+      dimensionId: dimension?.id,
+    };
+  }, [canWrite, contextMenu, draft.dimensions, draft.measures, onDeleteDimension, onDeleteMeasure]);
 
   const selectionCount = canvasSelection.size;
 
@@ -915,7 +1035,9 @@ export function SemanticNodeEditor({
         <div className={cn('node-canvas-wrap', canWrite && 'node-canvas-wrap--writable')}>
           <div className="node-canvas-mobile">
             <Monitor className="size-5 shrink-0" strokeWidth={1.75} />
-            <span>Shift+drag — выделение · Ctrl/Shift+клик — добавить · drag — перенос группы</span>
+            <span>
+              ЛКМ — инспектор · Ctrl+ЛКМ — выделить · Shift+drag — рамка · ПКМ — действия · Esc — сброс
+            </span>
           </div>
           <div className="node-canvas-toolbar">
             {selectionCount > 0 ? (
@@ -1038,10 +1160,15 @@ export function SemanticNodeEditor({
                   draggingCanvas && canvasSelection.has(sourceNodeId) && 'is-dragging'
                 )}
                 style={toStagePos(layout[sourceNodeId]?.x ?? 0, layout[sourceNodeId]?.y ?? 0)}
-                onClick={() => handleNodeClick(sourceNodeId)}
-                {...nodeDragProps(sourceNodeId)}
+                {...nodePointerProps(sourceNodeId)}
                 role="button"
                 tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    onSelect(sourceNodeId);
+                  }
+                }}
               >
                 <header className="node__header">
                   <span className="node__icon">
@@ -1074,19 +1201,24 @@ export function SemanticNodeEditor({
                   draggingCanvas && canvasSelection.has(cubeNodeId) && 'is-dragging'
                 )}
                 style={toStagePos(layout[cubeNodeId]?.x ?? 0, layout[cubeNodeId]?.y ?? 0)}
-                onClick={() => handleNodeClick(cubeNodeId)}
-                {...nodeDragProps(cubeNodeId)}
+                {...nodePointerProps(cubeNodeId)}
                 role="button"
                 tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    onSelect(cubeNodeId);
+                  }
+                }}
               >
                 <header className="node__header">
                   <span className="node__icon">
                     <Box size={14} />
                   </span>
                   <div className="node__titles">
-                    <h3 className="node__title">{draft.name}</h3>
+                    <h3 className="node__title">{semanticCubeLabel(draft)}</h3>
                     <p className="node__type">
-                      Куб · {draft.measures.length} меры · {draft.dimensions.length} измерения
+                      Куб · {draft.name} · {draft.measures.length} меры · {draft.dimensions.length} измерения
                     </p>
                   </div>
                 </header>
@@ -1112,18 +1244,23 @@ export function SemanticNodeEditor({
                     draggingCanvas && canvasSelection.has(measure.id) && 'is-dragging'
                   )}
                   style={toStagePos(layout[measure.id]?.x ?? 0, layout[measure.id]?.y ?? 0)}
-                  onClick={() => handleNodeClick(measure.id)}
-                  {...nodeDragProps(measure.id)}
+                  {...nodePointerProps(measure.id)}
                   role="button"
                   tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      onSelect(measure.id);
+                    }
+                  }}
                 >
                   <header className="node__header">
                     <span className="node__icon">
                       <Hash size={14} />
                     </span>
                     <div className="node__titles">
-                      <h3 className="node__title">{measure.name}</h3>
-                      <p className="node__type">Мера · {measure.type}</p>
+                      <h3 className="node__title">{semanticMemberLabel(measure)}</h3>
+                      <p className="node__type">Мера · {measure.name} · {measure.type}</p>
                     </div>
                   </header>
                   <div className="node__body">
@@ -1152,10 +1289,15 @@ export function SemanticNodeEditor({
                     draggingCanvas && canvasSelection.has(dimension.id) && 'is-dragging'
                   )}
                   style={toStagePos(layout[dimension.id]?.x ?? 0, layout[dimension.id]?.y ?? 0)}
-                  onClick={() => handleNodeClick(dimension.id)}
-                  {...nodeDragProps(dimension.id)}
+                  {...nodePointerProps(dimension.id)}
                   role="button"
                   tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      onSelect(dimension.id);
+                    }
+                  }}
                 >
                   <header className="node__header">
                     <span className="node__icon">
@@ -1168,9 +1310,9 @@ export function SemanticNodeEditor({
                       )}
                     </span>
                     <div className="node__titles">
-                      <h3 className="node__title">{dimension.name}</h3>
+                      <h3 className="node__title">{semanticMemberLabel(dimension)}</h3>
                       <p className="node__type">
-                        {dimension.locked ? 'Системное' : 'Измерение'} · {dimension.type}
+                        {dimension.locked ? 'Системное' : 'Измерение'} · {dimension.name} · {dimension.type}
                       </p>
                     </div>
                   </header>
@@ -1220,6 +1362,67 @@ export function SemanticNodeEditor({
           <ColumnDatalist columns={draft.source.columns} />
         </aside>
       </div>
+
+      {contextMenu && contextMenuActions ? (
+        <div
+          className="workspace-context-menu"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          role="menu"
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="workspace-context-menu__item"
+            role="menuitem"
+            onClick={() => {
+              setContextMenu(null);
+              onSelect(contextMenuActions.anchorId);
+            }}
+          >
+            {contextMenuActions.selectionCount > 1 ? 'Открыть в инспекторе' : 'Открыть'}
+          </button>
+          {contextMenuActions.canDeleteMeasure && contextMenuActions.measureId ? (
+            <button
+              type="button"
+              className="workspace-context-menu__item"
+              role="menuitem"
+              onClick={() => {
+                setContextMenu(null);
+                onDeleteMeasure?.(contextMenuActions.measureId!);
+              }}
+            >
+              Удалить меру
+            </button>
+          ) : null}
+          {contextMenuActions.canDeleteDimension && contextMenuActions.dimensionId ? (
+            <button
+              type="button"
+              className="workspace-context-menu__item"
+              role="menuitem"
+              onClick={() => {
+                setContextMenu(null);
+                onDeleteDimension?.(contextMenuActions.dimensionId!);
+              }}
+            >
+              Удалить измерение
+            </button>
+          ) : null}
+          {contextMenuActions.selectionCount > 1 ? (
+            <p className="workspace-context-menu__hint">{contextMenuActions.selectionCount} нод выбрано</p>
+          ) : null}
+          <button
+            type="button"
+            className="workspace-context-menu__item workspace-context-menu__item--muted"
+            role="menuitem"
+            onClick={() => {
+              setContextMenu(null);
+              setCanvasSelection(new Set());
+            }}
+          >
+            Снять выделение
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

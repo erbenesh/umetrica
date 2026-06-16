@@ -20,7 +20,7 @@ npx pnpm@9.15.4 dev          # turbo: api + studio
 npx pnpm@9.15.4 typecheck
 npx pnpm@9.15.4 lint
 npx pnpm@9.15.4 db:push      # schema → Postgres (needs approval in prod)
-docker compose up -d         # postgres, redis, cube
+docker compose up -d         # postgres, redis, cubestore, cube, cube_refresh_worker
 ```
 
 pnpm is not global — always use `npx pnpm@9.15.4`.

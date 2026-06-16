@@ -18,6 +18,50 @@ function yamlQuote(value: string) {
   return JSON.stringify(value);
 }
 
+type LocalizedMember = {
+  title: string;
+  shortTitle?: string;
+};
+
+type YamlMemberRow = {
+  title?: string;
+  shortTitle?: string;
+  meta?: { umetrica?: { title?: string } };
+};
+
+function cubeMemberTitle(member: LocalizedMember) {
+  return member.shortTitle ?? member.title;
+}
+
+function appendLocalizedTitleLines(lines: string[], member: LocalizedMember, indent: string) {
+  const cubeTitle = cubeMemberTitle(member);
+  lines.push(`${indent}title: ${yamlQuote(cubeTitle)}`);
+  if (member.shortTitle && member.title !== member.shortTitle) {
+    lines.push(`${indent}shortTitle: ${yamlQuote(member.shortTitle)}`);
+    lines.push(`${indent}meta:`);
+    lines.push(`${indent}  umetrica:`);
+    lines.push(`${indent}    title: ${yamlQuote(member.title)}`);
+  }
+}
+
+function parseLocalizedMemberTitles(row: YamlMemberRow, fallbackName: string): LocalizedMember {
+  const metaFullTitle = row.meta?.umetrica?.title;
+  const yamlTitle = row.title ? String(row.title) : undefined;
+  const yamlShortTitle = row.shortTitle ? String(row.shortTitle) : undefined;
+
+  if (metaFullTitle) {
+    return {
+      title: String(metaFullTitle),
+      shortTitle: yamlShortTitle ?? yamlTitle,
+    };
+  }
+
+  return {
+    title: yamlTitle ?? fallbackName,
+    ...(yamlShortTitle && yamlShortTitle !== yamlTitle ? { shortTitle: yamlShortTitle } : {}),
+  };
+}
+
 function cubeYamlFileName(cubeName: string, orgPrefix?: string) {
   const base = `${cubeName.charAt(0).toLowerCase()}${cubeName.slice(1)}.yml`;
   return orgPrefix ? `${orgPrefix}__${base}` : base;
@@ -32,6 +76,9 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
   const lines: string[] = ['cubes:', `  - name: ${definition.name}`];
 
   lines.push(`    title: ${yamlQuote(definition.displayTitle)}`);
+  if (definition.displayShortTitle && definition.displayShortTitle !== definition.displayTitle) {
+    lines.push(`    shortTitle: ${yamlQuote(definition.displayShortTitle)}`);
+  }
   lines.push(`    sql: ${yamlQuote(definition.source.sql)}`);
 
   const joins = definition.joins ?? [];
@@ -48,7 +95,7 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
 
   for (const measure of definition.measures) {
     lines.push(`      - name: ${measure.name}`);
-    lines.push(`        title: ${yamlQuote(measure.title)}`);
+    appendLocalizedTitleLines(lines, measure, '        ');
     if (measure.type === 'count') {
       lines.push('        type: count');
     } else {
@@ -63,11 +110,85 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
   lines.push('    dimensions:');
   for (const dimension of definition.dimensions) {
     lines.push(`      - name: ${dimension.name}`);
-    lines.push(`        title: ${yamlQuote(dimension.title)}`);
+    appendLocalizedTitleLines(lines, dimension, '        ');
     lines.push(`        sql: ${yamlQuote(dimension.sql)}`);
     lines.push(`        type: ${dimension.type}`);
     if (dimension.type === 'time' && dimension.granularity) {
       lines.push(`        granularity: ${dimension.granularity}`);
+    }
+  }
+
+  const segments = definition.segments ?? [];
+  if (segments.length > 0) {
+    lines.push('    segments:');
+    for (const segment of segments) {
+      lines.push(`      - name: ${segment.name}`);
+      if (segment.title || segment.shortTitle) {
+        appendLocalizedTitleLines(
+          lines,
+          {
+            title: segment.title ?? segment.name,
+            shortTitle: segment.shortTitle,
+          },
+          '        '
+        );
+      }
+      lines.push(`        sql: ${yamlQuote(segment.sql)}`);
+    }
+  }
+
+  const hierarchies = definition.hierarchies ?? [];
+  if (hierarchies.length > 0) {
+    lines.push('    hierarchies:');
+    for (const hierarchy of hierarchies) {
+      lines.push(`      - name: ${hierarchy.name}`);
+      if (hierarchy.title || hierarchy.shortTitle) {
+        appendLocalizedTitleLines(
+          lines,
+          {
+            title: hierarchy.title ?? hierarchy.name,
+            shortTitle: hierarchy.shortTitle,
+          },
+          '        '
+        );
+      }
+      lines.push('        levels:');
+      for (const level of hierarchy.levels) {
+        lines.push(`          - ${level}`);
+      }
+    }
+  }
+
+  const preAggregations = definition.preAggregations ?? [];
+  if (preAggregations.length > 0) {
+    lines.push('    pre_aggregations:');
+    for (const preAgg of preAggregations) {
+      lines.push(`      - name: ${preAgg.name}`);
+      lines.push('        measures:');
+      for (const measure of preAgg.measures) {
+        lines.push(`          - ${measure}`);
+      }
+      if (preAgg.dimensions.length > 0) {
+        lines.push('        dimensions:');
+        for (const dimension of preAgg.dimensions) {
+          lines.push(`          - ${dimension}`);
+        }
+      }
+      if (preAgg.timeDimension) {
+        lines.push(`        time_dimension: ${preAgg.timeDimension}`);
+        if (preAgg.granularity) {
+          lines.push(`        granularity: ${preAgg.granularity}`);
+        }
+      }
+      if (preAgg.refreshKey?.every || preAgg.refreshKey?.sql) {
+        lines.push('        refresh_key:');
+        if (preAgg.refreshKey.every) {
+          lines.push(`          every: ${yamlQuote(preAgg.refreshKey.every)}`);
+        }
+        if (preAgg.refreshKey.sql) {
+          lines.push(`          sql: ${yamlQuote(preAgg.refreshKey.sql)}`);
+        }
+      }
     }
   }
 
@@ -77,6 +198,9 @@ export function compileSemanticCubeToYaml(definition: SemanticCubeDefinition) {
 export function compileSemanticViewToYaml(definition: SemanticViewDefinition) {
   const lines: string[] = ['views:', `  - name: ${definition.name}`];
   lines.push(`    title: ${yamlQuote(definition.title)}`);
+  if (definition.shortTitle && definition.shortTitle !== definition.title) {
+    lines.push(`    shortTitle: ${yamlQuote(definition.shortTitle)}`);
+  }
 
   if (definition.description) {
     lines.push(`    description: ${yamlQuote(definition.description)}`);
@@ -216,21 +340,57 @@ export async function listOrgYamlCubeNames(orgPrefix: string) {
 type YamlCubeRow = {
   name?: string;
   title?: string;
+  shortTitle?: string;
   sql?: string;
   joins?: Array<{ name?: string; relationship?: string; sql?: string }>;
-  measures?: Array<{ name?: string; title?: string; sql?: string; type?: string; format?: string }>;
+  measures?: Array<{
+    name?: string;
+    title?: string;
+    shortTitle?: string;
+    meta?: { umetrica?: { title?: string } };
+    sql?: string;
+    type?: string;
+    format?: string;
+  }>;
   dimensions?: Array<{
     name?: string;
     title?: string;
+    shortTitle?: string;
+    meta?: { umetrica?: { title?: string } };
     sql?: string;
     type?: string;
     granularity?: string;
+  }>;
+  segments?: Array<{
+    name?: string;
+    title?: string;
+    shortTitle?: string;
+    meta?: { umetrica?: { title?: string } };
+    sql?: string;
+  }>;
+  hierarchies?: Array<{
+    name?: string;
+    title?: string;
+    shortTitle?: string;
+    meta?: { umetrica?: { title?: string } };
+    levels?: string[];
+  }>;
+  pre_aggregations?: Array<{
+    name?: string;
+    measures?: string[];
+    dimensions?: string[];
+    time_dimension?: string;
+    timeDimension?: string;
+    granularity?: string;
+    refresh_key?: { every?: string; sql?: string };
+    refreshKey?: { every?: string; sql?: string };
   }>;
 };
 
 type YamlViewRow = {
   name?: string;
   title?: string;
+  shortTitle?: string;
   description?: string;
   cubes?: Array<{ join_path?: string; joinPath?: string; includes?: string[] }>;
 };
@@ -253,29 +413,91 @@ export function parseSemanticCubeYaml(yaml: string): SemanticCubeDefinition {
     sql: String(join.sql ?? ''),
   }));
 
-  const measures = (cube.measures ?? []).map((measure, index) => ({
-    id: `measure:${measure.name ?? index}`,
-    name: String(measure.name ?? ''),
-    title: String(measure.title ?? measure.name ?? ''),
-    sql: String(measure.sql ?? '*'),
-    type: (measure.type ?? 'count') as 'sum' | 'count' | 'avg' | 'min' | 'max',
-    ...(measure.format ? { format: measure.format as 'currency' | 'percent' | 'number' } : {}),
-  }));
+  const measures = (cube.measures ?? []).map((measure, index) => {
+    const memberName = String(measure.name ?? '');
+    const titles = parseLocalizedMemberTitles(measure, memberName || String(index));
+    return {
+      id: `measure:${memberName || index}`,
+      name: memberName,
+      ...titles,
+      sql: String(measure.sql ?? '*'),
+      type: (measure.type ?? 'count') as 'sum' | 'count' | 'avg' | 'min' | 'max',
+      ...(measure.format ? { format: measure.format as 'currency' | 'percent' | 'number' } : {}),
+    };
+  });
 
-  const dimensions = (cube.dimensions ?? []).map((dimension, index) => ({
-    id: `dimension:${dimension.name ?? index}`,
-    name: String(dimension.name ?? ''),
-    title: String(dimension.title ?? dimension.name ?? ''),
-    sql: String(dimension.sql ?? ''),
-    type: (dimension.type ?? 'string') as 'string' | 'time' | 'number' | 'boolean',
-    ...(dimension.granularity
-      ? { granularity: dimension.granularity as 'day' | 'week' | 'month' | 'year' }
-      : {}),
-  }));
+  const dimensions = (cube.dimensions ?? []).map((dimension, index) => {
+    const memberName = String(dimension.name ?? '');
+    const titles = parseLocalizedMemberTitles(dimension, memberName || String(index));
+    return {
+      id: `dimension:${memberName || index}`,
+      name: memberName,
+      ...titles,
+      sql: String(dimension.sql ?? ''),
+      type: (dimension.type ?? 'string') as 'string' | 'time' | 'number' | 'boolean',
+      ...(dimension.granularity
+        ? { granularity: dimension.granularity as 'day' | 'week' | 'month' | 'year' }
+        : {}),
+    };
+  });
+
+  const segments = (cube.segments ?? []).map((segment, index) => {
+    const memberName = String(segment.name ?? '');
+    const titles = parseLocalizedMemberTitles(segment, memberName || String(index));
+    return {
+      id: `segment:${memberName || index}`,
+      name: memberName,
+      ...titles,
+      sql: String(segment.sql ?? ''),
+    };
+  });
+
+  const hierarchies = (cube.hierarchies ?? [])
+    .map((hierarchy, index) => {
+      const memberName = String(hierarchy.name ?? '');
+      const titles = parseLocalizedMemberTitles(hierarchy, memberName || String(index));
+      return {
+        id: `hierarchy:${memberName || index}`,
+        name: memberName,
+        ...titles,
+        levels: Array.isArray(hierarchy.levels) ? hierarchy.levels.map(String) : [],
+      };
+    })
+    .filter((hierarchy) => hierarchy.name && hierarchy.levels.length >= 2);
+
+  const preAggregations = (cube.pre_aggregations ?? [])
+    .map((preAgg, index) => {
+      const refreshKeyRaw = preAgg.refresh_key ?? preAgg.refreshKey;
+      const refreshKey =
+        refreshKeyRaw?.every || refreshKeyRaw?.sql
+          ? {
+              ...(refreshKeyRaw.every ? { every: String(refreshKeyRaw.every) } : {}),
+              ...(refreshKeyRaw.sql ? { sql: String(refreshKeyRaw.sql) } : {}),
+            }
+          : undefined;
+
+      return {
+        id: `preAgg:${preAgg.name ?? index}`,
+        name: String(preAgg.name ?? ''),
+        measures: Array.isArray(preAgg.measures) ? preAgg.measures.map(String) : [],
+        dimensions: Array.isArray(preAgg.dimensions) ? preAgg.dimensions.map(String) : [],
+        ...(preAgg.time_dimension ?? preAgg.timeDimension
+          ? { timeDimension: String(preAgg.time_dimension ?? preAgg.timeDimension) }
+          : {}),
+        ...(preAgg.granularity
+          ? { granularity: preAgg.granularity as 'day' | 'week' | 'month' | 'year' }
+          : {}),
+        ...(refreshKey ? { refreshKey } : {}),
+      };
+    })
+    .filter((preAgg) => preAgg.name && preAgg.measures.length > 0);
+
+  const cubeTitles = parseLocalizedMemberTitles(cube, cube.name);
 
   return SemanticCubeDefinitionSchema.parse({
     name: cube.name,
-    displayTitle: String(cube.title ?? cube.name),
+    displayTitle: cubeTitles.title,
+    ...(cubeTitles.shortTitle ? { displayShortTitle: cubeTitles.shortTitle } : {}),
     source: {
       sql,
       table,
@@ -291,6 +513,9 @@ export function parseSemanticCubeYaml(yaml: string): SemanticCubeDefinition {
         ? dimensions
         : [{ id: 'dimension:id', name: 'id', title: 'id', sql: 'id', type: 'string' }],
     joins,
+    segments,
+    hierarchies,
+    preAggregations,
   });
 }
 
@@ -306,9 +531,12 @@ export function parseSemanticViewYaml(yaml: string): SemanticViewDefinition {
     includes: Array.isArray(cube.includes) ? cube.includes.map(String) : [],
   }));
 
+  const viewTitles = parseLocalizedMemberTitles(view, view.name);
+
   return SemanticViewDefinitionSchema.parse({
     name: view.name,
-    title: String(view.title ?? view.name),
+    title: viewTitles.title,
+    ...(viewTitles.shortTitle ? { shortTitle: viewTitles.shortTitle } : {}),
     ...(view.description ? { description: String(view.description) } : {}),
     cubes,
   });

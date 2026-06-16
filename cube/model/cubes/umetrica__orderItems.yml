@@ -1,0 +1,42 @@
+cubes:
+  - name: OrderItems
+    title: "Позиции заказов"
+    sql: "SELECT * FROM public.order_items"
+    joins:
+      - name: Orders
+        relationship: belongsTo
+        sql: "${OrderItems}.order_id = ${Orders}.id"
+      - name: Products
+        relationship: belongsTo
+        sql: "${OrderItems}.product_id = ${Products}.id"
+    measures:
+      - name: count
+        title: "Количество строк"
+        type: count
+      - name: quantity
+        title: "Количество единиц"
+        sql: quantity
+        type: sum
+      - name: lineRevenue
+        title: "Выручка по строкам"
+        sql: amount
+        type: sum
+        format: currency
+    dimensions:
+      - name: orderId
+        title: "Заказ"
+        sql: order_id
+        type: string
+      - name: productId
+        title: "Товар"
+        sql: product_id
+        type: string
+      - name: createdAt
+        title: "Дата"
+        sql: created_at
+        type: time
+        granularity: day
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string

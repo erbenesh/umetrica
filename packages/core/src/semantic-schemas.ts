@@ -10,6 +10,7 @@ export const SemanticMeasureSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(80),
   title: z.string().min(1).max(200),
+  shortTitle: z.string().min(1).max(80).optional(),
   description: z.string().max(500).optional(),
   sql: z.string().min(1).max(500),
   type: SemanticMeasureTypeSchema,
@@ -22,6 +23,7 @@ export const SemanticDimensionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(80),
   title: z.string().min(1).max(200),
+  shortTitle: z.string().min(1).max(80).optional(),
   description: z.string().min(1).max(500).optional(),
   sql: z.string().min(1).max(500),
   type: SemanticDimensionTypeSchema,
@@ -53,14 +55,74 @@ export const SemanticJoinSchema = z.object({
 
 export type SemanticJoin = z.infer<typeof SemanticJoinSchema>;
 
+export const SemanticSegmentSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(80),
+  title: z.string().min(1).max(200).optional(),
+  shortTitle: z.string().min(1).max(80).optional(),
+  sql: z.string().min(1).max(2000),
+});
+
+export type SemanticSegment = z.infer<typeof SemanticSegmentSchema>;
+
+export const SemanticHierarchySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(80),
+  title: z.string().min(1).max(200).optional(),
+  shortTitle: z.string().min(1).max(80).optional(),
+  levels: z.array(z.string().min(1).max(80)).min(2),
+});
+
+export type SemanticHierarchy = z.infer<typeof SemanticHierarchySchema>;
+
+export const SemanticPreAggregationRefreshKeySchema = z.object({
+  every: z.string().min(1).max(80).optional(),
+  sql: z.string().min(1).max(2000).optional(),
+});
+
+export type SemanticPreAggregationRefreshKey = z.infer<typeof SemanticPreAggregationRefreshKeySchema>;
+
+export const SemanticPreAggregationSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1).max(80),
+    measures: z.array(z.string().min(1).max(80)).min(1),
+    dimensions: z.array(z.string().min(1).max(80)).default([]),
+    timeDimension: z.string().min(1).max(80).optional(),
+    granularity: z.enum(['day', 'week', 'month', 'year']).optional(),
+    refreshKey: SemanticPreAggregationRefreshKeySchema.optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.timeDimension && !value.granularity) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'granularity is required when timeDimension is set',
+        path: ['granularity'],
+      });
+    }
+    if (value.refreshKey && !value.refreshKey.every && !value.refreshKey.sql) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'refreshKey requires every or sql',
+        path: ['refreshKey'],
+      });
+    }
+  });
+
+export type SemanticPreAggregation = z.infer<typeof SemanticPreAggregationSchema>;
+
 export const SemanticCubeDefinitionSchema = z.object({
   name: z.string().min(1).max(80),
   displayTitle: z.string().min(1).max(200),
+  displayShortTitle: z.string().min(1).max(80).optional(),
   description: z.string().max(1000).optional(),
   source: SemanticSourceSchema,
   measures: z.array(SemanticMeasureSchema).min(1),
   dimensions: z.array(SemanticDimensionSchema).min(1),
   joins: z.array(SemanticJoinSchema).default([]),
+  segments: z.array(SemanticSegmentSchema).default([]),
+  hierarchies: z.array(SemanticHierarchySchema).default([]),
+  preAggregations: z.array(SemanticPreAggregationSchema).default([]),
 });
 
 export type SemanticCubeDefinition = z.infer<typeof SemanticCubeDefinitionSchema>;
@@ -90,6 +152,7 @@ export type SemanticViewCubeInclude = z.infer<typeof SemanticViewCubeIncludeSche
 export const SemanticViewDefinitionSchema = z.object({
   name: z.string().min(1).max(80),
   title: z.string().min(1).max(200),
+  shortTitle: z.string().min(1).max(80).optional(),
   description: z.string().max(1000).optional(),
   cubes: z.array(SemanticViewCubeIncludeSchema).min(1),
 });
@@ -165,6 +228,8 @@ export type SemanticCubeStatus = z.infer<typeof SemanticCubeStatusSchema>;
 
 export const SemanticCubeListItemSchema = z.object({
   name: z.string(),
+  title: z.string(),
+  shortTitle: z.string().optional(),
   subtitle: z.string(),
   status: SemanticCubeStatusSchema,
   measureCount: z.number().int().nonnegative(),
@@ -236,6 +301,7 @@ export const DEFAULT_ORDERS_GRAPH_LAYOUT: SemanticGraphLayout = {
 export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
   name: 'Orders',
   displayTitle: 'Заказы',
+  displayShortTitle: 'Заказы',
   description: 'Заказы компании с суммой, статусом и датой.',
   source: {
     sql: 'SELECT * FROM public.orders',
@@ -247,7 +313,8 @@ export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
     {
       id: 'measure:revenue',
       name: 'revenue',
-      title: 'Выручка',
+      title: 'Выручка по заказам',
+      shortTitle: 'Выручка',
       description: 'sum(amount)',
       sql: 'amount',
       type: 'sum',
@@ -257,6 +324,7 @@ export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
       id: 'measure:count',
       name: 'count',
       title: 'Количество заказов',
+      shortTitle: 'Заказы',
       description: 'count(*)',
       sql: '*',
       type: 'count',
@@ -265,6 +333,7 @@ export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
       id: 'measure:avgOrder',
       name: 'avgOrder',
       title: 'Средний чек',
+      shortTitle: 'Ср. чек',
       description: 'avg(amount)',
       sql: 'amount',
       type: 'avg',
@@ -272,11 +341,15 @@ export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
     },
   ],
   joins: [],
+  segments: [],
+  hierarchies: [],
+  preAggregations: [],
   dimensions: [
     {
       id: 'dimension:status',
       name: 'status',
-      title: 'Статус',
+      title: 'Статус заказа',
+      shortTitle: 'Статус',
       description: 'status → string',
       sql: 'status',
       type: 'string',
@@ -285,6 +358,7 @@ export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
       id: 'dimension:createdAt',
       name: 'createdAt',
       title: 'Дата заказа',
+      shortTitle: 'Дата',
       description: 'created_at → time',
       sql: 'created_at',
       type: 'time',
@@ -306,6 +380,30 @@ export function semanticCubeSubtitle(definition: SemanticCubeDefinition) {
   return `${definition.source.table} · ${definition.displayTitle}`;
 }
 
+export function semanticCubeLabel(cube: {
+  name: string;
+  displayTitle?: string;
+  displayShortTitle?: string;
+  title?: string;
+  shortTitle?: string;
+}) {
+  return (
+    cube.displayShortTitle ??
+    cube.shortTitle ??
+    cube.displayTitle ??
+    cube.title ??
+    cube.name
+  );
+}
+
+export function semanticMemberLabel(member: {
+  name: string;
+  title?: string;
+  shortTitle?: string;
+}) {
+  return member.shortTitle ?? member.title ?? member.name;
+}
+
 export function computeSemanticPublishDiff(
   published: SemanticCubeDefinition,
   draft: SemanticCubeDefinition
@@ -317,6 +415,14 @@ export function computeSemanticPublishDiff(
       op: 'change',
       label: 'Куб',
       value: `заголовок: «${published.displayTitle}» → «${draft.displayTitle}»`,
+    });
+  }
+
+  if ((published.displayShortTitle ?? '') !== (draft.displayShortTitle ?? '')) {
+    rows.push({
+      op: 'change',
+      label: 'Куб',
+      value: `краткий заголовок: «${published.displayShortTitle ?? '—'}» → «${draft.displayShortTitle ?? '—'}»`,
     });
   }
 
@@ -336,6 +442,11 @@ export function computeSemanticPublishDiff(
 
     const changes: string[] = [];
     if (prev.title !== measure.title) changes.push(`заголовок: «${prev.title}» → «${measure.title}»`);
+    if ((prev.shortTitle ?? '') !== (measure.shortTitle ?? '')) {
+      changes.push(
+        `краткий заголовок: «${prev.shortTitle ?? '—'}» → «${measure.shortTitle ?? '—'}»`
+      );
+    }
     if (prev.sql !== measure.sql) changes.push(`SQL: ${prev.sql} → ${measure.sql}`);
     if (prev.type !== measure.type) changes.push(`агрегация: ${prev.type} → ${measure.type}`);
     if (prev.format !== measure.format) {
@@ -369,6 +480,11 @@ export function computeSemanticPublishDiff(
 
     const changes: string[] = [];
     if (prev.title !== dimension.title) changes.push(`заголовок: «${prev.title}» → «${dimension.title}»`);
+    if ((prev.shortTitle ?? '') !== (dimension.shortTitle ?? '')) {
+      changes.push(
+        `краткий заголовок: «${prev.shortTitle ?? '—'}» → «${dimension.shortTitle ?? '—'}»`
+      );
+    }
     if (prev.sql !== dimension.sql) changes.push(`SQL: ${prev.sql} → ${dimension.sql}`);
     if (prev.type !== dimension.type) changes.push(`тип: ${prev.type} → ${dimension.type}`);
 
@@ -411,6 +527,151 @@ export function computeSemanticPublishDiff(
   for (const target of publishedJoins.keys()) {
     if (!draftJoins.has(target)) {
       rows.push({ op: 'remove', label: `Join ${target}`, value: 'удалён из черновика' });
+    }
+  }
+
+  const publishedSegments = new Map((published.segments ?? []).map((item) => [item.name, item]));
+  const draftSegments = new Map((draft.segments ?? []).map((item) => [item.name, item]));
+
+  for (const [name, segment] of draftSegments) {
+    const prev = publishedSegments.get(name);
+    if (!prev) {
+      rows.push({
+        op: 'add',
+        label: `Сегмент ${name}`,
+        value: segment.sql,
+      });
+      continue;
+    }
+
+    const changes: string[] = [];
+    if ((prev.title ?? prev.name) !== (segment.title ?? segment.name)) {
+      changes.push(`заголовок: «${prev.title ?? prev.name}» → «${segment.title ?? segment.name}»`);
+    }
+    if ((prev.shortTitle ?? '') !== (segment.shortTitle ?? '')) {
+      changes.push(
+        `краткий заголовок: «${prev.shortTitle ?? '—'}» → «${segment.shortTitle ?? '—'}»`
+      );
+    }
+    if (prev.sql !== segment.sql) changes.push(`SQL: ${prev.sql} → ${segment.sql}`);
+
+    if (changes.length > 0) {
+      rows.push({ op: 'change', label: `Сегмент ${name}`, value: changes.join(' · ') });
+    }
+  }
+
+  for (const name of publishedSegments.keys()) {
+    if (!draftSegments.has(name)) {
+      rows.push({ op: 'remove', label: `Сегмент ${name}`, value: 'удалён из черновика' });
+    }
+  }
+
+  const publishedHierarchies = new Map((published.hierarchies ?? []).map((item) => [item.name, item]));
+  const draftHierarchies = new Map((draft.hierarchies ?? []).map((item) => [item.name, item]));
+
+  for (const [name, hierarchy] of draftHierarchies) {
+    const prev = publishedHierarchies.get(name);
+    if (!prev) {
+      rows.push({
+        op: 'add',
+        label: `Иерархия ${name}`,
+        value: hierarchy.levels.join(' → '),
+      });
+      continue;
+    }
+
+    const changes: string[] = [];
+    if ((prev.title ?? prev.name) !== (hierarchy.title ?? hierarchy.name)) {
+      changes.push(
+        `заголовок: «${prev.title ?? prev.name}» → «${hierarchy.title ?? hierarchy.name}»`
+      );
+    }
+    if ((prev.shortTitle ?? '') !== (hierarchy.shortTitle ?? '')) {
+      changes.push(
+        `краткий заголовок: «${prev.shortTitle ?? '—'}» → «${hierarchy.shortTitle ?? '—'}»`
+      );
+    }
+    if (prev.levels.join('>') !== hierarchy.levels.join('>')) {
+      changes.push(`уровни: ${prev.levels.join(' → ')} → ${hierarchy.levels.join(' → ')}`);
+    }
+
+    if (changes.length > 0) {
+      rows.push({ op: 'change', label: `Иерархия ${name}`, value: changes.join(' · ') });
+    }
+  }
+
+  for (const name of publishedHierarchies.keys()) {
+    if (!draftHierarchies.has(name)) {
+      rows.push({ op: 'remove', label: `Иерархия ${name}`, value: 'удалена из черновика' });
+    }
+  }
+
+  const summarizePreAggregation = (preAgg: {
+    measures: string[];
+    dimensions: string[];
+    timeDimension?: string;
+    granularity?: string;
+    refreshKey?: { every?: string; sql?: string };
+  }) => {
+    const parts = [`меры: ${preAgg.measures.join(', ')}`];
+    if (preAgg.dimensions.length > 0) {
+      parts.push(`изм.: ${preAgg.dimensions.join(', ')}`);
+    }
+    if (preAgg.timeDimension) {
+      parts.push(`время: ${preAgg.timeDimension} (${preAgg.granularity ?? 'day'})`);
+    }
+    if (preAgg.refreshKey?.every) {
+      parts.push(`refresh: ${preAgg.refreshKey.every}`);
+    } else if (preAgg.refreshKey?.sql) {
+      parts.push('refresh: sql');
+    }
+    return parts.join(' · ');
+  };
+
+  const preAggregationSignature = (preAgg: {
+    measures: string[];
+    dimensions: string[];
+    timeDimension?: string;
+    granularity?: string;
+    refreshKey?: { every?: string; sql?: string };
+  }) =>
+    JSON.stringify({
+      measures: [...preAgg.measures].sort(),
+      dimensions: [...preAgg.dimensions].sort(),
+      timeDimension: preAgg.timeDimension ?? null,
+      granularity: preAgg.granularity ?? null,
+      refreshEvery: preAgg.refreshKey?.every ?? null,
+      refreshSql: preAgg.refreshKey?.sql ?? null,
+    });
+
+  const publishedPreAggregations = new Map(
+    (published.preAggregations ?? []).map((item) => [item.name, item])
+  );
+  const draftPreAggregations = new Map((draft.preAggregations ?? []).map((item) => [item.name, item]));
+
+  for (const [name, preAgg] of draftPreAggregations) {
+    const prev = publishedPreAggregations.get(name);
+    if (!prev) {
+      rows.push({
+        op: 'add',
+        label: `Pre-aggregation ${name}`,
+        value: summarizePreAggregation(preAgg),
+      });
+      continue;
+    }
+
+    if (preAggregationSignature(prev) !== preAggregationSignature(preAgg)) {
+      rows.push({
+        op: 'change',
+        label: `Pre-aggregation ${name}`,
+        value: `${summarizePreAggregation(prev)} → ${summarizePreAggregation(preAgg)}`,
+      });
+    }
+  }
+
+  for (const name of publishedPreAggregations.keys()) {
+    if (!draftPreAggregations.has(name)) {
+      rows.push({ op: 'remove', label: `Pre-aggregation ${name}`, value: 'удалена из черновика' });
     }
   }
 

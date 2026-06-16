@@ -204,8 +204,16 @@ export function SemanticViewPage() {
               }
 
               const members = [
-                ...cubeDef.measures.map((item) => ({ kind: 'measure', name: item.name, title: item.title })),
-                ...cubeDef.dimensions.map((item) => ({ kind: 'dimension', name: item.name, title: item.title })),
+                ...cubeDef.measures.map((item) => ({
+                  kind: 'measure',
+                  name: item.name,
+                  title: item.shortTitle ?? item.title,
+                })),
+                ...cubeDef.dimensions.map((item) => ({
+                  kind: 'dimension',
+                  name: item.name,
+                  title: item.shortTitle ?? item.title,
+                })),
               ];
 
               return (

@@ -17,7 +17,7 @@ import { shouldGenerateBenchmarkInsights } from './benchmark-access.js';
 import { generateMarketInsights, persistTenantInsight } from './market-insight-generation.js';
 import { notifyHighSeverityInsights } from './insight-email-alerts.js';
 import { getInsightSettings } from './org-metadata.js';
-import { seedDemoOrdersForTenant } from './seed-demo-orders.js';
+import { seedDemoSemanticForTenant } from './seed-demo-semantic.js';
 
 export type InsightGenerationResult =
   | {
@@ -107,7 +107,7 @@ async function generateTenantInsights(input: {
   | { ok: true; items: Insight[]; creditsUsed: number; message?: string }
   | { ok: false; status: 400 | 402; error: string; requiredCredits?: number }
 > {
-  await seedDemoOrdersForTenant(input.organizationId);
+  await seedDemoSemanticForTenant(input.organizationId);
 
   const cubeUrl = process.env.CUBE_URL ?? 'http://localhost:4000';
   const token = await createCubeToken({

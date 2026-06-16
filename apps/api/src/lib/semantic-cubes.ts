@@ -3,8 +3,9 @@ import { randomUUID } from 'node:crypto';
 import {
   buildDefaultGraphLayout,
   computeSemanticPublishDiff,
+  DEMO_SEMANTIC_VIEW,
   DEFAULT_ORDERS_GRAPH_LAYOUT,
-  DEFAULT_ORDERS_SEMANTIC_CUBE,
+  getDemoSemanticCubeSeeds,
   scaffoldSemanticCubeFromTable,
   SemanticCubeDefinitionSchema,
   SemanticCubeDetailSchema,
@@ -25,6 +26,7 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import { dashboards } from '../db/dashboards.js';
 import { semanticCubes } from '../db/semantic-cubes.js';
+import { semanticViews } from '../db/semantic-views.js';
 import { organization } from '../db/schema.js';
 import { db } from '../db/index.js';
 import { recordAuditEvent } from './audit-log.js';
@@ -35,13 +37,20 @@ import {
   writeSemanticCubeYaml,
 } from './semantic-yaml.js';
 import { syncOrgSemanticYaml } from './semantic-sync.js';
+import { seedDemoSemanticForTenant } from './seed-demo-semantic.js';
 
 function parseDefinition(raw: unknown): SemanticCubeDefinition {
   const parsed = SemanticCubeDefinitionSchema.safeParse(raw);
   if (parsed.success) return parsed.data;
 
   const legacy = raw as SemanticCubeDefinition;
-  return SemanticCubeDefinitionSchema.parse({ ...legacy, joins: legacy.joins ?? [] });
+  return SemanticCubeDefinitionSchema.parse({
+    ...legacy,
+    joins: legacy.joins ?? [],
+    segments: legacy.segments ?? [],
+    hierarchies: legacy.hierarchies ?? [],
+    preAggregations: legacy.preAggregations ?? [],
+  });
 }
 
 function parseLayout(raw: unknown): SemanticGraphLayout {
@@ -112,35 +121,108 @@ async function getOrgPrefix(organizationId: string) {
   return row?.slug ?? organizationId.slice(0, 8);
 }
 
-export async function ensureSemanticCubes(organizationId: string) {
+async function ensureDemoSemanticView(organizationId: string) {
   const [existing] = await db
-    .select({ id: semanticCubes.id })
-    .from(semanticCubes)
-    .where(and(eq(semanticCubes.organizationId, organizationId), eq(semanticCubes.name, 'Orders')))
+    .select({ id: semanticViews.id })
+    .from(semanticViews)
+    .where(
+      and(eq(semanticViews.organizationId, organizationId), eq(semanticViews.name, DEMO_SEMANTIC_VIEW.name))
+    )
     .limit(1);
 
-  if (existing) return;
+  if (existing) return false;
 
   const now = new Date();
-  const definition = DEFAULT_ORDERS_SEMANTIC_CUBE;
-
-  await db.insert(semanticCubes).values({
+  await db.insert(semanticViews).values({
     id: randomUUID(),
     organizationId,
-    name: definition.name,
-    subtitle: semanticCubeSubtitle(definition),
-    draftDefinition: definition,
-    publishedDefinition: definition,
-    graphLayout: DEFAULT_ORDERS_GRAPH_LAYOUT,
+    name: DEMO_SEMANTIC_VIEW.name,
+    title: DEMO_SEMANTIC_VIEW.title,
+    draftDefinition: DEMO_SEMANTIC_VIEW,
+    publishedDefinition: DEMO_SEMANTIC_VIEW,
     publishedAt: now,
     createdAt: now,
     updatedAt: now,
   });
 
-  try {
-    await syncOrgSemanticYaml(organizationId);
-  } catch (error) {
-    console.warn('[semantic] Failed to sync seed Orders YAML:', error);
+  return true;
+}
+
+async function upgradeLegacyOrdersCube(organizationId: string) {
+  const ordersSeed = getDemoSemanticCubeSeeds().find((seed) => seed.definition.name === 'Orders');
+  if (!ordersSeed) return false;
+
+  const [row] = await db
+    .select()
+    .from(semanticCubes)
+    .where(and(eq(semanticCubes.organizationId, organizationId), eq(semanticCubes.name, 'Orders')))
+    .limit(1);
+
+  if (!row) return false;
+
+  const published = parseDefinition(row.publishedDefinition);
+  const hasDemoJoins = (published.joins ?? []).some((join) => join.targetCube === 'Customers');
+  if (hasDemoJoins) return false;
+
+  const now = new Date();
+  await db
+    .update(semanticCubes)
+    .set({
+      draftDefinition: ordersSeed.definition,
+      publishedDefinition: ordersSeed.definition,
+      graphLayout: ordersSeed.layout,
+      subtitle: semanticCubeSubtitle(ordersSeed.definition),
+      updatedAt: now,
+    })
+    .where(eq(semanticCubes.id, row.id));
+
+  return true;
+}
+
+export async function ensureSemanticCubes(organizationId: string) {
+  await seedDemoSemanticForTenant(organizationId);
+
+  const seeds = getDemoSemanticCubeSeeds();
+  let changed = false;
+
+  for (const seed of seeds) {
+    const [existing] = await db
+      .select({ id: semanticCubes.id })
+      .from(semanticCubes)
+      .where(
+        and(eq(semanticCubes.organizationId, organizationId), eq(semanticCubes.name, seed.definition.name))
+      )
+      .limit(1);
+
+    if (existing) continue;
+
+    const now = new Date();
+    await db.insert(semanticCubes).values({
+      id: randomUUID(),
+      organizationId,
+      name: seed.definition.name,
+      subtitle: semanticCubeSubtitle(seed.definition),
+      draftDefinition: seed.definition,
+      publishedDefinition: seed.definition,
+      graphLayout: seed.layout,
+      publishedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+    changed = true;
+  }
+
+  if (await upgradeLegacyOrdersCube(organizationId)) {
+    changed = true;
+  }
+
+  const viewCreated = await ensureDemoSemanticView(organizationId);
+  if (changed || viewCreated) {
+    try {
+      await syncOrgSemanticYaml(organizationId);
+    } catch (error) {
+      console.warn('[semantic] Failed to sync demo semantic YAML:', error);
+    }
   }
 }
 
@@ -163,6 +245,8 @@ export async function listSemanticCubes(organizationId: string): Promise<Semanti
     items.push(
       SemanticCubeListItemSchema.parse({
         name: row.name,
+        title: draft.displayTitle,
+        shortTitle: draft.displayShortTitle,
         subtitle: row.subtitle,
         status: cubeStatus(draft, published, row.publishedAt),
         measureCount: draft.measures.length,

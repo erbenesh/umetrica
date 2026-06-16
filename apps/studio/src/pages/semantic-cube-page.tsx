@@ -1,8 +1,8 @@
 import type { SemanticCubeDefinition, SemanticGraphLayout } from '@umetrica/core';
-import { DEFAULT_ORDERS_GRAPH_LAYOUT } from '@umetrica/core';
-import { ChevronRight, Loader2, Redo2, Undo2 } from 'lucide-react';
+import { DEFAULT_ORDERS_GRAPH_LAYOUT, semanticCubeLabel } from '@umetrica/core';
+import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { MobilePageHeader } from '@/components/layout/mobile-page-header';
 import {
@@ -10,7 +10,11 @@ import {
   type SemanticNodeId,
 } from '@/components/semantic/semantic-node-editor';
 import { SemanticPublishDialog } from '@/components/semantic/semantic-publish-dialog';
+import { SemanticCubeEditorHeader, type SemanticCubeEditorTab } from '@/components/semantic/semantic-cube-editor-header';
+import { SemanticHierarchiesPanel } from '@/components/semantic/semantic-hierarchies-panel';
+import { SemanticPreAggregationsPanel } from '@/components/semantic/semantic-pre-aggregations-panel';
 import { SemanticRelationshipsPanel } from '@/components/semantic/semantic-relationships-panel';
+import { SemanticSegmentsPanel } from '@/components/semantic/semantic-segments-panel';
 import { SemanticYamlPanel } from '@/components/semantic/semantic-yaml-panel';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { Button } from '@/components/ui/button';
@@ -39,7 +43,8 @@ function nextMemberName(prefix: string, existing: string[]) {
 export function SemanticCubePage() {
   const { cubeName = '' } = useParams<{ cubeName: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const editorTab = (searchParams.get('tab') as 'visual' | 'relationships' | 'yaml') ?? 'visual';
+  const editorTab =
+    (searchParams.get('tab') as SemanticCubeEditorTab | null) ?? 'visual';
   const joinTarget = searchParams.get('joinTarget') ?? undefined;
   const canWrite = useCanWriteDashboards();
   const { data: connections } = useConnections();
@@ -291,6 +296,8 @@ export function SemanticCubePage() {
   const isDraft = cube.status === 'draft';
   const needsFirstPublish = !cube.publishedAt;
 
+  const cubeLabel = semanticCubeLabel(activeDraft);
+
   return (
     <div className="app-page">
       {needsFirstPublish ? (
@@ -301,7 +308,7 @@ export function SemanticCubePage() {
       ) : null}
 
       <MobilePageHeader
-        title={cube.name}
+        title={cubeLabel}
         back={{ to: '/semantic', label: 'Семантика' }}
         actions={
           canWrite ? (
@@ -312,73 +319,21 @@ export function SemanticCubePage() {
         }
       />
 
-      <header className="editor-toolbar">
-        <div className="editor-toolbar__crumb">
-          <Link to="/semantic">Семантика</Link>
-          <ChevronRight className="size-3.5 text-muted-foreground" strokeWidth={2} />
-          <span>{cube.name}</span>
-        </div>
-        <div className="editor-toolbar__actions">
-          <div className="segmented segmented--dense">
-            <button
-              className={`segmented__btn ${editorTab === 'visual' ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => setSearchParams({ tab: 'visual' })}
-            >
-              Visual
-            </button>
-            <button
-              className={`segmented__btn ${editorTab === 'relationships' ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => setSearchParams({ tab: 'relationships' })}
-            >
-              Relationships
-            </button>
-            <button
-              className={`segmented__btn ${editorTab === 'yaml' ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => setSearchParams({ tab: 'yaml' })}
-            >
-              YAML
-            </button>
-          </div>
-          <span
-            className={
-              isDraft ? 'db-tag db-tag--blue editor-toolbar__status' : 'db-tag db-tag--green editor-toolbar__status'
-            }
-          >
-            {isDraft ? 'Черновик' : 'Опубликован'}
-          </span>
-          {savedHint ? <span className="text-xs text-muted-foreground">Сохранено</span> : null}
-          {updateDraft.isPending ? (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" />
-            </span>
-          ) : null}
-          {canWrite ? (
-            <>
-              <Button variant="ghost" size="icon-sm" type="button" onClick={handleUndo} aria-label="Отменить">
-                <Undo2 size={16} />
-              </Button>
-              <Button variant="ghost" size="icon-sm" type="button" onClick={handleRedo} aria-label="Повторить">
-                <Redo2 size={16} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                onClick={handleDiscard}
-                disabled={!isDraft || discardDraft.isPending}
-              >
-                Отменить
-              </Button>
-              <Button size="sm" type="button" onClick={() => setPublishOpen(true)}>
-                Опубликовать
-              </Button>
-            </>
-          ) : null}
-        </div>
-      </header>
+      <SemanticCubeEditorHeader
+        cubeName={cube.name}
+        cubeLabel={cubeLabel}
+        tab={editorTab}
+        isDraft={isDraft}
+        canWrite={canWrite}
+        savedHint={savedHint}
+        isSaving={updateDraft.isPending}
+        isDiscarding={discardDraft.isPending}
+        onTabChange={(nextTab) => setSearchParams({ tab: nextTab })}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onDiscard={handleDiscard}
+        onPublish={() => setPublishOpen(true)}
+      />
 
       {editorTab === 'yaml' ? (
         <SemanticYamlPanel cubeName={cube.name} canWrite={canWrite} />
@@ -391,6 +346,24 @@ export function SemanticCubePage() {
             onDraftChange={handleDraftChange}
           />
         </div>
+      ) : editorTab === 'segments' ? (
+        <SemanticSegmentsPanel
+          draft={activeDraft}
+          canWrite={canWrite}
+          onDraftChange={handleDraftChange}
+        />
+      ) : editorTab === 'hierarchies' ? (
+        <SemanticHierarchiesPanel
+          draft={activeDraft}
+          canWrite={canWrite}
+          onDraftChange={handleDraftChange}
+        />
+      ) : editorTab === 'rollups' ? (
+        <SemanticPreAggregationsPanel
+          draft={activeDraft}
+          canWrite={canWrite}
+          onDraftChange={handleDraftChange}
+        />
       ) : (
         <SemanticNodeEditor
           draft={activeDraft}
@@ -411,6 +384,7 @@ export function SemanticCubePage() {
 
       <SemanticPublishDialog
         cubeName={cube.name}
+        cubeLabel={cubeLabel}
         open={publishOpen}
         onClose={() => setPublishOpen(false)}
         onPublished={() => {

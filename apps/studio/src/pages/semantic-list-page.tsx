@@ -1,3 +1,4 @@
+import { semanticCubeLabel } from '@umetrica/core';
 import { Box, Database, Eye, Layers, List, Loader2, Network, Plus, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -178,14 +179,14 @@ export function SemanticListPage() {
             {tab === 'cubes'
               ? cubes.map((cube) => (
                   <Link key={cube.name} to={`/semantic/cubes/${cube.name}`} className="semantic-workspace-list__item">
-                    <strong>{cube.name}</strong>
+                    <strong>{semanticCubeLabel(cube)}</strong>
                     <span>{cube.subtitle}</span>
                   </Link>
                 ))
               : views.map((view) => (
                   <Link key={view.name} to={`/semantic/views/${view.name}`} className="semantic-workspace-list__item">
-                    <strong>{view.name}</strong>
-                    <span>{view.title}</span>
+                    <strong>{view.title}</strong>
+                    <span>{view.name}</span>
                   </Link>
                 ))}
           </div>

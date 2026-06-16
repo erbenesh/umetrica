@@ -1,5 +1,5 @@
 import type { SemanticCubeDefinition, SemanticJoin } from '@umetrica/core';
-import { buildSuggestedJoinSql, semanticJoinId } from '@umetrica/core';
+import { buildSuggestedJoinSql, semanticCubeLabel, semanticJoinId } from '@umetrica/core';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 
@@ -97,7 +97,7 @@ export function SemanticRelationshipsPanel({
   return (
     <div className="semantic-panel semantic-relationships">
       <div className="semantic-panel__head">
-        <h2 className="semantic-panel__title">Relationships · {draft.name}</h2>
+        <h2 className="semantic-panel__title">Relationships · {semanticCubeLabel(draft)}</h2>
         <p className="semantic-panel__desc">Joins к другим кубам на data graph</p>
       </div>
 
@@ -129,7 +129,7 @@ export function SemanticRelationshipsPanel({
                   >
                     {otherCubes.map((cube) => (
                       <option key={cube.name} value={cube.name}>
-                        {cube.name}
+                        {semanticCubeLabel(cube)}
                       </option>
                     ))}
                   </select>

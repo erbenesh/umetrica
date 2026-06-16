@@ -21,6 +21,7 @@ function diffOpClass(op: SemanticPublishDiffOp) {
 
 interface SemanticPublishDialogProps {
   cubeName: string;
+  cubeLabel?: string;
   open: boolean;
   onClose: () => void;
   onPublished: () => void;
@@ -28,6 +29,7 @@ interface SemanticPublishDialogProps {
 
 export function SemanticPublishDialog({
   cubeName,
+  cubeLabel,
   open,
   onClose,
   onPublished,
@@ -67,7 +69,7 @@ export function SemanticPublishDialog({
       <Card className="w-full max-w-lg rounded-b-none sm:rounded-b-lg">
         <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-border sm:hidden" aria-hidden />
         <CardHeader className="pb-2">
-          <CardTitle>Опубликовать {cubeName}</CardTitle>
+          <CardTitle>Опубликовать {cubeLabel ?? cubeName}</CardTitle>
           <p className="m-0 text-[13px] text-muted-foreground">
             Черновик → production · изменения затронут {widgetLabel}
           </p>

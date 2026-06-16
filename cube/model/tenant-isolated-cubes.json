@@ -1,1 +1,6 @@
-["Orders"]
+[
+  "Customers",
+  "OrderItems",
+  "Orders",
+  "Products"
+]
