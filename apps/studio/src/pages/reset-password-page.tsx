@@ -4,14 +4,16 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { AuthStatusMessage } from '@/components/auth/auth-status';
+import { PasswordField } from '@/components/auth/password-field';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { resetPassword } from '@/lib/auth-client';
 
 const schema = z
   .object({
-    password: z.string().min(8),
-    confirmPassword: z.string().min(8),
+    password: z.string().min(8, 'Пароль — минимум 8 символов'),
+    confirmPassword: z.string().min(8, 'Повторите пароль'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Пароли не совпадают',
@@ -30,7 +32,7 @@ export function ResetPasswordPage() {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
@@ -85,37 +87,37 @@ export function ResetPasswordPage() {
       panelTitle="Задайте пароль"
       panelDescription="После сохранения войдите с новым паролем"
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="form-fields">
-          <div className="field">
-            <label htmlFor="password">Новый пароль</label>
-            <input
-              id="password"
-              type="password"
-              className="input"
-              autoComplete="new-password"
-              {...register('password')}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="confirmPassword">Повторите</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              className="input"
-              autoComplete="new-password"
-              {...register('confirmPassword')}
-            />
-          </div>
+          <PasswordField
+            id="password"
+            label="Новый пароль"
+            autoComplete="new-password"
+            hint="Минимум 8 символов"
+            required
+            autoFocus
+            error={errors.password?.message}
+            {...register('password')}
+          />
+          <PasswordField
+            id="confirmPassword"
+            label="Повторите"
+            autoComplete="new-password"
+            required
+            error={errors.confirmPassword?.message}
+            {...register('confirmPassword')}
+          />
         </div>
 
-        {errors.confirmPassword ? (
-          <p className="text-xs text-insight-warning">{errors.confirmPassword.message}</p>
-        ) : null}
-        {message ? <p className="text-xs text-insight-warning">{message}</p> : null}
+        {message ? <AuthStatusMessage variant="error">{message}</AuthStatusMessage> : null}
 
         <div className="form-actions">
-          <Button type="submit" className="h-11 w-full text-base" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="h-11 w-full text-base"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+          >
             {isSubmitting ? 'Сохранение...' : 'Сохранить пароль'}
           </Button>
         </div>

@@ -25,12 +25,23 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import { dashboards } from '../db/dashboards.js';
 import { semanticCubes } from '../db/semantic-cubes.js';
+import { organization } from '../db/schema.js';
 import { db } from '../db/index.js';
 import { recordAuditEvent } from './audit-log.js';
-import { writeSemanticCubeYaml } from './semantic-yaml.js';
+import {
+  compileSemanticCubeToYaml,
+  deleteSemanticCubeYaml,
+  parseSemanticCubeYaml,
+  writeSemanticCubeYaml,
+} from './semantic-yaml.js';
+import { syncOrgSemanticYaml } from './semantic-sync.js';
 
 function parseDefinition(raw: unknown): SemanticCubeDefinition {
-  return SemanticCubeDefinitionSchema.parse(raw);
+  const parsed = SemanticCubeDefinitionSchema.safeParse(raw);
+  if (parsed.success) return parsed.data;
+
+  const legacy = raw as SemanticCubeDefinition;
+  return SemanticCubeDefinitionSchema.parse({ ...legacy, joins: legacy.joins ?? [] });
 }
 
 function parseLayout(raw: unknown): SemanticGraphLayout {
@@ -45,6 +56,17 @@ function hasDraftChanges(
   return !semanticDefinitionsEqual(draft, published);
 }
 
+function cubeStatus(
+  draft: SemanticCubeDefinition,
+  published: SemanticCubeDefinition,
+  publishedAt: Date | null
+) {
+  if (!publishedAt || hasDraftChanges(draft, published)) {
+    return 'draft' as const;
+  }
+  return 'published' as const;
+}
+
 function toDetail(row: typeof semanticCubes.$inferSelect, widgetCount: number): SemanticCubeDetail {
   const draft = parseDefinition(row.draftDefinition);
   const published = parseDefinition(row.publishedDefinition);
@@ -53,7 +75,7 @@ function toDetail(row: typeof semanticCubes.$inferSelect, widgetCount: number): 
   return SemanticCubeDetailSchema.parse({
     name: row.name,
     subtitle: row.subtitle,
-    status: hasDraftChanges(draft, published) ? 'draft' : 'published',
+    status: cubeStatus(draft, published, row.publishedAt),
     draft,
     published,
     layout,
@@ -80,6 +102,16 @@ async function countWidgetsForCube(organizationId: string, cubeName: string) {
   return count;
 }
 
+async function getOrgPrefix(organizationId: string) {
+  const [row] = await db
+    .select({ slug: organization.slug })
+    .from(organization)
+    .where(eq(organization.id, organizationId))
+    .limit(1);
+
+  return row?.slug ?? organizationId.slice(0, 8);
+}
+
 export async function ensureSemanticCubes(organizationId: string) {
   const [existing] = await db
     .select({ id: semanticCubes.id })
@@ -104,6 +136,12 @@ export async function ensureSemanticCubes(organizationId: string) {
     createdAt: now,
     updatedAt: now,
   });
+
+  try {
+    await syncOrgSemanticYaml(organizationId);
+  } catch (error) {
+    console.warn('[semantic] Failed to sync seed Orders YAML:', error);
+  }
 }
 
 export async function listSemanticCubes(organizationId: string): Promise<SemanticCubeListItem[]> {
@@ -126,7 +164,7 @@ export async function listSemanticCubes(organizationId: string): Promise<Semanti
       SemanticCubeListItemSchema.parse({
         name: row.name,
         subtitle: row.subtitle,
-        status: hasDraftChanges(draft, published) ? 'draft' : 'published',
+        status: cubeStatus(draft, published, row.publishedAt),
         measureCount: draft.measures.length,
         dimensionCount: draft.dimensions.length,
         widgetCount,
@@ -238,6 +276,10 @@ export async function publishSemanticCube(input: {
   const current = await getSemanticCube(input.organizationId, input.name);
   if (!current) return null;
 
+  const orgPrefix = await getOrgPrefix(input.organizationId);
+  await writeSemanticCubeYaml(current.draft, orgPrefix);
+  await syncOrgSemanticYaml(input.organizationId);
+
   const now = new Date();
 
   const [row] = await db
@@ -254,12 +296,6 @@ export async function publishSemanticCube(input: {
     .returning();
 
   if (!row) return null;
-
-  try {
-    await writeSemanticCubeYaml(current.draft);
-  } catch (error) {
-    console.warn('[semantic] Failed to write Cube YAML:', error);
-  }
 
   await recordAuditEvent({
     organizationId: input.organizationId,
@@ -295,6 +331,7 @@ export async function createSemanticCube(
     table: input.table,
     columns,
     connectionLabel,
+    connectionId: input.connectionId,
     name: input.name,
     displayTitle: input.displayTitle,
   });
@@ -322,7 +359,7 @@ export async function createSemanticCube(
       draftDefinition: definition,
       publishedDefinition: definition,
       graphLayout: layout,
-      publishedAt: now,
+      publishedAt: null,
       createdAt: now,
       updatedAt: now,
     })
@@ -334,6 +371,71 @@ export async function createSemanticCube(
 
   const widgetCount = await countWidgetsForCube(organizationId, definition.name);
   return toDetail(row, widgetCount);
+}
+
+export async function deleteSemanticCube(organizationId: string, name: string) {
+  if (name === 'Orders') {
+    throw new Error('Куб Orders нельзя удалить');
+  }
+
+  const widgetCount = await countWidgetsForCube(organizationId, name);
+  if (widgetCount > 0) {
+    throw new Error(`Куб используется в ${widgetCount} виджетах — сначала удалите их`);
+  }
+
+  const [row] = await db
+    .delete(semanticCubes)
+    .where(and(eq(semanticCubes.organizationId, organizationId), eq(semanticCubes.name, name)))
+    .returning({ name: semanticCubes.name });
+
+  if (!row) return false;
+
+  const orgPrefix = await getOrgPrefix(organizationId);
+  await deleteSemanticCubeYaml(name, orgPrefix);
+  await syncOrgSemanticYaml(organizationId);
+  return true;
+}
+
+export async function getSemanticCubeYaml(
+  organizationId: string,
+  name: string,
+  variant: 'draft' | 'published'
+) {
+  const current = await getSemanticCube(organizationId, name);
+  if (!current) return null;
+
+  const definition = variant === 'draft' ? current.draft : current.published;
+  return {
+    yaml: compileSemanticCubeToYaml(definition),
+    variant,
+  };
+}
+
+export async function applySemanticCubeYaml(
+  organizationId: string,
+  name: string,
+  yaml: string
+) {
+  const current = await getSemanticCube(organizationId, name);
+  if (!current) return null;
+
+  const parsed = parseSemanticCubeYaml(yaml);
+  if (parsed.name !== name) {
+    throw new Error('Имя куба в YAML должно совпадать с текущим');
+  }
+
+  return updateSemanticDraft(organizationId, name, { draft: parsed, layout: current.layout });
+}
+
+export async function listCubeDefinitionsForJoins(organizationId: string) {
+  const cubes = await listSemanticCubes(organizationId);
+  const details = await Promise.all(
+    cubes.map((cube) => getSemanticCube(organizationId, cube.name))
+  );
+
+  return details
+    .filter((cube): cube is SemanticCubeDetail => cube !== null)
+    .map((cube) => cube.draft);
 }
 
 export { computeSemanticPublishDiff };

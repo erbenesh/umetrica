@@ -86,7 +86,8 @@ export function SemanticNewCubeDialog({ open, onClose }: SemanticNewCubeDialogPr
         <CardHeader className="pb-2">
           <CardTitle>Новый куб</CardTitle>
           <p className="m-0 text-[13px] text-muted-foreground">
-            Выберите таблицу PostgreSQL — меры и измерения создадутся автоматически
+            Выберите таблицу PostgreSQL — меры и измерения создадутся автоматически. После создания
+            опубликуйте куб, чтобы он появился в виджетах.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

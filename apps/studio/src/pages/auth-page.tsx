@@ -1,26 +1,28 @@
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { AuthField, AuthSelectField } from '@/components/auth/auth-field';
+import { PasswordField } from '@/components/auth/password-field';
+import { AuthLoadingStatus, AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { signIn } from '@/lib/auth-client';
-import { ensureActiveOrganization, isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpers';
+import { signIn, useSession } from '@/lib/auth-client';
+import { ensureActiveOrganization, isEmailVerificationError, syncSessionAfterLogin } from '@/lib/auth-helpers';
 import { registerFounder } from '@/lib/register-api';
-import { cn } from '@/lib/utils';
 
 const CATEGORIES = ['Дом и текстиль', 'Одежда', 'Красота и здоровье', 'Другое'];
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email('Укажите корректный email'),
+  password: z.string().min(8, 'Пароль — минимум 8 символов'),
 });
 
 const registerSchema = loginSchema.extend({
   name: z.string().min(2, 'Укажите имя'),
-  companyName: z.string().min(2, 'Укажите название компании').max(100),
+  companyName: z.string().min(2, 'Укажите название компании').max(100, 'Слишком длинное название'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -40,6 +42,7 @@ export function AuthPage() {
 function AuthPageForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { data: session, isPending: sessionPending, refetch: refetchSession } = useSession();
   const mode = searchParams.get('mode') === 'register' ? 'register' : 'login';
 
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -57,7 +60,7 @@ function AuthPageForm() {
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormData | RegisterFormData>({
     resolver: zodResolver(schema),
   });
@@ -85,7 +88,7 @@ function AuthPageForm() {
           }
           throw new Error(result.error.message);
         }
-        await syncSessionAfterAuth();
+        await syncSessionAfterLogin(refetchSession);
         await ensureActiveOrganization();
         navigate('/');
       } else {
@@ -111,6 +114,25 @@ function AuthPageForm() {
   };
 
   const isLogin = mode === 'login';
+  const registerErrors = errors as FieldErrors<RegisterFormData>;
+
+  if (sessionPending) {
+    return (
+      <AuthSplitLayout
+        topbar="full"
+        brandTitle="Загрузка"
+        brandDescription=""
+        panelTitle="Проверяем сессию"
+        panelDescription="Подождите несколько секунд"
+      >
+        <AuthLoadingStatus>Проверяем сессию…</AuthLoadingStatus>
+      </AuthSplitLayout>
+    );
+  }
+
+  if (session?.user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <AuthSplitLayout
@@ -151,67 +173,75 @@ function AuthPageForm() {
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="form-fields">
           {!isLogin ? (
             <>
-              <div className="field">
-                <label htmlFor="name">Имя</label>
-                <input id="name" className="input" placeholder="Егор" {...register('name')} />
-              </div>
-              <div className="field">
-                <label htmlFor="company">Магазин / компания</label>
-                <input
-                  id="company"
-                  className="input"
-                  placeholder="HomeStyle"
-                  {...register('companyName')}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="category">Категория (для рыночных инсайтов)</label>
-                <select
-                  id="category"
-                  className={cn('input')}
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
-                >
-                  {CATEGORIES.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <AuthField
+                id="name"
+                label="Имя"
+                placeholder="Егор"
+                autoComplete="name"
+                required
+                error={registerErrors.name?.message}
+                autoFocus
+                {...register('name')}
+              />
+              <AuthField
+                id="company"
+                label="Магазин / компания"
+                placeholder="HomeStyle"
+                autoComplete="organization"
+                required
+                error={registerErrors.companyName?.message}
+                {...register('companyName')}
+              />
+              <AuthSelectField
+                id="category"
+                label="Категория (для рыночных инсайтов)"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+              >
+                {CATEGORIES.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </AuthSelectField>
             </>
           ) : null}
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              autoComplete="email"
-              {...register('email')}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Пароль</label>
-            <input
-              id="password"
-              type="password"
-              className="input"
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-              {...register('password')}
-            />
-          </div>
+          <AuthField
+            id="email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+            error={errors.email?.message}
+            autoFocus={isLogin}
+            {...register('email')}
+          />
+          <PasswordField
+            id="password"
+            label="Пароль"
+            autoComplete={isLogin ? 'current-password' : 'new-password'}
+            hint={isLogin ? undefined : 'Минимум 8 символов'}
+            required
+            error={errors.password?.message}
+            {...register('password')}
+          />
         </div>
 
-        {info ? <p className="text-xs text-insight-info">{info}</p> : null}
-        {error ? <p className="text-xs text-insight-warning">{error}</p> : null}
+        {info ? <AuthStatusMessage variant="info">{info}</AuthStatusMessage> : null}
+        {error ? <AuthStatusMessage variant="error">{error}</AuthStatusMessage> : null}
 
         <div className="form-actions">
-          <Button type="submit" className="h-11 w-full text-base" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="h-11 w-full text-base"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+          >
             {isSubmitting ? 'Загрузка...' : isLogin ? 'Войти' : 'Зарегистрироваться'}
           </Button>
         </div>

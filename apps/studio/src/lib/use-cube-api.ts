@@ -1,5 +1,5 @@
 import cube from '@cubejs-client/core';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { fetchCubeToken, getCubeApiUrl } from './cube-api';
@@ -16,6 +16,7 @@ export function useCubeToken() {
 }
 
 export function useCubeApi() {
+  const queryClient = useQueryClient();
   const { data, isLoading, error } = useCubeToken();
 
   const cubeApi = useMemo(() => {
@@ -23,11 +24,18 @@ export function useCubeApi() {
 
     const apiUrl = getCubeApiUrl(data.cubeUrl);
 
-    return cube(async () => {
-      const fresh = await fetchCubeToken();
-      return fresh.token;
-    }, { apiUrl });
-  }, [data?.cubeUrl]);
+    return cube(
+      () =>
+        queryClient
+          .fetchQuery({
+            queryKey: cubeTokenQueryKey,
+            queryFn: fetchCubeToken,
+            staleTime: 5 * 60 * 1000,
+          })
+          .then((response) => response.token),
+      { apiUrl }
+    );
+  }, [data?.cubeUrl, queryClient]);
 
   return {
     cubeApi,

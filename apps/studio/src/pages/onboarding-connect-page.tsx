@@ -33,7 +33,7 @@ export function OnboardingConnectPage() {
         </>
       }
     >
-      <div className="flex flex-col gap-2.5">
+      <nav className="onboarding-paths" aria-label="Способы подключения данных">
         <OnboardingPathCard
           to="/insights"
           icon={Globe}
@@ -68,11 +68,11 @@ export function OnboardingConnectPage() {
           hint="PostgreSQL и др. — для агентств и крупных селлеров с витриной"
           state={ONBOARDING_FROM}
         />
-      </div>
+      </nav>
 
-      <div className="mt-4">
+      <div className="form-actions">
         <Link to="/">
-          <Button variant="ghost" className="w-full" type="button">
+          <Button variant="ghost" className="h-11 w-full text-base" type="button">
             Пропустить · демо-данные
           </Button>
         </Link>

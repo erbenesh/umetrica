@@ -223,3 +223,80 @@ export async function listPostgresTableColumns(
     await sql.end({ timeout: 1 }).catch(() => undefined);
   }
 }
+
+export type SemanticForeignKeyListResult =
+  | SemanticDbError
+  | {
+      items: Array<{
+        fromTable: string;
+        fromColumn: string;
+        toTable: string;
+        toColumn: string;
+        suggestedSql: string;
+      }>;
+    };
+
+export async function listPostgresForeignKeys(
+  organizationId: string,
+  connectionId?: string
+): Promise<SemanticForeignKeyListResult> {
+  const resolved = await resolveOrgPostgresParams(organizationId, connectionId);
+  if ('error' in resolved) {
+    return { error: resolved.error };
+  }
+
+  const sql = createSql(resolved.params);
+
+  try {
+    const rows = await sql<
+      {
+        from_schema: string;
+        from_table: string;
+        from_column: string;
+        to_schema: string;
+        to_table: string;
+        to_column: string;
+      }[]
+    >`
+      SELECT
+        tc.table_schema AS from_schema,
+        tc.table_name AS from_table,
+        kcu.column_name AS from_column,
+        ccu.table_schema AS to_schema,
+        ccu.table_name AS to_table,
+        ccu.column_name AS to_column
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.key_column_usage kcu
+        ON tc.constraint_name = kcu.constraint_name
+       AND tc.table_schema = kcu.table_schema
+      JOIN information_schema.constraint_column_usage ccu
+        ON ccu.constraint_name = tc.constraint_name
+       AND ccu.table_schema = tc.table_schema
+      WHERE tc.constraint_type = 'FOREIGN KEY'
+        AND tc.table_schema NOT IN ('pg_catalog', 'information_schema')
+      ORDER BY from_schema, from_table, from_column
+    `;
+
+    return {
+      items: rows.map((row) => {
+        const fromTable = `${row.from_schema}.${row.from_table}`;
+        const toTable = `${row.to_schema}.${row.to_table}`;
+        const fromCube = row.from_table.charAt(0).toUpperCase() + row.from_table.slice(1);
+        const toCube = row.to_table.charAt(0).toUpperCase() + row.to_table.slice(1);
+
+        return {
+          fromTable,
+          fromColumn: row.from_column,
+          toTable,
+          toColumn: row.to_column,
+          suggestedSql: `\${${fromCube}}.${row.from_column} = \${${toCube}}.${row.to_column}`,
+        };
+      }),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Не удалось прочитать FK';
+    return { error: message };
+  } finally {
+    await sql.end({ timeout: 1 }).catch(() => undefined);
+  }
+}

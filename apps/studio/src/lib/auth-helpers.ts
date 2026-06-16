@@ -11,6 +11,15 @@ export async function syncSessionAfterAuth() {
   return result.data;
 }
 
+export async function syncSessionAfterLogin(refetchSession?: () => Promise<void>) {
+  if (refetchSession) {
+    await refetchSession();
+    return;
+  }
+
+  return syncSessionAfterAuth();
+}
+
 export async function ensureActiveOrganization() {
   await completeFounderSetup();
 

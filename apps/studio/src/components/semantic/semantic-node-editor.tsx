@@ -4,7 +4,7 @@ import type {
   SemanticGraphLayout,
   SemanticMeasure,
 } from '@umetrica/core';
-import { semanticCubeNodeId, semanticSourceNodeId } from '@umetrica/core';
+import { buildMemberPreviewQuery, semanticCubeNodeId, semanticSourceNodeId } from '@umetrica/core';
 import {
   Box,
   Calendar,
@@ -17,19 +17,65 @@ import {
   Plus,
   Table,
   Text,
+  Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
 import { FormField } from '@/components/doc/form-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  CANVAS_DRAG_THRESHOLD_PX,
+  clientToCanvasSpace,
+  isToggleSelectPointer,
+  normalizeRect,
+  rectsIntersect,
+  toggleSetMember,
+  type CanvasRect,
+} from '@/lib/canvas-graph-utils';
 import { cn } from '@/lib/utils';
+import { usePreviewSemanticQuery } from '@/hooks/use-semantic';
 
 const NODE_W = 204;
 const NODE_H_COMPACT = 88;
 const NODE_H_CUBE = 120;
 const NODE_H_SOURCE = 130;
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 1.5;
+const STAGE_PAD = 48;
+const STAGE_MIN_W = 860;
+const STAGE_MIN_H = 460;
+
+function clampZoom(value: number) {
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(value.toFixed(2))));
+}
+
+function computeStageBounds(layout: SemanticGraphLayout) {
+  const positions = Object.values(layout);
+  if (positions.length === 0) {
+    return { width: STAGE_MIN_W, height: STAGE_MIN_H, originX: 0, originY: 0 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const pos of positions) {
+    minX = Math.min(minX, pos.x);
+    minY = Math.min(minY, pos.y);
+    maxX = Math.max(maxX, pos.x + NODE_W);
+    maxY = Math.max(maxY, pos.y + NODE_H_SOURCE);
+  }
+
+  const originX = Math.min(0, minX - STAGE_PAD);
+  const originY = Math.min(0, minY - STAGE_PAD);
+  const width = Math.max(STAGE_MIN_W, maxX + STAGE_PAD - originX);
+  const height = Math.max(STAGE_MIN_H, maxY + STAGE_PAD - originY);
+
+  return { width, height, originX, originY };
+}
 
 export type SemanticNodeId = string;
 
@@ -87,6 +133,8 @@ interface SemanticNodeEditorProps {
   onDraftChange: (draft: SemanticCubeDefinition) => void;
   onAddMeasure: () => void;
   onAddDimension: () => void;
+  onDeleteMeasure?: (id: string) => void;
+  onDeleteDimension?: (id: string) => void;
   onLayoutChange?: (layout: SemanticGraphLayout) => void;
 }
 
@@ -122,6 +170,8 @@ function SemanticInspectorPanel({
   onDraftChange,
   onAddMeasure,
   onAddDimension,
+  onDeleteMeasure,
+  onDeleteDimension,
 }: {
   draft: SemanticCubeDefinition;
   selected: SemanticNodeId;
@@ -132,6 +182,8 @@ function SemanticInspectorPanel({
   onDraftChange: (draft: SemanticCubeDefinition) => void;
   onAddMeasure: () => void;
   onAddDimension: () => void;
+  onDeleteMeasure?: (id: string) => void;
+  onDeleteDimension?: (id: string) => void;
 }) {
   if (selected === sourceNodeId) {
     return (
@@ -140,18 +192,24 @@ function SemanticInspectorPanel({
           <h2 className="semantic-panel__title">Таблица · {draft.source.table}</h2>
           <p className="semantic-panel__desc">Источник · {connectionLabel}</p>
         </div>
-        <dl className="semantic-preview__meta-list">
-          <div>
-            <dt>SQL</dt>
-            <dd>
-              <code>{draft.source.sql}</code>
-            </dd>
-          </div>
-          <div>
-            <dt>Колонки</dt>
-            <dd>{draft.source.columns.join(', ')}</dd>
-          </div>
-        </dl>
+        <div className="form-fields max-w-none">
+          <FormField label="SQL источник">
+            <textarea
+              className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
+              value={draft.source.sql}
+              disabled={!canWrite}
+              onChange={(event) =>
+                onDraftChange({
+                  ...draft,
+                  source: { ...draft.source, sql: event.target.value },
+                })
+              }
+            />
+          </FormField>
+          <FormField label="Колонки">
+            <p className="m-0 text-[13px] text-muted-foreground">{draft.source.columns.join(', ')}</p>
+          </FormField>
+        </div>
         <Link to="/settings/connections" className="text-sm text-primary hover:underline">
           Открыть подключения →
         </Link>
@@ -187,7 +245,17 @@ function SemanticInspectorPanel({
             />
           </FormField>
           <FormField label="SQL источник">
-            <pre className="code-block code-block--sm m-0">{draft.source.sql}</pre>
+            <textarea
+              className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
+              value={draft.source.sql}
+              disabled={!canWrite}
+              onChange={(event) =>
+                onDraftChange({
+                  ...draft,
+                  source: { ...draft.source, sql: event.target.value },
+                })
+              }
+            />
           </FormField>
         </div>
       </div>
@@ -247,6 +315,7 @@ function SemanticInspectorPanel({
             <Input
               value={measure.sql}
               disabled={!canWrite}
+              list="semantic-column-options"
               onChange={(event) =>
                 onDraftChange(updateMeasure(draft, measure.id, { sql: event.target.value }))
               }
@@ -292,6 +361,18 @@ function SemanticInspectorPanel({
             </select>
           </FormField>
         </div>
+        {canWrite && draft.measures.length > 1 ? (
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            className="text-destructive"
+            onClick={() => onDeleteMeasure?.(measure.id)}
+          >
+            <Trash2 size={14} />
+            Удалить меру
+          </Button>
+        ) : null}
       </div>
     );
   }
@@ -321,6 +402,7 @@ function SemanticInspectorPanel({
             <Input
               value={dimension.sql}
               disabled={!canWrite || dimension.locked}
+              list="semantic-column-options"
               onChange={(event) =>
                 onDraftChange(updateDimension(draft, dimension.id, { sql: event.target.value }))
               }
@@ -369,12 +451,107 @@ function SemanticInspectorPanel({
         </div>
         {dimension.locked ? (
           <p className="text-xs text-muted-foreground">Системное измерение tenantId нельзя удалить.</p>
+        ) : canWrite && draft.dimensions.filter((item) => !item.locked).length > 0 &&
+          draft.dimensions.length > 1 ? (
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            className="text-destructive"
+            onClick={() => onDeleteDimension?.(dimension.id)}
+          >
+            <Trash2 size={14} />
+            Удалить измерение
+          </Button>
         ) : null}
       </div>
     );
   }
 
   return null;
+}
+
+function ColumnDatalist({ columns }: { columns: string[] }) {
+  return (
+    <datalist id="semantic-column-options">
+      {columns.map((column) => (
+        <option key={column} value={column} />
+      ))}
+    </datalist>
+  );
+}
+
+function SemanticMemberPreview({
+  draft,
+  selected,
+  sourceNodeId,
+  cubeNodeId,
+  widgetCount,
+}: {
+  draft: SemanticCubeDefinition;
+  selected: SemanticNodeId;
+  sourceNodeId: string;
+  cubeNodeId: string;
+  widgetCount: number;
+}) {
+  const previewQuery = usePreviewSemanticQuery();
+  const queryObject = buildMemberPreviewQuery(draft, selected, sourceNodeId, cubeNodeId);
+  const [queryText, setQueryText] = useState(JSON.stringify(queryObject, null, 2));
+  const [sampleValue, setSampleValue] = useState('—');
+
+  useEffect(() => {
+    setQueryText(JSON.stringify(queryObject, null, 2));
+  }, [selected, draft.name]);
+
+  const memberName =
+    draft.measures.find((item) => item.id === selected)?.name ??
+    draft.dimensions.find((item) => item.id === selected)?.name ??
+    (selected === cubeNodeId ? draft.name : selected === sourceNodeId ? draft.source.table : '');
+
+  const runPreview = async () => {
+    try {
+      const parsed = JSON.parse(queryText) as Record<string, unknown>;
+      const result = await previewQuery.mutateAsync(parsed);
+      setSampleValue(result.sampleValue);
+    } catch {
+      setSampleValue('ошибка');
+    }
+  };
+
+  return (
+    <div className="semantic-preview">
+      <div className="semantic-preview__head">
+        <span>Превью member</span>
+        <Button variant="outline" size="sm" type="button" onClick={runPreview} disabled={previewQuery.isPending}>
+          Выполнить
+        </Button>
+      </div>
+      <div className="semantic-preview__body">
+        {memberName ? (
+          <p className="semantic-preview__member">
+            {selected === sourceNodeId ? memberName : `${draft.name}.${memberName}`}
+          </p>
+        ) : null}
+        <dl className="semantic-preview__meta-list">
+          <div>
+            <dt>Sample</dt>
+            <dd>{sampleValue}</dd>
+          </div>
+        </dl>
+        <textarea
+          className="semantic-preview__query"
+          value={queryText}
+          spellCheck={false}
+          onChange={(event) => setQueryText(event.target.value)}
+        />
+        <ul className="semantic-preview__links m-0 list-none p-0">
+          <li>
+            <Link to="/dashboards">Используется в {widgetCount} виджетах →</Link>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
 }
 
 export function SemanticNodeEditor({
@@ -388,63 +565,310 @@ export function SemanticNodeEditor({
   onDraftChange,
   onAddMeasure,
   onAddDimension,
+  onDeleteMeasure,
+  onDeleteDimension,
   onLayoutChange,
 }: SemanticNodeEditorProps) {
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [draggingCanvas, setDraggingCanvas] = useState(false);
+  const [canvasSelection, setCanvasSelection] = useState<Set<string>>(new Set());
+  const [marqueeRect, setMarqueeRect] = useState<CanvasRect | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef(1);
+  const panStateRef = useRef({ x: 0, y: 0 });
   const dragRef = useRef<{
-    id: string;
     startX: number;
     startY: number;
-    originX: number;
-    originY: number;
+    moved: boolean;
+    origins: Map<string, { x: number; y: number }>;
   } | null>(null);
+  const canvasPointerRef = useRef<{
+    startX: number;
+    startY: number;
+    originPanX: number;
+    originPanY: number;
+    mode: 'pending' | 'pan' | 'marquee';
+    additive: boolean;
+    baseSelection: Set<string>;
+  } | null>(null);
+  const selectionClickRef = useRef<'toggle' | 'additive' | null>(null);
+  const skipClickRef = useRef(false);
+
+  zoomRef.current = zoom;
+  panStateRef.current = pan;
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
 
   const sourceNodeId = semanticSourceNodeId(draft.source.table);
   const cubeNodeId = semanticCubeNodeId(draft.name);
-  const edges = buildEdges(draft, layout, selected, sourceNodeId, cubeNodeId);
-  const memberName =
-    draft.measures.find((item) => item.id === selected)?.name ??
-    draft.dimensions.find((item) => item.id === selected)?.name ??
-    (selected === cubeNodeId ? draft.name : selected === sourceNodeId ? draft.source.table.split('.').pop() ?? '' : '');
+  const stageBounds = useMemo(() => computeStageBounds(layout), [layout]);
 
-  const beginDrag = (nodeId: string, event: PointerEvent<HTMLElement>) => {
-    if (!canWrite || !onLayoutChange) return;
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setCanvasSelection(new Set());
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const getNodeHeight = useCallback(
+    (nodeId: string) => {
+      if (nodeId === sourceNodeId) return NODE_H_SOURCE;
+      if (nodeId === cubeNodeId) return NODE_H_CUBE;
+      return NODE_H_COMPACT;
+    },
+    [cubeNodeId, sourceNodeId]
+  );
+
+  const canvasNodeIds = useMemo(
+    () => [
+      sourceNodeId,
+      cubeNodeId,
+      ...draft.measures.map((item) => item.id),
+      ...draft.dimensions.map((item) => item.id),
+    ],
+    [cubeNodeId, draft.dimensions, draft.measures, sourceNodeId]
+  );
+
+  const getNodeRect = useCallback(
+    (nodeId: string): CanvasRect => {
+      const pos = layout[nodeId] ?? { x: 0, y: 0 };
+      return {
+        left: pos.x - stageBounds.originX,
+        top: pos.y - stageBounds.originY,
+        width: NODE_W,
+        height: getNodeHeight(nodeId),
+      };
+    },
+    [getNodeHeight, layout, stageBounds.originX, stageBounds.originY]
+  );
+
+  const collectMarqueeSelection = useCallback(
+    (rect: CanvasRect) =>
+      canvasNodeIds.filter((nodeId) => rectsIntersect(rect, getNodeRect(nodeId))),
+    [canvasNodeIds, getNodeRect]
+  );
+  const toStagePos = useCallback(
+    (x: number, y: number) => ({
+      left: x - stageBounds.originX,
+      top: y - stageBounds.originY,
+    }),
+    [stageBounds.originX, stageBounds.originY]
+  );
+  const edges = buildEdges(draft, layout, selected, sourceNodeId, cubeNodeId);
+
+  const beginNodePointer = (nodeId: string, event: PointerEvent<HTMLElement>) => {
     event.stopPropagation();
-    const pos = layout[nodeId] ?? { x: 0, y: 0 };
+
+    let nextSelection = canvasSelection;
+
+    if (isToggleSelectPointer(event)) {
+      event.preventDefault();
+      selectionClickRef.current = 'toggle';
+      nextSelection = toggleSetMember(canvasSelection, nodeId);
+      setCanvasSelection(nextSelection);
+      if (!nextSelection.has(nodeId)) return;
+    } else if (event.shiftKey) {
+      selectionClickRef.current = 'additive';
+      nextSelection = new Set([...canvasSelection, nodeId]);
+      setCanvasSelection(nextSelection);
+    } else if (!canvasSelection.has(nodeId)) {
+      selectionClickRef.current = null;
+      nextSelection = new Set([nodeId]);
+      setCanvasSelection(nextSelection);
+    } else {
+      selectionClickRef.current = null;
+      nextSelection = canvasSelection;
+    }
+
+    onSelect(nodeId);
+
+    if (!canWrite || !onLayoutChange) return;
+
+    const moveIds = nextSelection.has(nodeId) ? nextSelection : new Set([nodeId]);
+    const origins = new Map<string, { x: number; y: number }>();
+    for (const id of moveIds) {
+      origins.set(id, layout[id] ?? { x: 0, y: 0 });
+    }
+
     dragRef.current = {
-      id: nodeId,
       startX: event.clientX,
       startY: event.clientY,
-      originX: pos.x,
-      originY: pos.y,
+      moved: false,
+      origins,
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    setDraggingCanvas(true);
+    canvasRef.current?.setPointerCapture(event.pointerId);
   };
 
-  const moveDrag = (event: PointerEvent<HTMLElement>) => {
-    if (!dragRef.current || !onLayoutChange) return;
-    const dx = (event.clientX - dragRef.current.startX) / zoom;
-    const dy = (event.clientY - dragRef.current.startY) / zoom;
-    onLayoutChange({
-      ...layout,
-      [dragRef.current.id]: {
-        x: Math.max(0, dragRef.current.originX + dx),
-        y: Math.max(0, dragRef.current.originY + dy),
-      },
+  const handleNodeClick = (nodeId: SemanticNodeId) => {
+    if (skipClickRef.current) {
+      skipClickRef.current = false;
+      return;
+    }
+    if (selectionClickRef.current) {
+      selectionClickRef.current = null;
+      return;
+    }
+    if (canvasSelection.size > 1) return;
+    onSelect(nodeId);
+  };
+
+  const beginCanvasPointer = (event: PointerEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('.node')) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvasPointerRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      originPanX: panStateRef.current.x,
+      originPanY: panStateRef.current.y,
+      mode: event.shiftKey ? 'marquee' : 'pending',
+      additive: isToggleSelectPointer(event),
+      baseSelection: new Set(canvasSelection),
+    };
+    if (event.shiftKey) {
+      setMarqueeRect({ left: 0, top: 0, width: 0, height: 0 });
+    }
+    canvas.setPointerCapture(event.pointerId);
+  };
+
+  const moveCanvasPointer = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current && onLayoutChange) {
+      const dx = event.clientX - dragRef.current.startX;
+      const dy = event.clientY - dragRef.current.startY;
+      if (!dragRef.current.moved && Math.hypot(dx, dy) < CANVAS_DRAG_THRESHOLD_PX) return;
+
+      dragRef.current.moved = true;
+      skipClickRef.current = true;
+      const offsetX = dx / zoomRef.current;
+      const offsetY = dy / zoomRef.current;
+      const nextLayout = { ...layoutRef.current };
+      for (const [id, origin] of dragRef.current.origins) {
+        nextLayout[id] = { x: origin.x + offsetX, y: origin.y + offsetY };
+      }
+      onLayoutChange(nextLayout);
+      return;
+    }
+
+    const ptr = canvasPointerRef.current;
+    const canvas = canvasRef.current;
+    if (!ptr || !canvas) return;
+
+    const dx = event.clientX - ptr.startX;
+    const dy = event.clientY - ptr.startY;
+
+    if (ptr.mode === 'pending' && Math.hypot(dx, dy) >= CANVAS_DRAG_THRESHOLD_PX) {
+      ptr.mode = 'pan';
+      setIsPanning(true);
+    }
+
+    if (ptr.mode === 'pan') {
+      setPan({
+        x: ptr.originPanX + dx,
+        y: ptr.originPanY + dy,
+      });
+      return;
+    }
+
+    if (ptr.mode === 'marquee') {
+      const rect = canvas.getBoundingClientRect();
+      const start = clientToCanvasSpace(
+        ptr.startX,
+        ptr.startY,
+        rect,
+        panStateRef.current,
+        zoomRef.current
+      );
+      const current = clientToCanvasSpace(
+        event.clientX,
+        event.clientY,
+        rect,
+        panStateRef.current,
+        zoomRef.current
+      );
+      const nextRect = normalizeRect(start.x, start.y, current.x, current.y);
+      setMarqueeRect(nextRect);
+      const hits = collectMarqueeSelection(nextRect);
+      setCanvasSelection(
+        ptr.additive ? new Set([...ptr.baseSelection, ...hits]) : new Set(hits)
+      );
+    }
+  };
+
+  const endCanvasPointer = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current) {
+      dragRef.current = null;
+      setDraggingCanvas(false);
+      canvasRef.current?.releasePointerCapture(event.pointerId);
+      return;
+    }
+
+    const ptr = canvasPointerRef.current;
+    if (!ptr) return;
+
+    if (ptr.mode === 'pending') {
+      setCanvasSelection(new Set());
+    }
+
+    canvasPointerRef.current = null;
+    setIsPanning(false);
+    setMarqueeRect(null);
+    canvasRef.current?.releasePointerCapture(event.pointerId);
+  };
+
+  const applyZoomAtPoint = useCallback((nextZoom: number, clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    const currentZoom = zoomRef.current;
+    const clamped = clampZoom(nextZoom);
+    if (clamped === currentZoom) return;
+
+    if (!canvas) {
+      setZoom(clamped);
+      return;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const offsetX = clientX - rect.left;
+    const offsetY = clientY - rect.top;
+    const { x: panX, y: panY } = panStateRef.current;
+    const stageX = (offsetX - panX) / currentZoom;
+    const stageY = (offsetY - panY) / currentZoom;
+
+    setZoom(clamped);
+    setPan({
+      x: offsetX - stageX * clamped,
+      y: offsetY - stageY * clamped,
     });
-  };
+  }, []);
 
-  const endDrag = (event: PointerEvent<HTMLElement>) => {
-    if (!dragRef.current) return;
-    dragRef.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
-  };
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const intensity = event.ctrlKey || event.metaKey ? 0.002 : 0.0012;
+      const nextZoom = zoomRef.current * (1 - event.deltaY * intensity);
+      applyZoomAtPoint(nextZoom, event.clientX, event.clientY);
+    };
+
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', onWheel);
+  }, [applyZoomAtPoint]);
 
   const nodeDragProps = (nodeId: string) => ({
-    onPointerDown: (event: PointerEvent<HTMLElement>) => beginDrag(nodeId, event),
-    onPointerMove: moveDrag,
-    onPointerUp: endDrag,
+    onPointerDown: (event: PointerEvent<HTMLElement>) => beginNodePointer(nodeId, event),
   });
+
+  const selectionCount = canvasSelection.size;
 
   return (
     <div className="node-editor-page">
@@ -488,18 +912,38 @@ export function SemanticNodeEditor({
           </p>
         </aside>
 
-        <div className="node-canvas-wrap">
+        <div className={cn('node-canvas-wrap', canWrite && 'node-canvas-wrap--writable')}>
           <div className="node-canvas-mobile">
             <Monitor className="size-5 shrink-0" strokeWidth={1.75} />
-            <span>Node-редактор удобнее на desktop · pinch-to-zoom на canvas</span>
+            <span>Shift+drag — выделение · Ctrl/Shift+клик — добавить · drag — перенос группы</span>
           </div>
           <div className="node-canvas-toolbar">
+            {selectionCount > 0 ? (
+              <span className="node-canvas-toolbar__selection">
+                {selectionCount} выбрано
+                <button
+                  type="button"
+                  className="node-canvas-toolbar__selection-clear"
+                  onClick={() => setCanvasSelection(new Set())}
+                >
+                  Сбросить
+                </button>
+              </span>
+            ) : null}
             <Button
               variant="ghost"
               size="icon-sm"
               type="button"
               aria-label="Уменьшить"
-              onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.1).toFixed(2))))}
+              onClick={() => {
+                const canvas = canvasRef.current;
+                if (!canvas) {
+                  setZoom((value) => clampZoom(value - 0.1));
+                  return;
+                }
+                const rect = canvas.getBoundingClientRect();
+                applyZoomAtPoint(zoom - 0.1, rect.left + rect.width / 2, rect.top + rect.height / 2);
+              }}
             >
               <Minus size={16} />
             </Button>
@@ -509,12 +953,28 @@ export function SemanticNodeEditor({
               size="icon-sm"
               type="button"
               aria-label="Увеличить"
-              onClick={() => setZoom((value) => Math.min(1.5, Number((value + 0.1).toFixed(2))))}
+              onClick={() => {
+                const canvas = canvasRef.current;
+                if (!canvas) {
+                  setZoom((value) => clampZoom(value + 0.1));
+                  return;
+                }
+                const rect = canvas.getBoundingClientRect();
+                applyZoomAtPoint(zoom + 0.1, rect.left + rect.width / 2, rect.top + rect.height / 2);
+              }}
             >
               <Plus size={16} />
             </Button>
             <span className="node-canvas-toolbar__spacer" />
-            <Button variant="ghost" size="sm" type="button" onClick={() => setZoom(1)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              onClick={() => {
+                setZoom(1);
+                setPan({ x: 0, y: 0 });
+              }}
+            >
               <Maximize2 size={14} />
               Вписать
             </Button>
@@ -524,25 +984,61 @@ export function SemanticNodeEditor({
             </Button>
           </div>
 
-          <div className="node-canvas">
+          <div
+            ref={canvasRef}
+            className={cn('node-canvas', isPanning && 'is-panning')}
+            onPointerDown={beginCanvasPointer}
+            onPointerMove={moveCanvasPointer}
+            onPointerUp={endCanvasPointer}
+            onPointerCancel={endCanvasPointer}
+          >
             <div
               className="node-canvas__stage"
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+              style={{
+                width: stageBounds.width,
+                height: stageBounds.height,
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transformOrigin: 'top left',
+              }}
             >
-              <svg className="node-edges" aria-hidden="true">
-                {edges.map((edge) => (
-                  <path
-                    key={edge.id}
-                    d={edge.d}
-                    className={cn(edge.active && 'is-active')}
-                  />
-                ))}
+              <svg
+                className="node-edges"
+                aria-hidden="true"
+                width={stageBounds.width}
+                height={stageBounds.height}
+              >
+                <g transform={`translate(${-stageBounds.originX} ${-stageBounds.originY})`}>
+                  {edges.map((edge) => (
+                    <path
+                      key={edge.id}
+                      d={edge.d}
+                      className={cn(edge.active && 'is-active')}
+                    />
+                  ))}
+                </g>
               </svg>
 
+              {marqueeRect ? (
+                <div
+                  className="canvas-marquee"
+                  style={{
+                    left: marqueeRect.left,
+                    top: marqueeRect.top,
+                    width: marqueeRect.width,
+                    height: marqueeRect.height,
+                  }}
+                />
+              ) : null}
+
               <article
-                className={cn('node node--source', selected === sourceNodeId && 'is-selected')}
-                style={{ left: layout[sourceNodeId]?.x, top: layout[sourceNodeId]?.y }}
-                onClick={() => onSelect(sourceNodeId)}
+                className={cn(
+                  'node node--source',
+                  selected === sourceNodeId && 'is-selected',
+                  canvasSelection.has(sourceNodeId) && 'is-canvas-selected',
+                  draggingCanvas && canvasSelection.has(sourceNodeId) && 'is-dragging'
+                )}
+                style={toStagePos(layout[sourceNodeId]?.x ?? 0, layout[sourceNodeId]?.y ?? 0)}
+                onClick={() => handleNodeClick(sourceNodeId)}
                 {...nodeDragProps(sourceNodeId)}
                 role="button"
                 tabIndex={0}
@@ -571,9 +1067,14 @@ export function SemanticNodeEditor({
               </article>
 
               <article
-                className={cn('node node--cube', selected === cubeNodeId && 'is-selected')}
-                style={{ left: layout[cubeNodeId]?.x, top: layout[cubeNodeId]?.y }}
-                onClick={() => onSelect(cubeNodeId)}
+                className={cn(
+                  'node node--cube',
+                  selected === cubeNodeId && 'is-selected',
+                  canvasSelection.has(cubeNodeId) && 'is-canvas-selected',
+                  draggingCanvas && canvasSelection.has(cubeNodeId) && 'is-dragging'
+                )}
+                style={toStagePos(layout[cubeNodeId]?.x ?? 0, layout[cubeNodeId]?.y ?? 0)}
+                onClick={() => handleNodeClick(cubeNodeId)}
                 {...nodeDragProps(cubeNodeId)}
                 role="button"
                 tabIndex={0}
@@ -606,10 +1107,12 @@ export function SemanticNodeEditor({
                   key={measure.id}
                   className={cn(
                     'node node--measure node--compact',
-                    selected === measure.id && 'is-selected'
+                    selected === measure.id && 'is-selected',
+                    canvasSelection.has(measure.id) && 'is-canvas-selected',
+                    draggingCanvas && canvasSelection.has(measure.id) && 'is-dragging'
                   )}
-                  style={{ left: layout[measure.id]?.x, top: layout[measure.id]?.y }}
-                  onClick={() => onSelect(measure.id)}
+                  style={toStagePos(layout[measure.id]?.x ?? 0, layout[measure.id]?.y ?? 0)}
+                  onClick={() => handleNodeClick(measure.id)}
                   {...nodeDragProps(measure.id)}
                   role="button"
                   tabIndex={0}
@@ -644,10 +1147,12 @@ export function SemanticNodeEditor({
                   className={cn(
                     'node node--dimension node--compact',
                     dimension.locked && 'node--locked node--system',
-                    selected === dimension.id && 'is-selected'
+                    selected === dimension.id && 'is-selected',
+                    canvasSelection.has(dimension.id) && 'is-canvas-selected',
+                    draggingCanvas && canvasSelection.has(dimension.id) && 'is-dragging'
                   )}
-                  style={{ left: layout[dimension.id]?.x, top: layout[dimension.id]?.y }}
-                  onClick={() => onSelect(dimension.id)}
+                  style={toStagePos(layout[dimension.id]?.x ?? 0, layout[dimension.id]?.y ?? 0)}
+                  onClick={() => handleNodeClick(dimension.id)}
                   {...nodeDragProps(dimension.id)}
                   role="button"
                   tabIndex={0}
@@ -699,31 +1204,20 @@ export function SemanticNodeEditor({
               onDraftChange={onDraftChange}
               onAddMeasure={onAddMeasure}
               onAddDimension={onAddDimension}
+              onDeleteMeasure={onDeleteMeasure}
+              onDeleteDimension={onDeleteDimension}
             />
           </div>
           <div className="semantic-preview">
-            <div className="semantic-preview__head">
-              <span>Превью member</span>
-              <span className="db-tag db-tag--gray">read-only</span>
-            </div>
-            <div className="semantic-preview__body">
-              {memberName ? (
-                <p className="semantic-preview__member">
-                  {draft.name}.{memberName}
-                </p>
-              ) : null}
-              <ul className="semantic-preview__links m-0 list-none p-0">
-                <li>
-                  <Link to="/dashboards">
-                    Используется в {widgetCount} виджетах →
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/insights">Используется в AI-инсайтах →</Link>
-                </li>
-              </ul>
-            </div>
+            <SemanticMemberPreview
+              draft={draft}
+              selected={selected}
+              sourceNodeId={sourceNodeId}
+              cubeNodeId={cubeNodeId}
+              widgetCount={widgetCount}
+            />
           </div>
+          <ColumnDatalist columns={draft.source.columns} />
         </aside>
       </div>
     </div>

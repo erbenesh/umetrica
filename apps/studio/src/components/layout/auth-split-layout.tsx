@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { AuthAmbient } from '@/components/layout/auth-ambient';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { cn } from '@/lib/utils';
 
 export type AuthTopbarVariant = 'full' | 'mark' | 'back';
@@ -36,9 +37,21 @@ export function AuthSplitLayout({
   children: ReactNode;
   className?: string;
 }) {
+  const panelTitleId = useId();
+  const panelDescriptionId = useId();
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useDocumentTitle(panelTitle);
+
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, [panelTitle]);
+
   const brandBlock = (
     <div className="brand">
-      <span className="brand__mark">u</span>
+      <span className="brand__mark" aria-hidden="true">
+        u
+      </span>
       <span>
         <div className="brand__name">umetrica</div>
         {brandTag ? <div className="brand__tag">{brandTag}</div> : null}
@@ -48,7 +61,11 @@ export function AuthSplitLayout({
 
   return (
     <div className={cn('auth-frame', className)}>
-      <aside className="auth-brand-panel">
+      <a className="auth-skip-link" href="#auth-main">
+        Перейти к форме
+      </a>
+
+      <aside className="auth-brand-panel" aria-hidden="true">
         <AuthAmbient />
         <div>
           {showBrandBlock ? <div className="mb-8">{brandBlock}</div> : null}
@@ -72,36 +89,55 @@ export function AuthSplitLayout({
 
         <header className="auth-topbar">
           {topbar === 'full' ? (
-            <Link to="/auth" className="brand">
-              <span className="brand__mark">u</span>
+            <Link to="/auth" className="brand" aria-label="umetrica — страница входа">
+              <span className="brand__mark" aria-hidden="true">
+                u
+              </span>
               <span>
                 <div className="brand__name">umetrica</div>
               </span>
             </Link>
           ) : topbar === 'mark' ? (
-            <Link to="/auth" className="brand" aria-label="umetrica">
-              <span className="brand__mark">u</span>
+            <Link to="/auth" className="brand" aria-label="umetrica — на страницу входа">
+              <span className="brand__mark" aria-hidden="true">
+                u
+              </span>
             </Link>
           ) : backTo ? (
-            <Link to={backTo} className="text-xs text-muted-foreground hover:text-foreground">
+            <Link to={backTo} className="auth-topbar__back">
               ← {backLabel ?? 'Назад'}
             </Link>
           ) : (
-            <span className="brand__mark">u</span>
+            <span className="brand__mark" aria-hidden="true">
+              u
+            </span>
           )}
           <ThemeToggle />
         </header>
 
-        <main className="auth-main">
+        <main id="auth-main" className="auth-main" tabIndex={-1} aria-labelledby={panelTitleId}>
           <div className="auth-panel">
             <div className="auth-panel__head">
-              <h1>{panelTitle}</h1>
-              {panelDescription ? <p>{panelDescription}</p> : null}
+              <h1 id={panelTitleId} ref={titleRef} tabIndex={-1}>
+                {panelTitle}
+              </h1>
+              {panelDescription ? (
+                <p id={panelDescriptionId}>{panelDescription}</p>
+              ) : null}
             </div>
 
-            <div className="auth-panel__card">{children}</div>
+            <div
+              className="auth-panel__card"
+              aria-describedby={panelDescription ? panelDescriptionId : undefined}
+            >
+              {children}
+            </div>
 
-            {footer ? <div className="auth-panel__footer">{footer}</div> : null}
+            {footer ? (
+              <nav className="auth-panel__footer" aria-label="Дополнительные действия">
+                {footer}
+              </nav>
+            ) : null}
           </div>
         </main>
       </div>

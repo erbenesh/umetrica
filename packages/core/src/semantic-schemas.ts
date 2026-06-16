@@ -35,10 +35,23 @@ export const SemanticSourceSchema = z.object({
   sql: z.string().min(1).max(2000),
   table: z.string().min(1).max(200),
   connectionLabel: z.string().min(1).max(120),
+  connectionId: z.string().uuid().optional(),
   columns: z.array(z.string().min(1).max(120)),
 });
 
 export type SemanticSource = z.infer<typeof SemanticSourceSchema>;
+
+export const SemanticJoinRelationshipSchema = z.enum(['belongsTo', 'hasMany', 'hasOne']);
+export type SemanticJoinRelationship = z.infer<typeof SemanticJoinRelationshipSchema>;
+
+export const SemanticJoinSchema = z.object({
+  id: z.string().min(1),
+  targetCube: z.string().min(1).max(80),
+  relationship: SemanticJoinRelationshipSchema,
+  sql: z.string().min(1).max(1000),
+});
+
+export type SemanticJoin = z.infer<typeof SemanticJoinSchema>;
 
 export const SemanticCubeDefinitionSchema = z.object({
   name: z.string().min(1).max(80),
@@ -47,6 +60,7 @@ export const SemanticCubeDefinitionSchema = z.object({
   source: SemanticSourceSchema,
   measures: z.array(SemanticMeasureSchema).min(1),
   dimensions: z.array(SemanticDimensionSchema).min(1),
+  joins: z.array(SemanticJoinSchema).default([]),
 });
 
 export type SemanticCubeDefinition = z.infer<typeof SemanticCubeDefinitionSchema>;
@@ -58,6 +72,93 @@ export const SemanticNodePositionSchema = z.object({
 
 export const SemanticGraphLayoutSchema = z.record(z.string(), SemanticNodePositionSchema);
 export type SemanticGraphLayout = z.infer<typeof SemanticGraphLayoutSchema>;
+
+export const SemanticWorkspaceLayoutSchema = z.object({
+  cubes: z.record(z.string(), SemanticNodePositionSchema).default({}),
+  views: z.record(z.string(), SemanticNodePositionSchema).default({}),
+});
+
+export type SemanticWorkspaceLayout = z.infer<typeof SemanticWorkspaceLayoutSchema>;
+
+export const SemanticViewCubeIncludeSchema = z.object({
+  joinPath: z.string().min(1).max(200),
+  includes: z.array(z.string().min(1).max(80)).min(1),
+});
+
+export type SemanticViewCubeInclude = z.infer<typeof SemanticViewCubeIncludeSchema>;
+
+export const SemanticViewDefinitionSchema = z.object({
+  name: z.string().min(1).max(80),
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  cubes: z.array(SemanticViewCubeIncludeSchema).min(1),
+});
+
+export type SemanticViewDefinition = z.infer<typeof SemanticViewDefinitionSchema>;
+
+export const SemanticViewStatusSchema = z.enum(['published', 'draft']);
+export type SemanticViewStatus = z.infer<typeof SemanticViewStatusSchema>;
+
+export const SemanticViewListItemSchema = z.object({
+  name: z.string(),
+  title: z.string(),
+  status: SemanticViewStatusSchema,
+  cubePathCount: z.number().int().nonnegative(),
+  memberCount: z.number().int().nonnegative(),
+  updatedAt: z.string().datetime(),
+  publishedAt: z.string().datetime().nullable(),
+});
+
+export type SemanticViewListItem = z.infer<typeof SemanticViewListItemSchema>;
+
+export const SemanticViewDetailSchema = z.object({
+  name: z.string(),
+  title: z.string(),
+  status: SemanticViewStatusSchema,
+  draft: SemanticViewDefinitionSchema,
+  published: SemanticViewDefinitionSchema,
+  updatedAt: z.string().datetime(),
+  publishedAt: z.string().datetime().nullable(),
+});
+
+export type SemanticViewDetail = z.infer<typeof SemanticViewDetailSchema>;
+
+export const UpdateSemanticViewDraftSchema = z.object({
+  draft: SemanticViewDefinitionSchema,
+});
+
+export type UpdateSemanticViewDraftInput = z.infer<typeof UpdateSemanticViewDraftSchema>;
+
+export const CreateSemanticViewSchema = z.object({
+  name: z.string().min(1).max(80).optional(),
+  title: z.string().min(1).max(200),
+  baseCube: z.string().min(1).max(80),
+});
+
+export type CreateSemanticViewInput = z.infer<typeof CreateSemanticViewSchema>;
+
+export const SemanticForeignKeyInfoSchema = z.object({
+  fromTable: z.string(),
+  fromColumn: z.string(),
+  toTable: z.string(),
+  toColumn: z.string(),
+  suggestedSql: z.string(),
+});
+
+export type SemanticForeignKeyInfo = z.infer<typeof SemanticForeignKeyInfoSchema>;
+
+export const SemanticPreviewQueryInputSchema = z.object({
+  query: z.record(z.unknown()),
+});
+
+export type SemanticPreviewQueryInput = z.infer<typeof SemanticPreviewQueryInputSchema>;
+
+export const SemanticYamlResponseSchema = z.object({
+  yaml: z.string(),
+  variant: z.enum(['draft', 'published']),
+});
+
+export type SemanticYamlResponse = z.infer<typeof SemanticYamlResponseSchema>;
 
 export const SemanticCubeStatusSchema = z.enum(['published', 'draft']);
 export type SemanticCubeStatus = z.infer<typeof SemanticCubeStatusSchema>;
@@ -170,6 +271,7 @@ export const DEFAULT_ORDERS_SEMANTIC_CUBE: SemanticCubeDefinition = {
       format: 'currency',
     },
   ],
+  joins: [],
   dimensions: [
     {
       id: 'dimension:status',
@@ -281,6 +383,85 @@ export function computeSemanticPublishDiff(
     }
   }
 
+  const publishedJoins = new Map((published.joins ?? []).map((item) => [item.targetCube, item]));
+  const draftJoins = new Map((draft.joins ?? []).map((item) => [item.targetCube, item]));
+
+  for (const [target, join] of draftJoins) {
+    const prev = publishedJoins.get(target);
+    if (!prev) {
+      rows.push({
+        op: 'add',
+        label: `Join ${target}`,
+        value: `${join.relationship} · ${join.sql}`,
+      });
+      continue;
+    }
+
+    const changes: string[] = [];
+    if (prev.relationship !== join.relationship) {
+      changes.push(`тип: ${prev.relationship} → ${join.relationship}`);
+    }
+    if (prev.sql !== join.sql) changes.push(`SQL: ${prev.sql} → ${join.sql}`);
+
+    if (changes.length > 0) {
+      rows.push({ op: 'change', label: `Join ${target}`, value: changes.join(' · ') });
+    }
+  }
+
+  for (const target of publishedJoins.keys()) {
+    if (!draftJoins.has(target)) {
+      rows.push({ op: 'remove', label: `Join ${target}`, value: 'удалён из черновика' });
+    }
+  }
+
+  return rows;
+}
+
+export function computeSemanticViewPublishDiff(
+  published: SemanticViewDefinition,
+  draft: SemanticViewDefinition
+): SemanticPublishDiffRow[] {
+  const rows: SemanticPublishDiffRow[] = [];
+
+  if (published.title !== draft.title) {
+    rows.push({
+      op: 'change',
+      label: 'View',
+      value: `заголовок: «${published.title}» → «${draft.title}»`,
+    });
+  }
+
+  const publishedPaths = new Map(published.cubes.map((item) => [item.joinPath, item]));
+  const draftPaths = new Map(draft.cubes.map((item) => [item.joinPath, item]));
+
+  for (const [path, cube] of draftPaths) {
+    const prev = publishedPaths.get(path);
+    if (!prev) {
+      rows.push({
+        op: 'add',
+        label: `Путь ${path}`,
+        value: cube.includes.join(', '),
+      });
+      continue;
+    }
+
+    const added = cube.includes.filter((item) => !prev.includes.includes(item));
+    const removed = prev.includes.filter((item) => !cube.includes.includes(item));
+
+    if (added.length > 0 || removed.length > 0) {
+      const parts: string[] = [];
+      if (added.length > 0) parts.push(`+${added.join(', ')}`);
+      if (removed.length > 0) parts.push(`−${removed.join(', ')}`);
+      rows.push({ op: 'change', label: `Путь ${path}`, value: parts.join(' · ') });
+    }
+  }
+
+  for (const path of publishedPaths.keys()) {
+    if (!draftPaths.has(path)) {
+      rows.push({ op: 'remove', label: `Путь ${path}`, value: 'удалён из черновика' });
+    }
+  }
+
   return rows;
 }
 
@@ -295,6 +476,14 @@ export function semanticSourceNodeId(table: string) {
 
 export function semanticCubeNodeId(cubeName: string) {
   return `cube:${cubeName.charAt(0).toLowerCase()}${cubeName.slice(1)}`;
+}
+
+export function semanticJoinId(sourceCube: string, targetCube: string) {
+  return `join:${sourceCube}->${targetCube}`;
+}
+
+export function buildSuggestedJoinSql(sourceCube: string, sourceColumn: string, targetCube: string, targetColumn: string) {
+  return `\${${sourceCube}}.${sourceColumn} = \${${targetCube}}.${targetColumn}`;
 }
 
 export function tableToCubeName(table: string) {
@@ -323,6 +512,128 @@ export function buildDefaultGraphLayout(definition: SemanticCubeDefinition): Sem
   });
 
   return layout;
+}
+
+const WORKSPACE_CARD_W = 220;
+const WORKSPACE_CARD_H = 100;
+const WORKSPACE_PAD = 48;
+const WORKSPACE_MIN_W = 900;
+const WORKSPACE_MIN_H = 500;
+
+export function buildDefaultWorkspaceLayout(cubeNames: string[]): SemanticWorkspaceLayout {
+  const cubes: SemanticWorkspaceLayout['cubes'] = {};
+  cubeNames.forEach((name, index) => {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    cubes[name] = { x: WORKSPACE_PAD + col * (WORKSPACE_CARD_W + 48), y: WORKSPACE_PAD + row * (WORKSPACE_CARD_H + 48) };
+  });
+  return { cubes, views: {} };
+}
+
+export function computeWorkspaceBounds(
+  layout: SemanticWorkspaceLayout,
+  cubeNames: string[],
+  viewNames: string[]
+) {
+  const positions: Array<{ x: number; y: number }> = [];
+
+  for (const name of cubeNames) {
+    positions.push(layout.cubes[name] ?? { x: WORKSPACE_PAD, y: WORKSPACE_PAD });
+  }
+  for (const name of viewNames) {
+    positions.push(layout.views[name] ?? { x: WORKSPACE_PAD + 400, y: WORKSPACE_PAD });
+  }
+
+  if (positions.length === 0) {
+    return { width: WORKSPACE_MIN_W, height: WORKSPACE_MIN_H, originX: 0, originY: 0 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const pos of positions) {
+    minX = Math.min(minX, pos.x);
+    minY = Math.min(minY, pos.y);
+    maxX = Math.max(maxX, pos.x + WORKSPACE_CARD_W);
+    maxY = Math.max(maxY, pos.y + WORKSPACE_CARD_H);
+  }
+
+  const originX = Math.min(0, minX - WORKSPACE_PAD);
+  const originY = Math.min(0, minY - WORKSPACE_PAD);
+  const width = Math.max(WORKSPACE_MIN_W, maxX + WORKSPACE_PAD - originX);
+  const height = Math.max(WORKSPACE_MIN_H, maxY + WORKSPACE_PAD - originY);
+
+  return { width, height, originX, originY };
+}
+
+export function buildMemberPreviewQuery(
+  draft: SemanticCubeDefinition,
+  selected: string,
+  sourceNodeId: string,
+  cubeNodeId: string
+): Record<string, unknown> {
+  const cubeName = draft.name;
+
+  if (selected === cubeNodeId) {
+    return { meta: `cube ${cubeName}` };
+  }
+
+  if (selected === sourceNodeId) {
+    return { source: draft.source.table };
+  }
+
+  const measure = draft.measures.find((item) => item.id === selected);
+  if (measure) {
+    const timeDim = draft.dimensions.find((item) => item.type === 'time');
+    if (timeDim) {
+      return {
+        measures: [`${cubeName}.${measure.name}`],
+        timeDimensions: [
+          {
+            dimension: `${cubeName}.${timeDim.name}`,
+            dateRange: 'last 7 days',
+          },
+        ],
+      };
+    }
+    return { measures: [`${cubeName}.${measure.name}`] };
+  }
+
+  const dimension = draft.dimensions.find((item) => item.id === selected);
+  if (dimension) {
+    const countMeasure = draft.measures.find((item) => item.type === 'count') ?? draft.measures[0];
+    return {
+      dimensions: [`${cubeName}.${dimension.name}`],
+      measures: countMeasure ? [`${cubeName}.${countMeasure.name}`] : [],
+      limit: 10,
+    };
+  }
+
+  return { measures: [`${cubeName}.count`] };
+}
+
+export function listJoinPathsForCube(
+  cubeName: string,
+  cubes: SemanticCubeDefinition[]
+): string[] {
+  const paths = new Set<string>([cubeName]);
+  const byName = new Map(cubes.map((cube) => [cube.name, cube]));
+
+  function walk(current: string, prefix: string) {
+    const cube = byName.get(current);
+    if (!cube) return;
+    for (const join of cube.joins ?? []) {
+      const nextPath = `${prefix}.${join.targetCube}`;
+      if (paths.has(nextPath)) continue;
+      paths.add(nextPath);
+      walk(join.targetCube, nextPath);
+    }
+  }
+
+  walk(cubeName, cubeName);
+  return [...paths];
 }
 
 export const SemanticTableInfoSchema = z.object({
@@ -372,6 +683,7 @@ export function scaffoldSemanticCubeFromTable(input: {
   table: string;
   columns: SemanticColumnInfo[];
   connectionLabel: string;
+  connectionId?: string;
   name?: string;
   displayTitle?: string;
 }): SemanticCubeDefinition {
@@ -453,19 +765,6 @@ export function scaffoldSemanticCubeFromTable(input: {
     });
   }
 
-  if (!dimensions.some((item) => item.locked)) {
-    dimensions.push({
-      id: 'dimension:tenantId',
-      name: 'tenantId',
-      title: 'tenantId',
-      description: 'Добавьте tenant_id в таблицу для multi-tenant фильтра',
-      sql: 'tenant_id',
-      type: 'string',
-      locked: true,
-    });
-    columnNames.push('tenant_id');
-  }
-
   return SemanticCubeDefinitionSchema.parse({
     name: cubeName,
     displayTitle,
@@ -474,9 +773,11 @@ export function scaffoldSemanticCubeFromTable(input: {
       sql: `SELECT * FROM ${qualifiedTable}`,
       table: qualifiedTable,
       connectionLabel: input.connectionLabel,
+      ...(input.connectionId ? { connectionId: input.connectionId } : {}),
       columns: columnNames,
     },
     measures: measures.slice(0, 8),
     dimensions: dimensions.slice(0, 8),
+    joins: [],
   });
 }

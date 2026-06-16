@@ -2,7 +2,7 @@ import type { SemanticCubeDefinition, SemanticGraphLayout } from '@umetrica/core
 import { DEFAULT_ORDERS_GRAPH_LAYOUT } from '@umetrica/core';
 import { ChevronRight, Loader2, Redo2, Undo2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { MobilePageHeader } from '@/components/layout/mobile-page-header';
 import {
@@ -10,6 +10,9 @@ import {
   type SemanticNodeId,
 } from '@/components/semantic/semantic-node-editor';
 import { SemanticPublishDialog } from '@/components/semantic/semantic-publish-dialog';
+import { SemanticRelationshipsPanel } from '@/components/semantic/semantic-relationships-panel';
+import { SemanticYamlPanel } from '@/components/semantic/semantic-yaml-panel';
+import { DocCallout } from '@/components/doc/doc-callout';
 import { Button } from '@/components/ui/button';
 import { semanticCubeNodeId } from '@/lib/semantic-utils';
 import { useConnections } from '@/hooks/use-connections';
@@ -35,6 +38,9 @@ function nextMemberName(prefix: string, existing: string[]) {
 
 export function SemanticCubePage() {
   const { cubeName = '' } = useParams<{ cubeName: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const editorTab = (searchParams.get('tab') as 'visual' | 'relationships' | 'yaml') ?? 'visual';
+  const joinTarget = searchParams.get('joinTarget') ?? undefined;
   const canWrite = useCanWriteDashboards();
   const { data: connections } = useConnections();
   const { data: cube, isLoading, error } = useSemanticCube(cubeName);
@@ -185,6 +191,53 @@ export function SemanticCubePage() {
     applySnapshot({ draft: nextDraft, layout: nextLayout }, true);
   }, [applySnapshot, cube?.draft, cube?.layout, draft, layout]);
 
+  const handleDeleteMeasure = useCallback(
+    (measureId: string) => {
+      const currentDraft = draft ?? cube?.draft;
+      const currentLayout = draft !== null ? layout : (cube?.layout ?? DEFAULT_ORDERS_GRAPH_LAYOUT);
+      if (!currentDraft) return;
+
+      const nextDraft = {
+        ...currentDraft,
+        measures: currentDraft.measures.filter((item) => item.id !== measureId),
+      };
+      const nextLayout = { ...currentLayout };
+      delete nextLayout[measureId];
+
+      const nextSelected =
+        nextDraft.measures[0]?.id ?? semanticCubeNodeId(currentDraft.name);
+      setSelected(nextSelected as SemanticNodeId);
+      applySnapshot({ draft: nextDraft, layout: nextLayout }, true);
+    },
+    [applySnapshot, cube?.draft, cube?.layout, cube?.name, draft, layout]
+  );
+
+  const handleDeleteDimension = useCallback(
+    (dimensionId: string) => {
+      const currentDraft = draft ?? cube?.draft;
+      const currentLayout = draft !== null ? layout : (cube?.layout ?? DEFAULT_ORDERS_GRAPH_LAYOUT);
+      if (!currentDraft) return;
+
+      const dimension = currentDraft.dimensions.find((item) => item.id === dimensionId);
+      if (dimension?.locked) return;
+      if (currentDraft.dimensions.length <= 1) return;
+
+      const nextDraft = {
+        ...currentDraft,
+        dimensions: currentDraft.dimensions.filter((item) => item.id !== dimensionId),
+      };
+      const nextLayout = { ...currentLayout };
+      delete nextLayout[dimensionId];
+
+      const nextSelected =
+        nextDraft.dimensions.find((item) => !item.locked)?.id ??
+        semanticCubeNodeId(currentDraft.name);
+      setSelected(nextSelected as SemanticNodeId);
+      applySnapshot({ draft: nextDraft, layout: nextLayout }, true);
+    },
+    [applySnapshot, cube?.draft, cube?.layout, cube?.name, draft, layout]
+  );
+
   const handleUndo = () => {
     if (historyRef.current.length < 2 || !draft) return;
     const current = historyRef.current.pop();
@@ -236,9 +289,17 @@ export function SemanticCubePage() {
   const activeLayout = draft !== null ? layout : cube.layout;
 
   const isDraft = cube.status === 'draft';
+  const needsFirstPublish = !cube.publishedAt;
 
   return (
     <div className="app-page">
+      {needsFirstPublish ? (
+        <DocCallout className="mx-4 mt-3 border-primary/30 bg-primary-muted/40">
+          Куб ещё не опубликован в Cube.js — нажмите «Опубликовать», чтобы использовать его в
+          виджетах.
+        </DocCallout>
+      ) : null}
+
       <MobilePageHeader
         title={cube.name}
         back={{ to: '/semantic', label: 'Семантика' }}
@@ -258,6 +319,29 @@ export function SemanticCubePage() {
           <span>{cube.name}</span>
         </div>
         <div className="editor-toolbar__actions">
+          <div className="segmented segmented--dense">
+            <button
+              className={`segmented__btn ${editorTab === 'visual' ? 'is-active' : ''}`}
+              type="button"
+              onClick={() => setSearchParams({ tab: 'visual' })}
+            >
+              Visual
+            </button>
+            <button
+              className={`segmented__btn ${editorTab === 'relationships' ? 'is-active' : ''}`}
+              type="button"
+              onClick={() => setSearchParams({ tab: 'relationships' })}
+            >
+              Relationships
+            </button>
+            <button
+              className={`segmented__btn ${editorTab === 'yaml' ? 'is-active' : ''}`}
+              type="button"
+              onClick={() => setSearchParams({ tab: 'yaml' })}
+            >
+              YAML
+            </button>
+          </div>
           <span
             className={
               isDraft ? 'db-tag db-tag--blue editor-toolbar__status' : 'db-tag db-tag--green editor-toolbar__status'
@@ -296,19 +380,34 @@ export function SemanticCubePage() {
         </div>
       </header>
 
-      <SemanticNodeEditor
-        draft={activeDraft}
-        layout={activeLayout}
-        selected={selected}
-        canWrite={canWrite}
-        widgetCount={cube.widgetCount}
-        connectionLabel={connectionLabel}
-        onSelect={setSelected}
-        onDraftChange={handleDraftChange}
-        onAddMeasure={handleAddMeasure}
-        onAddDimension={handleAddDimension}
-        onLayoutChange={handleLayoutChange}
-      />
+      {editorTab === 'yaml' ? (
+        <SemanticYamlPanel cubeName={cube.name} canWrite={canWrite} />
+      ) : editorTab === 'relationships' ? (
+        <div className="semantic-relationships-page">
+          <SemanticRelationshipsPanel
+            draft={activeDraft}
+            canWrite={canWrite}
+            joinTarget={joinTarget}
+            onDraftChange={handleDraftChange}
+          />
+        </div>
+      ) : (
+        <SemanticNodeEditor
+          draft={activeDraft}
+          layout={activeLayout}
+          selected={selected}
+          canWrite={canWrite}
+          widgetCount={cube.widgetCount}
+          connectionLabel={connectionLabel}
+          onSelect={setSelected}
+          onDraftChange={handleDraftChange}
+          onAddMeasure={handleAddMeasure}
+          onAddDimension={handleAddDimension}
+          onDeleteMeasure={handleDeleteMeasure}
+          onDeleteDimension={handleDeleteDimension}
+          onLayoutChange={handleLayoutChange}
+        />
+      )}
 
       <SemanticPublishDialog
         cubeName={cube.name}

@@ -84,6 +84,8 @@ export function WidgetEditorDialog({
 }: WidgetEditorDialogProps) {
   const { response, isLoading } = useCubeMeta();
   const cubes = useMemo(() => response?.cubes ?? [], [response?.cubes]);
+  const regularCubes = useMemo(() => cubes.filter((cube) => cube.type !== 'view'), [cubes]);
+  const viewCubes = useMemo(() => cubes.filter((cube) => cube.type === 'view'), [cubes]);
 
   const [title, setTitle] = useState('');
   const [chartType, setChartType] = useState<ChartType>('bar');
@@ -226,7 +228,7 @@ export function WidgetEditorDialog({
             </label>
 
             <label className="text-sm text-muted-foreground">
-              Куб
+              Источник данных
               <select
                 className="mt-1 flex h-10 w-full rounded-lg border border-border bg-card px-3 text-sm"
                 value={cubeName}
@@ -238,11 +240,31 @@ export function WidgetEditorDialog({
                 }}
                 disabled={isLoading}
               >
-                {cubes.map((cube) => (
-                  <option key={cube.name} value={cube.name}>
-                    {cube.title ?? cube.name}
-                  </option>
-                ))}
+                {regularCubes.length > 0 ? (
+                  <optgroup label="Кубы">
+                    {regularCubes.map((cube) => (
+                      <option key={cube.name} value={cube.name}>
+                        {cube.title ?? cube.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : null}
+                {viewCubes.length > 0 ? (
+                  <optgroup label="Views">
+                    {viewCubes.map((cube) => (
+                      <option key={cube.name} value={cube.name}>
+                        {cube.title ?? cube.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : null}
+                {regularCubes.length === 0 && viewCubes.length === 0
+                  ? cubes.map((cube) => (
+                      <option key={cube.name} value={cube.name}>
+                        {cube.title ?? cube.name}
+                      </option>
+                    ))
+                  : null}
               </select>
             </label>
           </div>

@@ -7,6 +7,7 @@ export type MobileBackTarget = {
 
 const MOBILE_BACK: Array<{ pattern: string; back: MobileBackTarget }> = [
   { pattern: '/semantic/cubes/:cubeName', back: { to: '/semantic', label: 'Семантика' } },
+  { pattern: '/semantic/views/:viewName', back: { to: '/semantic', label: 'Семантика' } },
   { pattern: '/dashboards/:id', back: { to: '/dashboards', label: 'Дашборды' } },
   { pattern: '/insights/:id', back: { to: '/insights', label: 'AI-инсайты' } },
   { pattern: '/settings/profile', back: { to: '/settings', label: 'Настройки' } },

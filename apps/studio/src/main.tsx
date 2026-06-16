@@ -28,6 +28,7 @@ import { OnboardingPage } from '@/pages/onboarding-page';
 import { ResetPasswordPage } from '@/pages/reset-password-page';
 import { SemanticCubePage } from '@/pages/semantic-cube-page';
 import { SemanticListPage } from '@/pages/semantic-list-page';
+import { SemanticViewPage } from '@/pages/semantic-view-page';
 import { SettingsPage } from '@/pages/settings-page';
 import { SettingsBillingPage } from '@/pages/settings-billing-page';
 import { SettingsAuditPage } from '@/pages/settings-audit-page';
@@ -74,6 +75,7 @@ createRoot(document.getElementById('root')!).render(
                 <Route path="dashboards/:id" element={<DashboardDetailPage />} />
                 <Route path="semantic" element={<SemanticListPage />} />
                 <Route path="semantic/cubes/:cubeName" element={<SemanticCubePage />} />
+                <Route path="semantic/views/:viewName" element={<SemanticViewPage />} />
                 <Route path="team" element={<TeamPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/profile" element={<SettingsProfilePage />} />

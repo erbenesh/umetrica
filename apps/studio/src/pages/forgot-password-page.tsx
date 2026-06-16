@@ -4,26 +4,28 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { AuthField } from '@/components/auth/auth-field';
+import { AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { requestPasswordReset } from '@/lib/auth-client';
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().email('Укажите корректный email'),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export function ForgotPasswordPage() {
-  const [message, setMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ variant: 'info' | 'error'; message: string } | null>(null);
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
-    setMessage(null);
+    setStatus(null);
 
     try {
       const result = await requestPasswordReset({
@@ -31,9 +33,15 @@ export function ForgotPasswordPage() {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (result.error) throw new Error(result.error.message);
-      setMessage('Если аккаунт существует, мы отправили ссылку для сброса пароля.');
+      setStatus({
+        variant: 'info',
+        message: 'Если аккаунт существует, мы отправили ссылку для сброса пароля.',
+      });
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Не удалось отправить письмо');
+      setStatus({
+        variant: 'error',
+        message: err instanceof Error ? err.message : 'Не удалось отправить письмо',
+      });
     }
   };
 
@@ -47,24 +55,32 @@ export function ForgotPasswordPage() {
       panelDescription="Введите email аккаунта"
       footer={<Link to="/auth">Вернуться ко входу</Link>}
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="form-fields">
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              autoComplete="email"
-              {...register('email')}
-            />
-          </div>
+          <AuthField
+            id="email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+            autoFocus
+            error={errors.email?.message}
+            {...register('email')}
+          />
         </div>
 
-        {message ? <p className="text-xs text-muted-foreground">{message}</p> : null}
+        {status ? (
+          <AuthStatusMessage variant={status.variant}>{status.message}</AuthStatusMessage>
+        ) : null}
 
         <div className="form-actions">
-          <Button type="submit" className="h-11 w-full text-base" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="h-11 w-full text-base"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+          >
             {isSubmitting ? 'Отправка...' : 'Отправить ссылку'}
           </Button>
         </div>

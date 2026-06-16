@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { AuthLoadingStatus, AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
 import { useMe } from '@/hooks/use-me';
@@ -9,7 +10,7 @@ import { sendVerificationEmail } from '@/lib/auth-client';
 export function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: me, refetch } = useMe();
+  const { data: me, refetch, isLoading } = useMe();
   const [status, setStatus] = useState<string | null>(
     (location.state as { message?: string } | null)?.message ?? null
   );
@@ -39,6 +40,21 @@ export function VerifyEmailPage() {
       setIsSending(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <AuthSplitLayout
+        topbar="mark"
+        showBrandBlock={false}
+        brandTitle="Почти готово"
+        brandDescription="Подтверждение email защищает ваш аккаунт и компанию."
+        panelTitle="Подтвердите email"
+        panelDescription="Загружаем данные аккаунта"
+      >
+        <AuthLoadingStatus>Загрузка...</AuthLoadingStatus>
+      </AuthSplitLayout>
+    );
+  }
 
   if (me?.user.emailVerified) {
     return (
@@ -76,10 +92,16 @@ export function VerifyEmailPage() {
         После подтверждения и входа компания создастся автоматически.
       </p>
 
-      {status ? <p className="text-xs text-insight-info">{status}</p> : null}
+      {status ? <AuthStatusMessage variant="info">{status}</AuthStatusMessage> : null}
 
       <div className="form-actions form-actions--tight">
-        <Button className="h-11 w-full text-base" disabled={isSending} onClick={handleResend} type="button">
+        <Button
+          className="h-11 w-full text-base"
+          disabled={isSending || !me?.user.email}
+          onClick={handleResend}
+          type="button"
+          aria-busy={isSending}
+        >
           {isSending ? 'Отправка...' : 'Отправить письмо снова'}
         </Button>
         <Button

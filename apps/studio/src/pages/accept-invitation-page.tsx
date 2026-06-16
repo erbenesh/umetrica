@@ -1,15 +1,16 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { AuthField } from '@/components/auth/auth-field';
+import { AuthLoadingStatus, AuthStatusMessage } from '@/components/auth/auth-status';
+import { PasswordField } from '@/components/auth/password-field';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAcceptInvitation } from '@/hooks/use-team';
 import { useInvitationPreview } from '@/hooks/use-invitation-preview';
 import { signIn, signOut, signUp, useSession } from '@/lib/auth-client';
@@ -17,9 +18,9 @@ import { isEmailVerificationError, syncSessionAfterAuth } from '@/lib/auth-helpe
 import { confirmInvitationSignupEmail, prepareInvitationAccept } from '@/lib/invitations-api';
 
 const schema = z.object({
-  name: z.string().min(2).optional(),
-  email: z.string().email(),
-  password: z.string().min(8),
+  name: z.string().min(2, 'Укажите имя').optional(),
+  email: z.string().email('Укажите корректный email'),
+  password: z.string().min(8, 'Пароль — минимум 8 символов'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -81,7 +82,7 @@ export function AcceptInvitationPage() {
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
@@ -180,10 +181,7 @@ export function AcceptInvitationPage() {
         panelTitle="Подождите"
         panelDescription="Загружаем приглашение..."
       >
-        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
-          <Loader2 className="mr-2 size-3.5 animate-spin" />
-          Подождите...
-        </div>
+        <AuthLoadingStatus>Подождите...</AuthLoadingStatus>
       </InvitationAuthShell>
     );
   }
@@ -218,10 +216,7 @@ export function AcceptInvitationPage() {
         panelTitle={`Присоединяем к «${preview.organizationName}»`}
         panelDescription="Добавляем вас в компанию"
       >
-        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
-          <Loader2 className="mr-2 size-3.5 animate-spin" />
-          Подождите...
-        </div>
+        <AuthLoadingStatus>Подождите...</AuthLoadingStatus>
       </InvitationAuthShell>
     );
   }
@@ -236,10 +231,7 @@ export function AcceptInvitationPage() {
         panelTitle="Принимаем приглашение"
         panelDescription="Почти готово"
       >
-        <div className="flex items-center justify-center py-2 text-xs text-muted-foreground">
-          <Loader2 className="mr-2 size-3.5 animate-spin" />
-          Подождите...
-        </div>
+        <AuthLoadingStatus>Подождите...</AuthLoadingStatus>
       </InvitationAuthShell>
     );
   }
@@ -254,6 +246,7 @@ export function AcceptInvitationPage() {
         <button
           type="button"
           className="font-semibold text-primary hover:underline"
+          aria-label={mode === 'login' ? 'Переключиться на регистрацию' : 'Переключиться на вход'}
           onClick={() => setMode((current) => (current === 'login' ? 'register' : 'login'))}
         >
           {mode === 'login' ? 'Нет аккаунта? Регистрация' : 'Уже есть аккаунт? Войти'}
@@ -261,7 +254,10 @@ export function AcceptInvitationPage() {
       }
     >
       {session && !sessionEmailMatches && (
-        <div className="mb-4 space-y-2 rounded-md border border-border bg-muted/40 p-2.5 text-xs">
+        <div
+          className="mb-4 space-y-2 rounded-md border border-border bg-muted/40 p-2.5 text-xs"
+          role="status"
+        >
           <p className="text-muted-foreground">
             Вы вошли как <span className="text-foreground">{session.user.email}</span>. Для
             приглашения нужен <span className="text-foreground">{preview.email}</span>.
@@ -272,28 +268,47 @@ export function AcceptInvitationPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="form-fields">
           {mode === 'register' && (
-            <div className="field">
-              <label htmlFor="name">Имя</label>
-              <Input id="name" placeholder="Анна" {...register('name')} />
-            </div>
+            <AuthField
+              id="name"
+              label="Имя"
+              placeholder="Анна"
+              autoComplete="name"
+              error={errors.name?.message}
+              {...register('name')}
+            />
           )}
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <Input id="email" type="email" readOnly {...register('email')} />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Пароль</label>
-            <Input id="password" type="password" autoComplete="new-password" {...register('password')} />
-          </div>
+          <AuthField
+            id="email"
+            label="Email"
+            type="email"
+            readOnly
+            hint="Адрес из приглашения, изменить нельзя"
+            aria-readonly="true"
+            error={errors.email?.message}
+            {...register('email')}
+          />
+          <PasswordField
+            id="password"
+            label="Пароль"
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            required
+            error={errors.password?.message}
+            {...register('password')}
+          />
         </div>
 
-        {error ? <p className="mt-3 text-xs text-insight-warning">{error}</p> : null}
+        {error ? <AuthStatusMessage variant="error">{error}</AuthStatusMessage> : null}
 
         <div className="form-actions">
-          <Button type="submit" className="w-full" disabled={isSubmitting || joining}>
+          <Button
+            type="submit"
+            className="h-11 w-full text-base"
+            disabled={isSubmitting || joining}
+            aria-busy={isSubmitting || joining}
+          >
             {isSubmitting
               ? 'Загрузка...'
               : mode === 'login'

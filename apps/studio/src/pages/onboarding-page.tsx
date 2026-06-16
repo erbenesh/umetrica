@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { AuthField, AuthSelectField } from '@/components/auth/auth-field';
+import { AuthStatusMessage } from '@/components/auth/auth-status';
 import { AuthSplitLayout } from '@/components/layout/auth-split-layout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useCreateOrganization } from '@/hooks/use-create-organization';
-import { cn } from '@/lib/utils';
 
 const CATEGORIES = ['Дом и текстиль', 'Одежда', 'Красота', 'Электроника', 'Другое'];
 
@@ -17,13 +17,22 @@ export function OnboardingPage() {
   const [name, setName] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
 
-  const handleCreate = async () => {
+  const handleCreate = async (event: FormEvent) => {
+    event.preventDefault();
     setError(null);
-    if (!name.trim()) return;
+
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setNameError('Укажите название магазина или компании');
+      return;
+    }
+
+    setNameError(null);
 
     try {
-      await createOrg.mutateAsync(name.trim());
+      await createOrg.mutateAsync(trimmed);
       await queryClient.invalidateQueries();
       navigate('/onboarding/connect', { replace: true, state: { category } });
     } catch (err) {
@@ -46,29 +55,25 @@ export function OnboardingPage() {
         </>
       }
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="company-name" className="text-xs font-medium text-foreground">
-            Магазин / компания
-          </label>
-          <Input
+      <form onSubmit={handleCreate} noValidate>
+        <div className="form-fields">
+          <AuthField
             id="company-name"
+            label="Магазин / компания"
             placeholder="HomeStyle"
+            autoComplete="organization"
+            required
+            autoFocus
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            error={nameError ?? undefined}
+            onChange={(event) => {
+              setName(event.target.value);
+              if (nameError) setNameError(null);
+            }}
           />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="category" className="text-xs font-medium text-foreground">
-            Категория на WB
-          </label>
-          <select
+          <AuthSelectField
             id="category"
-            className={cn(
-              'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs',
-              'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none'
-            )}
+            label="Категория на WB"
             value={category}
             onChange={(event) => setCategory(event.target.value)}
           >
@@ -77,15 +82,22 @@ export function OnboardingPage() {
                 {item}
               </option>
             ))}
-          </select>
+          </AuthSelectField>
         </div>
 
-        {error ? <p className="text-xs text-insight-warning">{error}</p> : null}
+        {error ? <AuthStatusMessage variant="error">{error}</AuthStatusMessage> : null}
 
-        <Button className="w-full" disabled={createOrg.isPending} onClick={handleCreate} type="button">
-          {createOrg.isPending ? 'Создание...' : 'Создать компанию'}
-        </Button>
-      </div>
+        <div className="form-actions">
+          <Button
+            className="h-11 w-full text-base"
+            disabled={createOrg.isPending}
+            type="submit"
+            aria-busy={createOrg.isPending}
+          >
+            {createOrg.isPending ? 'Создание...' : 'Создать компанию'}
+          </Button>
+        </div>
+      </form>
     </AuthSplitLayout>
   );
 }
