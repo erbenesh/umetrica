@@ -71,14 +71,15 @@ export function SemanticPublishDialog({
         <CardHeader className="pb-2">
           <CardTitle>Опубликовать {cubeLabel ?? cubeName}</CardTitle>
           <p className="m-0 text-[13px] text-muted-foreground">
-            Черновик → production · изменения затронут {widgetLabel}
+            После публикации показатели и разрезы станут доступны в виджетах дашборда.
+            {preview ? ` Затронет ${widgetLabel}.` : null}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
-              Подготовка diff...
+              Подготовка изменений…
             </div>
           ) : preview && preview.diff.length > 0 ? (
             <div className="diff-block">
@@ -106,7 +107,7 @@ export function SemanticPublishDialog({
             <span>Уведомить команду об обновлении семантики</span>
           </CheckboxRow>
           <p className="m-0 text-xs text-muted-foreground">
-            Cube.js перезагрузит meta в течение ~30 сек. Дашборды продолжат работать.
+            Обновление займёт около 30 секунд. Уже открытые дашборды продолжат работать.
           </p>
 
           {error ? <p className="m-0 text-xs text-destructive">{error}</p> : null}

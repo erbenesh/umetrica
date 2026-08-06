@@ -20,7 +20,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef, type MouseEvent, type PointerEvent } from 'react';
 
 import { FormField } from '@/components/doc/form-field';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,20 @@ import {
   toggleSetMember,
   type CanvasRect,
 } from '@/lib/canvas-graph-utils';
+import { useFixedMenuPosition } from '@/lib/context-menu-position';
+import {
+  DIMENSION_TYPE_LABELS,
+  GRANULARITY_LABELS,
+  MEASURE_AGGREGATION_LABELS,
+  MEASURE_FORMAT_LABELS,
+  PALETTE_DIMENSION_LABEL,
+  PALETTE_MEASURE_LABEL,
+  formatDimensionCount,
+  formatMeasureCount,
+  labelGranularity,
+  labelMeasureAggregation,
+  labelMeasureFormat,
+} from '@/lib/semantic-labels';
 import { cn } from '@/lib/utils';
 import { usePreviewSemanticQuery } from '@/hooks/use-semantic';
 
@@ -138,6 +152,16 @@ interface SemanticNodeEditorProps {
   onLayoutChange?: (layout: SemanticGraphLayout) => void;
 }
 
+export type SemanticNodeEditorHandle = {
+  centerTourTarget: (selector: string) => Promise<void>;
+};
+
+async function waitForPaint() {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
 function updateMeasure(
   draft: SemanticCubeDefinition,
   id: string,
@@ -190,25 +214,28 @@ function SemanticInspectorPanel({
       <div className="semantic-panel">
         <div className="semantic-panel__head">
           <h2 className="semantic-panel__title">Таблица · {draft.source.table}</h2>
-          <p className="semantic-panel__desc">Источник · {connectionLabel}</p>
+          <p className="semantic-panel__desc">Откуда берутся сырые данные · {connectionLabel}</p>
         </div>
         <div className="form-fields max-w-none">
-          <FormField label="SQL источник">
-            <textarea
-              className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
-              value={draft.source.sql}
-              disabled={!canWrite}
-              onChange={(event) =>
-                onDraftChange({
-                  ...draft,
-                  source: { ...draft.source, sql: event.target.value },
-                })
-              }
-            />
-          </FormField>
-          <FormField label="Колонки">
+          <FormField label="Колонки в таблице">
             <p className="m-0 text-[13px] text-muted-foreground">{draft.source.columns.join(', ')}</p>
           </FormField>
+          <details className="semantic-panel__details">
+            <summary>SQL и технические настройки</summary>
+            <FormField label="SQL-запрос к таблице" hint="Обычно менять не нужно — куб уже создан из этой таблицы.">
+              <textarea
+                className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
+                value={draft.source.sql}
+                disabled={!canWrite}
+                onChange={(event) =>
+                  onDraftChange({
+                    ...draft,
+                    source: { ...draft.source, sql: event.target.value },
+                  })
+                }
+              />
+            </FormField>
+          </details>
         </div>
         <Link to="/settings/connections" className="text-sm text-primary hover:underline">
           Открыть подключения →
@@ -222,10 +249,12 @@ function SemanticInspectorPanel({
       <div className="semantic-panel">
         <div className="semantic-panel__head">
           <h2 className="semantic-panel__title">Куб · {semanticCubeLabel(draft)}</h2>
-          <p className="semantic-panel__desc">Центральная нода semantic layer</p>
+          <p className="semantic-panel__desc">
+            Собирает показатели и разрезы — именно это видно в дашбордах
+          </p>
         </div>
         <div className="form-fields max-w-none">
-          <FormField label="Заголовок">
+          <FormField label="Название в интерфейсе" hint="Как куб называется в списках и настройках.">
             <Input
               value={draft.displayTitle}
               disabled={!canWrite}
@@ -234,7 +263,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="Краткий заголовок" hint="Для виджетов и компактного UI">
+          <FormField label="Короткое название" hint="Для узких мест в виджетах и на мобильных.">
             <Input
               value={draft.displayShortTitle ?? ''}
               disabled={!canWrite}
@@ -247,7 +276,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="Описание">
+          <FormField label="Описание" hint="Необязательно — помогает команде понять, что внутри куба.">
             <textarea
               className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 text-[13px]"
               value={draft.description ?? ''}
@@ -257,19 +286,22 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="SQL источник">
-            <textarea
-              className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
-              value={draft.source.sql}
-              disabled={!canWrite}
-              onChange={(event) =>
-                onDraftChange({
-                  ...draft,
-                  source: { ...draft.source, sql: event.target.value },
-                })
-              }
-            />
-          </FormField>
+          <details className="semantic-panel__details">
+            <summary>SQL и технические настройки</summary>
+            <FormField label="SQL-запрос к таблице" hint="Меняйте только если знаете, что делаете.">
+              <textarea
+                className="flex min-h-[72px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
+                value={draft.source.sql}
+                disabled={!canWrite}
+                onChange={(event) =>
+                  onDraftChange({
+                    ...draft,
+                    source: { ...draft.source, sql: event.target.value },
+                  })
+                }
+              />
+            </FormField>
+          </details>
         </div>
       </div>
     );
@@ -279,11 +311,11 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Новая мера</h2>
-          <p className="semantic-panel__desc">Добавьте агрегат на canvas</p>
+          <h2 className="semantic-panel__title">Новый показатель</h2>
+          <p className="semantic-panel__desc">Число для графика: выручка, количество, средний чек</p>
         </div>
         <Button type="button" size="sm" disabled={!canWrite} onClick={onAddMeasure}>
-          Добавить меру
+          Добавить показатель
         </Button>
       </div>
     );
@@ -293,11 +325,11 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Новое измерение</h2>
-          <p className="semantic-panel__desc">Добавьте поле группировки на canvas</p>
+          <h2 className="semantic-panel__title">Новый разрез</h2>
+          <p className="semantic-panel__desc">По чему делить цифры: дата, статус, регион, товар</p>
         </div>
         <Button type="button" size="sm" disabled={!canWrite} onClick={onAddDimension}>
-          Добавить измерение
+          Добавить разрез
         </Button>
       </div>
     );
@@ -308,15 +340,16 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Мера · {semanticMemberLabel(measure)}</h2>
+          <h2 className="semantic-panel__title">Показатель · {semanticMemberLabel(measure)}</h2>
           <p className="semantic-panel__desc">{measure.description ?? measure.title}</p>
         </div>
         <div className="form-fields max-w-none">
-          <FormField label="Имя member">
+          <FormField label="Системный код" hint="Техническое имя — менять не нужно, если виджеты уже настроены.">
             <Input value={measure.name} disabled />
           </FormField>
-          <FormField label="Заголовок">
+          <FormField label="Название в дашборде" hint="Так показатель увидит команда: «Выручка», «Кол-во заказов».">
             <Input
+              data-tour="cube-inspector-title"
               value={measure.title}
               disabled={!canWrite}
               onChange={(event) =>
@@ -324,7 +357,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="Краткий заголовок" hint="Для виджетов и осей графиков">
+          <FormField label="Короткое название" hint="Для осей графиков и узких колонок.">
             <Input
               value={measure.shortTitle ?? ''}
               disabled={!canWrite}
@@ -338,7 +371,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="SQL колонка">
+          <FormField label="Колонка в таблице" hint="Из какого поля базы считать значение.">
             <Input
               value={measure.sql}
               disabled={!canWrite}
@@ -348,7 +381,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="Агрегация">
+          <FormField label="Как считать" hint="Суммировать продажи, считать строки или брать среднее.">
             <select
               className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
               value={measure.type}
@@ -361,14 +394,14 @@ function SemanticInspectorPanel({
                 )
               }
             >
-              <option value="sum">sum</option>
-              <option value="count">count</option>
-              <option value="avg">avg</option>
-              <option value="min">min</option>
-              <option value="max">max</option>
+              {Object.entries(MEASURE_AGGREGATION_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </FormField>
-          <FormField label="Формат">
+          <FormField label="Формат числа" hint="Валюта, процент или обычное число в виджетах.">
             <select
               className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
               value={measure.format ?? ''}
@@ -382,9 +415,11 @@ function SemanticInspectorPanel({
               }
             >
               <option value="">—</option>
-              <option value="currency">currency</option>
-              <option value="percent">percent</option>
-              <option value="number">number</option>
+              {Object.entries(MEASURE_FORMAT_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </FormField>
         </div>
@@ -397,7 +432,7 @@ function SemanticInspectorPanel({
             onClick={() => onDeleteMeasure?.(measure.id)}
           >
             <Trash2 size={14} />
-            Удалить меру
+            Удалить показатель
           </Button>
         ) : null}
       </div>
@@ -409,14 +444,14 @@ function SemanticInspectorPanel({
     return (
       <div className="semantic-panel">
         <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Измерение · {semanticMemberLabel(dimension)}</h2>
+          <h2 className="semantic-panel__title">Разрез · {semanticMemberLabel(dimension)}</h2>
           <p className="semantic-panel__desc">{dimension.description ?? dimension.title}</p>
         </div>
         <div className="form-fields max-w-none">
-          <FormField label="Имя member">
+          <FormField label="Системный код" hint="Техническое имя — менять не нужно, если виджеты уже настроены.">
             <Input value={dimension.name} disabled />
           </FormField>
-          <FormField label="Заголовок">
+          <FormField label="Название в дашборде" hint="По чему группировать: «Дата», «Статус», «Регион».">
             <Input
               value={dimension.title}
               disabled={!canWrite || dimension.locked}
@@ -425,7 +460,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="Краткий заголовок" hint="Для виджетов и фильтров">
+          <FormField label="Короткое название" hint="Для фильтров и компактных подписей.">
             <Input
               value={dimension.shortTitle ?? ''}
               disabled={!canWrite || dimension.locked}
@@ -439,7 +474,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="SQL колонка">
+          <FormField label="Колонка в таблице" hint="Из какого поля базы брать значение разреза.">
             <Input
               value={dimension.sql}
               disabled={!canWrite || dimension.locked}
@@ -449,7 +484,7 @@ function SemanticInspectorPanel({
               }
             />
           </FormField>
-          <FormField label="Тип">
+          <FormField label="Тип данных" hint="Время — для графиков по дням и месяцам.">
             <select
               className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
               value={dimension.type}
@@ -462,14 +497,15 @@ function SemanticInspectorPanel({
                 )
               }
             >
-              <option value="string">string</option>
-              <option value="time">time</option>
-              <option value="number">number</option>
-              <option value="boolean">boolean</option>
+              {Object.entries(DIMENSION_TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </FormField>
           {dimension.type === 'time' ? (
-            <FormField label="Granularity">
+            <FormField label="Шаг по времени" hint="Как группировать даты на графике: по дням, неделям или месяцам.">
               <select
                 className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
                 value={dimension.granularity ?? 'day'}
@@ -482,16 +518,17 @@ function SemanticInspectorPanel({
                   )
                 }
               >
-                <option value="day">day</option>
-                <option value="week">week</option>
-                <option value="month">month</option>
-                <option value="year">year</option>
+                {Object.entries(GRANULARITY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </FormField>
           ) : null}
         </div>
         {dimension.locked ? (
-          <p className="text-xs text-muted-foreground">Системное измерение tenantId нельзя удалить.</p>
+          <p className="text-xs text-muted-foreground">Системный разрез нельзя удалить.</p>
         ) : canWrite && draft.dimensions.filter((item) => !item.locked).length > 0 &&
           draft.dimensions.length > 1 ? (
           <Button
@@ -502,7 +539,7 @@ function SemanticInspectorPanel({
             onClick={() => onDeleteDimension?.(dimension.id)}
           >
             <Trash2 size={14} />
-            Удалить измерение
+            Удалить разрез
           </Button>
         ) : null}
       </div>
@@ -562,9 +599,9 @@ function SemanticMemberPreview({
   return (
     <div className="semantic-preview">
       <div className="semantic-preview__head">
-        <span>Превью member</span>
+        <span>Проверка данных</span>
         <Button variant="outline" size="sm" type="button" onClick={runPreview} disabled={previewQuery.isPending}>
-          Выполнить
+          {previewQuery.isPending ? 'Загрузка…' : 'Показать пример'}
         </Button>
       </div>
       <div className="semantic-preview__body">
@@ -572,22 +609,32 @@ function SemanticMemberPreview({
           <p className="semantic-preview__member">
             {selected === sourceNodeId ? memberName : `${draft.name}.${memberName}`}
           </p>
-        ) : null}
+        ) : (
+          <p className="text-sm text-muted-foreground">Выберите показатель или разрез на схеме.</p>
+        )}
         <dl className="semantic-preview__meta-list">
           <div>
-            <dt>Sample</dt>
-            <dd>{sampleValue}</dd>
+            <dt>Пример значения</dt>
+            <dd className="semantic-preview__sample">{sampleValue}</dd>
           </div>
         </dl>
-        <textarea
-          className="semantic-preview__query"
-          value={queryText}
-          spellCheck={false}
-          onChange={(event) => setQueryText(event.target.value)}
-        />
+        <details className="semantic-panel__details semantic-preview__details">
+          <summary>Технический запрос</summary>
+          <p className="m-0 text-xs text-muted-foreground">Для отладки — обычно не нужен.</p>
+          <textarea
+            className="semantic-preview__query"
+            value={queryText}
+            spellCheck={false}
+            onChange={(event) => setQueryText(event.target.value)}
+          />
+        </details>
         <ul className="semantic-preview__links m-0 list-none p-0">
           <li>
-            <Link to="/dashboards">Используется в {widgetCount} виджетах →</Link>
+            <Link to="/dashboards">
+              {widgetCount === 0
+                ? 'Добавить в дашборд →'
+                : `Используется в ${widgetCount} виджетах →`}
+            </Link>
           </li>
         </ul>
       </div>
@@ -595,7 +642,9 @@ function SemanticMemberPreview({
   );
 }
 
-export function SemanticNodeEditor({
+export const SemanticNodeEditor = forwardRef<SemanticNodeEditorHandle, SemanticNodeEditorProps>(
+  function SemanticNodeEditor(
+    {
   draft,
   layout,
   selected,
@@ -609,7 +658,9 @@ export function SemanticNodeEditor({
   onDeleteMeasure,
   onDeleteDimension,
   onLayoutChange,
-}: SemanticNodeEditorProps) {
+    },
+    ref
+  ) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [draggingCanvas, setDraggingCanvas] = useState(false);
@@ -648,6 +699,35 @@ export function SemanticNodeEditor({
   panStateRef.current = pan;
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
+
+  const centerTourTarget = useCallback(async (selector: string) => {
+    const canvas = canvasRef.current;
+    const target = canvas?.querySelector(selector) ?? document.querySelector(selector);
+    if (!(target instanceof HTMLElement)) return;
+
+    if (canvas?.contains(target)) {
+      const canvasRect = canvas.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const deltaX =
+        canvasRect.left + canvasRect.width / 2 - (targetRect.left + targetRect.width / 2);
+      const deltaY =
+        canvasRect.top + canvasRect.height / 2 - (targetRect.top + targetRect.height / 2);
+
+      if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+        setPan((prev) => ({
+          x: prev.x + deltaX,
+          y: prev.y + deltaY,
+        }));
+        await waitForPaint();
+      }
+      return;
+    }
+
+    target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+    await waitForPaint();
+  }, []);
+
+  useImperativeHandle(ref, () => ({ centerTourTarget }), [centerTourTarget]);
 
   const sourceNodeId = semanticSourceNodeId(draft.source.table);
   const cubeNodeId = semanticCubeNodeId(draft.name);
@@ -989,13 +1069,18 @@ export function SemanticNodeEditor({
   }, [canWrite, contextMenu, draft.dimensions, draft.measures, onDeleteDimension, onDeleteMeasure]);
 
   const selectionCount = canvasSelection.size;
+  const contextMenuPosition = useFixedMenuPosition(
+    contextMenu?.x ?? 0,
+    contextMenu?.y ?? 0,
+    Boolean(contextMenu)
+  );
 
   return (
     <div className="node-editor-page">
       <div className="node-editor">
-        <aside className="node-palette" aria-label="Палитра нод">
+        <aside className="node-palette" aria-label="Палитра элементов">
           <div className="node-palette__head">
-            <p className="node-palette__title">Добавить ноду</p>
+            <p className="node-palette__title">Добавить</p>
           </div>
           <button className="node-palette__item node-palette__item--source" type="button" disabled>
             <Table size={18} />
@@ -1012,7 +1097,7 @@ export function SemanticNodeEditor({
             onClick={() => onSelect('measure:new')}
           >
             <Hash size={18} />
-            <span>Мера</span>
+            <span>{PALETTE_MEASURE_LABEL}</span>
           </button>
           <button
             className="node-palette__item node-palette__item--dimension"
@@ -1021,25 +1106,42 @@ export function SemanticNodeEditor({
             onClick={() => onSelect('dimension:new')}
           >
             <Text size={18} />
-            <span>Измерение</span>
+            <span>{PALETTE_DIMENSION_LABEL}</span>
           </button>
           <button className="node-palette__item is-disabled" type="button" disabled>
             <GitMerge size={18} />
-            <span>Join</span>
+            <span>Связь</span>
           </button>
           <p className="node-palette__hint">
-            Кликните «Мера» или «Измерение», чтобы добавить member на canvas. Связи задают SQL-маппинг.
+            Нажмите «Показатель» или «Разрез», чтобы добавить поле. Связи между кубами — во вкладке «Связи».
           </p>
         </aside>
 
-        <div className={cn('node-canvas-wrap', canWrite && 'node-canvas-wrap--writable')}>
+        <div
+          className={cn('node-canvas-wrap', canWrite && 'node-canvas-wrap--writable')}
+          data-tour="cube-canvas"
+        >
           <div className="node-canvas-mobile">
             <Monitor className="size-5 shrink-0" strokeWidth={1.75} />
             <span>
-              ЛКМ — инспектор · Ctrl+ЛКМ — выделить · Shift+drag — рамка · ПКМ — действия · Esc — сброс
+              Нажмите на карточку — справа откроются настройки. Оранжевые — цифры, фиолетовые — разрезы.
             </span>
           </div>
           <div className="node-canvas-toolbar">
+            <div className="node-canvas-toolbar__quick">
+              {canWrite ? (
+                <>
+                  <Button variant="outline" size="sm" type="button" onClick={onAddMeasure}>
+                    <Hash size={14} />
+                    {PALETTE_MEASURE_LABEL}
+                  </Button>
+                  <Button variant="outline" size="sm" type="button" onClick={onAddDimension}>
+                    <Text size={14} />
+                    {PALETTE_DIMENSION_LABEL}
+                  </Button>
+                </>
+              ) : null}
+            </div>
             {selectionCount > 0 ? (
               <span className="node-canvas-toolbar__selection">
                 {selectionCount} выбрано
@@ -1194,6 +1296,7 @@ export function SemanticNodeEditor({
               </article>
 
               <article
+                data-tour="cube-cube"
                 className={cn(
                   'node node--cube',
                   selected === cubeNodeId && 'is-selected',
@@ -1218,7 +1321,8 @@ export function SemanticNodeEditor({
                   <div className="node__titles">
                     <h3 className="node__title">{semanticCubeLabel(draft)}</h3>
                     <p className="node__type">
-                      Куб · {draft.name} · {draft.measures.length} меры · {draft.dimensions.length} измерения
+                      Куб · {draft.name} · {formatMeasureCount(draft.measures.length)} ·{' '}
+                      {formatDimensionCount(draft.dimensions.length)}
                     </p>
                   </div>
                 </header>
@@ -1234,9 +1338,10 @@ export function SemanticNodeEditor({
                 </div>
               </article>
 
-              {draft.measures.map((measure) => (
+              {draft.measures.map((measure, measureIndex) => (
                 <article
                   key={measure.id}
+                  data-tour={measureIndex === 0 ? 'cube-measure' : undefined}
                   className={cn(
                     'node node--measure node--compact',
                     selected === measure.id && 'is-selected',
@@ -1260,7 +1365,9 @@ export function SemanticNodeEditor({
                     </span>
                     <div className="node__titles">
                       <h3 className="node__title">{semanticMemberLabel(measure)}</h3>
-                      <p className="node__type">Мера · {measure.name} · {measure.type}</p>
+                      <p className="node__type">
+                        Показатель · {labelMeasureAggregation(measure.type)}
+                      </p>
                     </div>
                   </header>
                   <div className="node__body">
@@ -1271,7 +1378,7 @@ export function SemanticNodeEditor({
                     {measure.format ? (
                       <div className="node__field">
                         <span>Формат</span>
-                        <span>{measure.format}</span>
+                        <span>{labelMeasureFormat(measure.format)}</span>
                       </div>
                     ) : null}
                   </div>
@@ -1312,7 +1419,8 @@ export function SemanticNodeEditor({
                     <div className="node__titles">
                       <h3 className="node__title">{semanticMemberLabel(dimension)}</h3>
                       <p className="node__type">
-                        {dimension.locked ? 'Системное' : 'Измерение'} · {dimension.name} · {dimension.type}
+                        {dimension.locked ? 'Системный разрез' : 'Разрез'} ·{' '}
+                        {DIMENSION_TYPE_LABELS[dimension.type]}
                       </p>
                     </div>
                   </header>
@@ -1323,8 +1431,8 @@ export function SemanticNodeEditor({
                     </div>
                     {dimension.granularity ? (
                       <div className="node__field">
-                        <span>Granularity</span>
-                        <span>{dimension.granularity}</span>
+                        <span>Детализация</span>
+                        <span>{labelGranularity(dimension.granularity ?? 'day')}</span>
                       </div>
                     ) : null}
                   </div>
@@ -1334,7 +1442,7 @@ export function SemanticNodeEditor({
           </div>
         </div>
 
-        <aside className="node-inspector" aria-label="Инспектор ноды">
+        <aside className="node-inspector" aria-label="Свойства элемента" data-tour="cube-inspector">
           <div className="node-inspector__main">
             <SemanticInspectorPanel
               draft={draft}
@@ -1365,8 +1473,9 @@ export function SemanticNodeEditor({
 
       {contextMenu && contextMenuActions ? (
         <div
+          ref={contextMenuPosition.ref}
           className="workspace-context-menu"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
+          style={contextMenuPosition.position}
           role="menu"
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -1391,7 +1500,7 @@ export function SemanticNodeEditor({
                 onDeleteMeasure?.(contextMenuActions.measureId!);
               }}
             >
-              Удалить меру
+              Удалить показатель
             </button>
           ) : null}
           {contextMenuActions.canDeleteDimension && contextMenuActions.dimensionId ? (
@@ -1404,11 +1513,11 @@ export function SemanticNodeEditor({
                 onDeleteDimension?.(contextMenuActions.dimensionId!);
               }}
             >
-              Удалить измерение
+              Удалить разрез
             </button>
           ) : null}
           {contextMenuActions.selectionCount > 1 ? (
-            <p className="workspace-context-menu__hint">{contextMenuActions.selectionCount} нод выбрано</p>
+            <p className="workspace-context-menu__hint">{contextMenuActions.selectionCount} элементов выбрано</p>
           ) : null}
           <button
             type="button"
@@ -1425,4 +1534,4 @@ export function SemanticNodeEditor({
       ) : null}
     </div>
   );
-}
+});

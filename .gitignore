@@ -10,3 +10,5 @@ coverage
 .cursor/mcp.json
 cube/.cubestore/
 *.tsbuildinfo
+data/avatars/
+data/org-logos/

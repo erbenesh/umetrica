@@ -1,17 +1,24 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Building2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { DocBlock } from '@/components/doc/doc-block';
 import { DocPage } from '@/components/doc/doc-page';
 import { FormActions, FormField } from '@/components/doc/form-field';
 import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
+import { OrgLogo } from '@/components/user-avatar';
 import { Button } from '@/components/ui/button';
 import { BRAND_APP_HOST_HINT } from '@/lib/brand';
 import { Input } from '@/components/ui/input';
 import { useMe, meQueryKey } from '@/hooks/use-me';
+import { organizationsQueryKey } from '@/hooks/use-organizations';
+import { appToast } from '@/lib/app-toast';
+import { getErrorMessage } from '@/lib/api-client';
 import { authClient } from '@/lib/auth-client';
+import { deleteOrgLogo, uploadOrgLogo } from '@/lib/profile-api';
+
+const ACCEPTED_LOGO_TYPES = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
 
 function slugify(value: string) {
   return value
@@ -23,6 +30,7 @@ function slugify(value: string) {
 
 export function SettingsCompanyPage() {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: me } = useMe();
   const [name, setName] = useState('');
   const [marketplace, setMarketplace] = useState('Wildberries');
@@ -30,9 +38,12 @@ export function SettingsCompanyPage() {
   const [website, setWebsite] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [logoCacheKey, setLogoCacheKey] = useState<string | null>(null);
 
   const orgId = me?.organization?.id;
   const orgName = me?.organization?.name ?? '';
+  const hasLogo = Boolean(me?.organization?.logo);
 
   useEffect(() => {
     setName(orgName);
@@ -51,15 +62,56 @@ export function SettingsCompanyPage() {
         throw new Error(result.error.message);
       }
       await queryClient.invalidateQueries({ queryKey: meQueryKey });
-      setStatus('Компания сохранена');
+      appToast.success('Компания сохранена');
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Не удалось сохранить');
+      const message = err instanceof Error ? err.message : 'Не удалось сохранить';
+      setStatus(message);
+      appToast.error(message);
     } finally {
       setSaving(false);
     }
   };
 
-  const orgInitial = orgName.charAt(0).toUpperCase();
+  const handleLogoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file) return;
+
+    setLogoBusy(true);
+    try {
+      const result = await uploadOrgLogo(file);
+      setLogoCacheKey(result.updatedAt);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: meQueryKey }),
+        queryClient.invalidateQueries({ queryKey: organizationsQueryKey }),
+      ]);
+      appToast.success('Логотип обновлён');
+    } catch (err) {
+      appToast.error(getErrorMessage(err, 'Не удалось загрузить логотип'));
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!hasLogo) return;
+
+    setLogoBusy(true);
+    try {
+      await deleteOrgLogo();
+      setLogoCacheKey(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: meQueryKey }),
+        queryClient.invalidateQueries({ queryKey: organizationsQueryKey }),
+      ]);
+      appToast.success('Логотип удалён');
+    } catch (err) {
+      appToast.error(getErrorMessage(err, 'Не удалось удалить логотип'));
+    } finally {
+      setLogoBusy(false);
+    }
+  };
 
   return (
     <DocPage
@@ -70,19 +122,41 @@ export function SettingsCompanyPage() {
     >
       <DocBlock title="Логотип">
         <div className="flex flex-wrap items-start gap-4">
-          <div className="flex size-12 items-center justify-center rounded-md bg-primary/10 text-lg font-bold text-primary">
-            {orgInitial}
-          </div>
+          <OrgLogo
+            name={orgName}
+            logo={me?.organization?.logo}
+            cacheKey={logoCacheKey ?? orgId}
+            className="size-12 rounded-md"
+          />
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" type="button" disabled>
-                Загрузить
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                disabled={logoBusy}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {logoBusy ? 'Загрузка...' : 'Загрузить'}
               </Button>
-              <Button variant="ghost" size="sm" type="button" disabled>
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                disabled={logoBusy || !hasLogo}
+                onClick={handleLogoDelete}
+              >
                 Удалить
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Квадрат PNG/SVG, до 1 МБ. Скоро.</p>
+            <p className="text-xs text-muted-foreground">JPG, PNG или WebP, до 1 МБ.</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_LOGO_TYPES}
+              className="sr-only"
+              onChange={handleLogoSelect}
+            />
           </div>
         </div>
       </DocBlock>
@@ -151,7 +225,7 @@ export function SettingsCompanyPage() {
       </DocBlock>
 
       <DocBlock>
-        {status ? <p className="mb-3 text-xs text-muted-foreground">{status}</p> : null}
+        {status ? <p className="mb-3 text-xs text-destructive">{status}</p> : null}
         <FormActions>
           <Button type="button" onClick={handleSave} disabled={saving || !orgId || name.trim() === orgName}>
             {saving ? 'Сохранение...' : 'Сохранить'}

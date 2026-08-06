@@ -1,0 +1,71 @@
+cubes:
+  - name: Products
+    title: "Товары"
+    sql: "SELECT * FROM public.products"
+    measures:
+      - name: count
+        title: SKU
+        shortTitle: SKU
+        meta:
+          sellerpool:
+            title: "Количество SKU"
+        type: count
+      - name: totalPrice
+        title: "Цены"
+        shortTitle: "Цены"
+        meta:
+          sellerpool:
+            title: "Сумма цен"
+        sql: price
+        type: sum
+        format: currency
+      - name: avgPrice
+        title: "Ср. цена"
+        shortTitle: "Ср. цена"
+        meta:
+          sellerpool:
+            title: "Средняя цена"
+        sql: price
+        type: avg
+        format: currency
+    dimensions:
+      - name: id
+        title: ID
+        sql: id
+        type: string
+        primary_key: true
+      - name: name
+        title: "Название"
+        shortTitle: "Название"
+        meta:
+          sellerpool:
+            title: "Название товара"
+        sql: name
+        type: string
+      - name: category
+        title: "Категория"
+        shortTitle: "Категория"
+        meta:
+          sellerpool:
+            title: "Категория товара"
+        sql: category
+        type: string
+      - name: createdAt
+        title: "Добавлен"
+        shortTitle: "Добавлен"
+        meta:
+          sellerpool:
+            title: "Дата добавления"
+        sql: created_at
+        type: time
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string
+    pre_aggregations:
+      - name: by_category
+        measures:
+          - count
+          - totalPrice
+        dimensions:
+          - category

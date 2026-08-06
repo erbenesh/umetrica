@@ -30,9 +30,7 @@ import { InsightsSettingsPage } from '@/pages/insights-settings-page';
 import { OnboardingConnectPage } from '@/pages/onboarding-connect-page';
 import { OnboardingPage } from '@/pages/onboarding-page';
 import { ResetPasswordPage } from '@/pages/reset-password-page';
-import { SemanticCubePage } from '@/pages/semantic-cube-page';
-import { SemanticListPage } from '@/pages/semantic-list-page';
-import { SemanticViewPage } from '@/pages/semantic-view-page';
+import { SemanticWorkspacePage, SemanticLegacyRedirect } from '@/pages/semantic-workspace-page';
 import { SettingsPage } from '@/pages/settings-page';
 import { SettingsBillingPage } from '@/pages/settings-billing-page';
 import { SettingsAuditPage } from '@/pages/settings-audit-page';
@@ -103,9 +101,9 @@ createRoot(document.getElementById('root')!).render(
                 <Route path="settings/privacy" element={<SettingsPrivacyPage />} />
                 <Route path="settings/security" element={<SettingsSecurityPage />} />
                 <Route element={<ManageOrgRoute />}>
-                  <Route path="semantic" element={<SemanticListPage />} />
-                  <Route path="semantic/cubes/:cubeName" element={<SemanticCubePage />} />
-                  <Route path="semantic/views/:viewName" element={<SemanticViewPage />} />
+                  <Route path="semantic" element={<SemanticWorkspacePage />} />
+                  <Route path="semantic/cubes/:cubeName" element={<SemanticLegacyRedirect />} />
+                  <Route path="semantic/views/:viewName" element={<SemanticLegacyRedirect />} />
                   <Route path="settings/company" element={<SettingsCompanyPage />} />
                   <Route path="settings/billing" element={<SettingsBillingPage />} />
                   <Route path="settings/billing/plans" element={<SettingsBillingPlansPage />} />

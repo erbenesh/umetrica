@@ -1,7 +1,9 @@
-import { ChevronRight, Loader2, Redo2, Undo2 } from 'lucide-react';
+import { ChevronRight, CircleHelp, Loader2, PanelLeftClose, Redo2, Undo2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { SEMANTIC_CUBE_ADVANCED_TABS } from '@/lib/semantic-guide';
+import { SEMANTIC_CUBE_TAB_LABELS } from '@/lib/semantic-labels';
 import { cn } from '@/lib/utils';
 
 export type SemanticCubeEditorTab =
@@ -12,13 +14,13 @@ export type SemanticCubeEditorTab =
   | 'rollups'
   | 'yaml';
 
-const TABS: Array<{ id: SemanticCubeEditorTab; label: string }> = [
-  { id: 'visual', label: 'Visual' },
-  { id: 'relationships', label: 'Relationships' },
-  { id: 'segments', label: 'Segments' },
-  { id: 'hierarchies', label: 'Hierarchies' },
-  { id: 'rollups', label: 'Rollups' },
-  { id: 'yaml', label: 'YAML' },
+const TABS: SemanticCubeEditorTab[] = [
+  'visual',
+  'relationships',
+  'segments',
+  'hierarchies',
+  'rollups',
+  'yaml',
 ];
 
 interface SemanticCubeEditorHeaderProps {
@@ -35,6 +37,11 @@ interface SemanticCubeEditorHeaderProps {
   onRedo: () => void;
   onDiscard: () => void;
   onPublish: () => void;
+  tourActive?: boolean;
+  onStartTour?: () => void;
+  onClose?: () => void;
+  panel?: boolean;
+  shell?: boolean;
 }
 
 export function SemanticCubeEditorHeader({
@@ -51,18 +58,41 @@ export function SemanticCubeEditorHeader({
   onRedo,
   onDiscard,
   onPublish,
+  tourActive = false,
+  onStartTour,
+  onClose,
+  panel = false,
+  shell = false,
 }: SemanticCubeEditorHeaderProps) {
   return (
-    <header className="semantic-cube-header">
-      <div className="semantic-cube-header__row">
+    <header className={cn('semantic-cube-header', panel && 'semantic-cube-header--panel', shell && 'semantic-cube-header--shell')}>
+      <div className="semantic-cube-header__row semantic-cube-header__row--desktop">
         <div className="semantic-cube-header__leading">
-          <nav className="semantic-cube-header__crumb" aria-label="Навигация">
-            <Link to="/semantic">Семантика</Link>
-            <ChevronRight className="size-3.5 text-muted-foreground" strokeWidth={2} aria-hidden />
-            <span className="semantic-cube-header__name" title={cubeName}>
-              {cubeLabel}
-            </span>
-          </nav>
+          {onClose ? (
+            <div className="semantic-cube-header__crumb">
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                className="semantic-ide__back-btn"
+                onClick={onClose}
+              >
+                <PanelLeftClose size={16} />
+                К графу
+              </Button>
+              <span className="semantic-cube-header__name" title={cubeName}>
+                {cubeLabel}
+              </span>
+            </div>
+          ) : (
+            <nav className="semantic-cube-header__crumb" aria-label="Навигация">
+              <Link to="/semantic">Семантика</Link>
+              <ChevronRight className="size-3.5 text-muted-foreground" strokeWidth={2} aria-hidden />
+              <span className="semantic-cube-header__name" title={cubeName}>
+                {cubeLabel}
+              </span>
+            </nav>
+          )}
           <span
             className={cn(
               'db-tag',
@@ -101,7 +131,7 @@ export function SemanticCubeEditorHeader({
             >
               Сбросить
             </Button>
-            <Button size="sm" type="button" onClick={onPublish}>
+            <Button size="sm" type="button" data-tour="cube-publish" onClick={onPublish}>
               Опубликовать
             </Button>
           </div>
@@ -109,20 +139,48 @@ export function SemanticCubeEditorHeader({
       </div>
 
       <div className="semantic-cube-header__row semantic-cube-header__row--tabs">
-        <div className="semantic-cube-header__tabs" role="tablist" aria-label="Разделы редактора куба">
-          {TABS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === item.id}
-              className={cn('semantic-cube-header__tab', tab === item.id && 'is-active')}
-              onClick={() => onTabChange(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div
+          className="semantic-cube-header__tabs"
+          role="tablist"
+          aria-label="Разделы редактора куба"
+          data-tour="cube-tabs"
+        >
+          {TABS.map((item) => {
+            const isAdvanced = SEMANTIC_CUBE_ADVANCED_TABS.includes(item);
+            return (
+              <button
+                key={item}
+                type="button"
+                role="tab"
+                aria-selected={tab === item}
+                data-tour={`cube-tab-${item}`}
+                className={cn(
+                  'semantic-cube-header__tab',
+                  tab === item && 'is-active',
+                  isAdvanced && 'semantic-cube-header__tab--advanced'
+                )}
+                onClick={() => onTabChange(item)}
+              >
+                {SEMANTIC_CUBE_TAB_LABELS[item]}
+              </button>
+            );
+          })}
         </div>
+        {onStartTour ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            type="button"
+            data-tour="cube-help"
+            className={cn('semantic-cube-header__help', tourActive && 'is-active')}
+            aria-label="Обучение"
+            title="Обучение"
+            aria-pressed={tourActive}
+            onClick={onStartTour}
+          >
+            <CircleHelp size={16} />
+          </Button>
+        ) : null}
       </div>
     </header>
   );

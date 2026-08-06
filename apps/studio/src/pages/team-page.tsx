@@ -15,6 +15,7 @@ import { DocBlock } from '@/components/doc/doc-block';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
 import { ListSearchInput, matchesListQuery } from '@/components/doc/list-search-input';
+import { UserAvatar } from '@/components/user-avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   useAcceptInvitation,
@@ -46,11 +47,6 @@ type MemberFilter = 'all' | 'admin' | 'viewer';
 
 function roleLabel(role: string) {
   return ROLE_LABELS[role] ?? role;
-}
-
-function userInitial(name?: string | null, email?: string | null) {
-  const source = name?.trim() || email?.trim() || '?';
-  return source.charAt(0).toUpperCase();
 }
 
 function formatInviteExpiry(value: string | Date) {
@@ -341,9 +337,14 @@ export function TeamPage() {
                   return (
                     <DataTableRow key={member.id}>
                       <DataTableTd>
-                        <span className="db-cell__avatar">
-                          {userInitial(member.user?.name, member.user?.email)}
-                        </span>
+                        <UserAvatar
+                          name={member.user?.name}
+                          email={member.user?.email}
+                          image={member.user?.image}
+                          cacheKey={member.userId}
+                          className="db-cell__avatar"
+                          fallbackClassName="db-cell__avatar"
+                        />
                         <span className="db-cell__title">{displayName}</span>
                       </DataTableTd>
                       <DataTableTd>

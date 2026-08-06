@@ -44,6 +44,7 @@ export async function listOrganizationsForUser(userId: string) {
       id: organization.id,
       name: organization.name,
       slug: organization.slug,
+      logo: organization.logo,
       role: member.role,
     })
     .from(member)

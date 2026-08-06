@@ -48,7 +48,7 @@ export function SemanticViewYamlPanel({ viewName, canWrite }: SemanticViewYamlPa
     <div className="semantic-yaml-panel">
       <div className="semantic-yaml-panel__toolbar">
         <Button variant="outline" size="sm" type="button" onClick={() => navigator.clipboard.writeText(value)}>
-          Copy
+          Копировать
         </Button>
         {canWrite ? (
           <Button variant="outline" size="sm" type="button" onClick={handleReset}>

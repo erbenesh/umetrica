@@ -1,0 +1,68 @@
+cubes:
+  - name: Customers
+    title: "Клиенты"
+    sql: "SELECT * FROM public.customers"
+    measures:
+      - name: count
+        title: "Клиенты"
+        shortTitle: "Клиенты"
+        meta:
+          sellerpool:
+            title: "Количество клиентов"
+        type: count
+    dimensions:
+      - name: id
+        title: ID
+        sql: id
+        type: string
+        primary_key: true
+      - name: email
+        title: Email
+        sql: email
+        type: string
+      - name: city
+        title: "Город"
+        shortTitle: "Город"
+        meta:
+          sellerpool:
+            title: "Город клиента"
+        sql: city
+        type: string
+      - name: segment
+        title: "Сегмент"
+        shortTitle: "Сегмент"
+        meta:
+          sellerpool:
+            title: "Сегмент клиента"
+        sql: segment
+        type: string
+      - name: createdAt
+        title: "Регистрация"
+        shortTitle: "Регистрация"
+        meta:
+          sellerpool:
+            title: "Дата регистрации"
+        sql: created_at
+        type: time
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string
+    segments:
+      - name: vip
+        title: VIP
+        shortTitle: VIP
+        meta:
+          sellerpool:
+            title: "VIP-клиенты"
+        sql: "segment = 'vip'"
+    hierarchies:
+      - name: geo
+        title: "География"
+        shortTitle: "География"
+        meta:
+          sellerpool:
+            title: "География клиентов"
+        levels:
+          - segment
+          - city

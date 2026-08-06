@@ -60,18 +60,18 @@ export function SemanticViewPublishDialog({
         <CardHeader className="pb-2">
           <CardTitle>Опубликовать {viewName}</CardTitle>
           <p className="m-0 text-[13px] text-muted-foreground">
-            Черновик view → production · станет доступен в виджетах
+            Черновик → продакшен · станет доступно в виджетах
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
-              Подготовка diff...
+              Подготовка изменений…
             </div>
           ) : preview && preview.diff.length > 0 ? (
             <div className="diff-block">
-              <div className="diff-block__head">Изменения во view</div>
+              <div className="diff-block__head">Изменения в представлении</div>
               {preview.diff.map((row) => (
                 <div key={`${row.op}-${row.label}-${row.value}`} className="diff-row">
                   <span className={diffOpClass(row.op)}>{diffOpLabel(row.op)}</span>

@@ -11,20 +11,9 @@ export type MobileBackTarget = {
 };
 
 const ANCESTOR_TRAILS: Array<{ pattern: string; ancestors: NavCrumb[] }> = [
-  { pattern: '/semantic', ancestors: [{ href: '/settings', label: 'Настройки' }] },
   {
-    pattern: '/semantic/cubes/:cubeName',
-    ancestors: [
-      { href: '/settings', label: 'Настройки' },
-      { href: '/semantic', label: 'Семантика' },
-    ],
-  },
-  {
-    pattern: '/semantic/views/:viewName',
-    ancestors: [
-      { href: '/settings', label: 'Настройки' },
-      { href: '/semantic', label: 'Семантика' },
-    ],
+    pattern: '/semantic',
+    ancestors: [{ href: '/settings', label: 'Настройки' }],
   },
   { pattern: '/dashboards/:id', ancestors: [{ href: '/dashboards', label: 'Дашборды' }] },
   { pattern: '/insights/:id', ancestors: [{ href: '/insights', label: 'AI-инсайты' }] },

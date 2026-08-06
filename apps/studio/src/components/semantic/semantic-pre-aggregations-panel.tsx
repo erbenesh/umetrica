@@ -1,20 +1,28 @@
 import type { SemanticCubeDefinition, SemanticPreAggregation } from '@sellerpool/core';
 import { semanticMemberLabel } from '@sellerpool/core';
-import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 import { DocCallout } from '@/components/doc/doc-callout';
 import { FormField } from '@/components/doc/form-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import {
+  GRANULARITY_LABELS,
+  REFRESH_EVERY_LABELS,
+  REFRESH_EVERY_PRESETS,
+} from '@/lib/semantic-labels';
 
 interface SemanticPreAggregationsPanelProps {
   draft: SemanticCubeDefinition;
   canWrite: boolean;
+  selected?: string;
+  embedded?: boolean;
   onDraftChange: (draft: SemanticCubeDefinition) => void;
+  onSelect?: (id: string) => void;
 }
 
-const REFRESH_EVERY_PRESETS = ['', '10 second', '1 hour', '1 day', '1 week'] as const;
+const REFRESH_EVERY_PRESET_VALUES = REFRESH_EVERY_PRESETS;
 
 function nextPreAggregationName(existing: string[]) {
   let index = 1;
@@ -31,7 +39,10 @@ function toggleMember(list: string[], member: string) {
 export function SemanticPreAggregationsPanel({
   draft,
   canWrite,
+  selected,
+  embedded = false,
   onDraftChange,
+  onSelect,
 }: SemanticPreAggregationsPanelProps) {
   const preAggregations = draft.preAggregations ?? [];
   const measureNames = draft.measures.map((measure) => measure.name);
@@ -59,6 +70,7 @@ export function SemanticPreAggregationsPanel({
       dimensions: [],
     };
     onDraftChange({ ...draft, preAggregations: [...preAggregations, nextPreAggregation] });
+    onSelect?.(nextPreAggregation.id);
   };
 
   const removePreAggregation = (id: string) => {
@@ -69,40 +81,36 @@ export function SemanticPreAggregationsPanel({
   };
 
   return (
-    <div className="semantic-relationships-page">
-      <div className="semantic-panel max-w-3xl">
-        <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Pre-aggregations</h2>
-          <p className="semantic-panel__desc">
-            Rollup-таблицы для ускорения запросов. Cube материализует выбранные меры и измерения.
+    <div className={cn('semantic-relationships-page', embedded && 'semantic-relationships-page--embedded')}>
+      <div className="semantic-panel" data-tour="cube-rollups-panel">
+        {!embedded ? (
+          <div className="semantic-panel__head">
+            <h2 className="semantic-panel__title">Предагрегации</h2>
+            <p className="semantic-panel__desc">
+              Заранее посчитанная сводка — отдельная таблица с итогами, которую Cube обновляет по
+              расписанию
+            </p>
+          </div>
+        ) : (
+          <p className="semantic-panel__desc semantic-panel__desc--compact">
+            Заранее посчитанные сводки. Выберите на графе или добавьте ниже.
           </p>
-        </div>
+        )}
 
-        <DocCallout variant="info">
-          После publish Cube подхватывает <code className="text-xs">pre_aggregations</code> из YAML.
-          В dev <code className="text-xs">docker compose up -d</code> поднимает Cube Store и refresh
-          worker для фоновой сборки. Статус rollups — в{' '}
-          <a
-            className="inline-flex items-center gap-1 text-primary hover:underline"
-            href="http://localhost:4000"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Cube Playground
-            <ExternalLink size={12} />
-          </a>
-          . Если meta не обновилась:{' '}
-          <code className="text-xs">docker compose restart cube cube_refresh_worker</code>.
+        <DocCallout variant="info" className={embedded ? 'semantic-panel__callout--compact' : undefined}>
+          Без предагрегации виджет каждый раз считает из сырых данных в базе. С предагрегацией —
+          читает готовую сводку: «выручка по дням», «заказы по товарам» и т. п. Нужно, когда строк
+          миллионы и дашборд стал медленным. На старте обычно можно не настраивать.
         </DocCallout>
 
         {preAggregations.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Pre-aggregations пока нет.</p>
+          <p className="text-sm text-muted-foreground">Предагрегаций пока нет.</p>
         ) : (
           <div className="form-fields max-w-none">
             {preAggregations.map((preAgg) => {
               const refreshEvery = preAgg.refreshKey?.every ?? '';
-              const refreshPreset = REFRESH_EVERY_PRESETS.includes(
-                refreshEvery as (typeof REFRESH_EVERY_PRESETS)[number]
+              const refreshPreset = REFRESH_EVERY_PRESET_VALUES.includes(
+                refreshEvery as (typeof REFRESH_EVERY_PRESET_VALUES)[number]
               )
                 ? refreshEvery
                 : refreshEvery
@@ -110,7 +118,19 @@ export function SemanticPreAggregationsPanel({
                   : '';
 
               return (
-                <div key={preAgg.id} className="rounded-lg border border-border p-4">
+                <div
+                  key={preAgg.id}
+                  data-canvas-entity={preAgg.id}
+                  className={cn(
+                    'semantic-panel-entity rounded-lg border border-border p-4',
+                    selected === preAgg.id && 'is-active'
+                  )}
+                  onClick={(event) => {
+                    const target = event.target as HTMLElement;
+                    if (target.closest('button, input, select, textarea, summary, a, label')) return;
+                    onSelect?.(preAgg.id);
+                  }}
+                >
                   <div className="mb-3 flex items-center justify-between gap-2">
                     <span className="text-sm font-medium">{preAgg.name}</span>
                     {canWrite ? (
@@ -119,7 +139,7 @@ export function SemanticPreAggregationsPanel({
                         size="icon-sm"
                         type="button"
                         className="text-destructive"
-                        aria-label="Удалить pre-aggregation"
+                        aria-label="Удалить предагрегацию"
                         onClick={() => removePreAggregation(preAgg.id)}
                       >
                         <Trash2 size={14} />
@@ -139,7 +159,10 @@ export function SemanticPreAggregationsPanel({
                       />
                     </FormField>
 
-                    <FormField label="Меры">
+                    <FormField
+                      label="Показатели в сводке"
+                      hint="Какие цифры заранее посчитать и положить в таблицу-итог."
+                    >
                       <div className="flex flex-wrap gap-2">
                         {draft.measures.map((measure) => (
                           <label
@@ -168,7 +191,10 @@ export function SemanticPreAggregationsPanel({
                       </div>
                     </FormField>
 
-                    <FormField label="Измерения">
+                    <FormField
+                      label="Разрезы в сводке"
+                      hint="По чему группировать итоги: дата, товар, регион."
+                    >
                       <div className="flex flex-wrap gap-2">
                         {dimensionNames.length === 0 ? (
                           <span className="text-sm text-muted-foreground">Нет измерений</span>
@@ -201,7 +227,10 @@ export function SemanticPreAggregationsPanel({
                       </div>
                     </FormField>
 
-                    <FormField label="Time dimension">
+                    <FormField
+                      label="Временной разрез"
+                      hint="Если в сводке нужна динамика по датам — выберите поле даты."
+                    >
                       <select
                         className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
                         value={preAgg.timeDimension ?? ''}
@@ -214,7 +243,7 @@ export function SemanticPreAggregationsPanel({
                           });
                         }}
                       >
-                        <option value="">— без time dimension —</option>
+                        <option value="">— без временного измерения —</option>
                         {timeDimensions.map((dimension) => (
                           <option key={dimension.id} value={dimension.name}>
                             {semanticMemberLabel(dimension)}
@@ -224,7 +253,7 @@ export function SemanticPreAggregationsPanel({
                     </FormField>
 
                     {preAgg.timeDimension ? (
-                      <FormField label="Granularity">
+                      <FormField label="Шаг по времени" hint="День, неделя или месяц в готовой сводке.">
                         <select
                           className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
                           value={preAgg.granularity ?? 'day'}
@@ -235,15 +264,19 @@ export function SemanticPreAggregationsPanel({
                             })
                           }
                         >
-                          <option value="day">day</option>
-                          <option value="week">week</option>
-                          <option value="month">month</option>
-                          <option value="year">year</option>
+                          {Object.entries(GRANULARITY_LABELS).map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
                         </select>
                       </FormField>
                     ) : null}
 
-                    <FormField label="Refresh key · every">
+                    <FormField
+                      label="Как часто пересчитывать"
+                      hint="Когда Cube заново строит таблицу-итог из свежих данных."
+                    >
                       <div className="flex flex-col gap-2">
                         <select
                           className="flex h-8 w-full rounded-md border border-input bg-card px-2.5 text-[13px]"
@@ -275,12 +308,12 @@ export function SemanticPreAggregationsPanel({
                             });
                           }}
                         >
-                          <option value="">По умолчанию Cube</option>
-                          <option value="10 second">10 second</option>
-                          <option value="1 hour">1 hour</option>
-                          <option value="1 day">1 day</option>
-                          <option value="1 week">1 week</option>
-                          <option value="__custom__">Своё значение</option>
+                          <option value="">{REFRESH_EVERY_LABELS['']}</option>
+                          <option value="10 second">{REFRESH_EVERY_LABELS['10 second']}</option>
+                          <option value="1 hour">{REFRESH_EVERY_LABELS['1 hour']}</option>
+                          <option value="1 day">{REFRESH_EVERY_LABELS['1 day']}</option>
+                          <option value="1 week">{REFRESH_EVERY_LABELS['1 week']}</option>
+                          <option value="__custom__">{REFRESH_EVERY_LABELS.__custom__}</option>
                         </select>
                         {refreshPreset === '__custom__' ? (
                           <Input
@@ -300,7 +333,7 @@ export function SemanticPreAggregationsPanel({
                       </div>
                     </FormField>
 
-                    <FormField label="Refresh key · SQL (опционально)">
+                    <FormField label="SQL-ключ обновления (опционально)">
                       <textarea
                         className="flex min-h-[56px] w-full rounded-md border border-input bg-card px-2.5 py-2 font-mono text-[12px]"
                         value={preAgg.refreshKey?.sql ?? ''}
@@ -331,7 +364,7 @@ export function SemanticPreAggregationsPanel({
         {canWrite ? (
           <Button type="button" size="sm" disabled={measureNames.length === 0} onClick={addPreAggregation}>
             <Plus size={14} />
-            Добавить pre-aggregation
+            Добавить предагрегацию
           </Button>
         ) : null}
       </div>

@@ -8,15 +8,12 @@ import { RevenueByStatusChart } from '@/components/cube/revenue-chart';
 import { DocBlock } from '@/components/doc/doc-block';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
-import { WorkspaceStatusCard } from '@/components/workspace/workspace-status-card';
 import { Button } from '@/components/ui/button';
-import { useBilling } from '@/hooks/use-billing';
 import { useConnections } from '@/hooks/use-connections';
 import { useCanWriteDashboards, useMe } from '@/hooks/use-me';
-import { usePrivacySettings } from '@/hooks/use-privacy';
 import { useSession } from '@/lib/auth-client';
 import { connectionHomeLead } from '@/lib/connection-format';
-import { buildHomeDocProps, buildWorkspaceStatusItems } from '@/lib/workspace-status';
+import { buildHomeDocProps } from '@/lib/workspace-status';
 
 const LAST_30_DAYS_QUERY = {
   measures: ['Orders.revenue', 'Orders.count'],
@@ -28,16 +25,6 @@ const LAST_30_DAYS_QUERY = {
   ],
 };
 
-const PREVIOUS_30_DAYS_QUERY = {
-  measures: ['Orders.revenue'],
-  timeDimensions: [
-    {
-      dimension: 'Orders.createdAt',
-      dateRange: 'last 60 days',
-    },
-  ],
-};
-
 export function HomePage() {
   const location = useLocation();
   const [importFlash, setImportFlash] = useState<string | null>(null);
@@ -45,35 +32,18 @@ export function HomePage() {
   const { data: me } = useMe();
   const canManage = useCanWriteDashboards();
   const { data: connections } = useConnections();
-  const { data: privacy } = usePrivacySettings();
-  const { data: billing } = useBilling();
   const userName = session?.user?.name;
   const orgName = me?.organization?.name;
   const lead = connectionHomeLead(connections?.items ?? []);
   const isDemo = me?.dataMode !== 'live';
-
-  const statusItems = useMemo(
-    () =>
-      buildWorkspaceStatusItems({
-        dataMode: me?.dataMode,
-        connections,
-        privacy,
-        billing: billing ?? null,
-        capabilities: me?.trustCapabilities,
-        canManage,
-      }),
-    [me?.dataMode, me?.trustCapabilities, connections, privacy, billing, canManage]
-  );
 
   const docProps = useMemo(
     () =>
       buildHomeDocProps({
         orgName: orgName ?? undefined,
         dataMode: me?.dataMode,
-        billing: billing ?? null,
-        canManage,
       }),
-    [orgName, me?.dataMode, billing, canManage]
+    [orgName, me?.dataMode]
   );
 
   useEffect(() => {
@@ -96,16 +66,11 @@ export function HomePage() {
         mobileSubtitle={orgName}
         props={docProps}
       >
-        <DocBlock title="Статус workspace">
-          <WorkspaceStatusCard items={statusItems} />
-        </DocBlock>
-
         {isDemo && canManage ? (
           <DocCallout variant="info">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="m-0">
-                Сейчас демо-данные. Подключите файл, API или БД — появятся свои продажи и инсайты по
-                кабинету.
+              <p className="m-0 text-sm">
+                Сейчас показаны демо-продажи. Подключите кабинет — увидите свои цифры.
               </p>
               <Link to="/onboarding/connect">
                 <Button size="sm" type="button">
@@ -115,33 +80,21 @@ export function HomePage() {
             </div>
           </DocCallout>
         ) : null}
-        {isDemo && !canManage ? (
-          <DocCallout variant="info">
-            Сейчас демо-данные. Подключение источников доступно владельцу и администратору компании.
-          </DocCallout>
-        ) : null}
-        {importFlash ? <DocCallout>{importFlash}</DocCallout> : null}
+        {importFlash ? <DocCallout variant="info">{importFlash}</DocCallout> : null}
 
-        <DocBlock title="Сводка" hint="· KPI">
+        <DocBlock title="Сводка за 30 дней">
           <StatStrip>
             <MetricKpi
               query={LAST_30_DAYS_QUERY}
-              title="Выручка (30д)"
+              title="Выручка"
               measureKey="Orders.revenue"
               format="currency"
             />
             <MetricKpi
               query={LAST_30_DAYS_QUERY}
-              title="Заказы (30д)"
+              title="Заказы"
               measureKey="Orders.count"
               format="number"
-            />
-            <MetricKpi
-              query={PREVIOUS_30_DAYS_QUERY}
-              title="Выручка (60д)"
-              description="Расширенное окно сравнения"
-              measureKey="Orders.revenue"
-              format="currency"
             />
           </StatStrip>
         </DocBlock>

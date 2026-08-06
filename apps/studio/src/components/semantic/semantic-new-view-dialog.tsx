@@ -47,9 +47,9 @@ export function SemanticNewViewDialog({ open, onClose, cubes }: SemanticNewViewD
     try {
       const view = await createView.mutateAsync({ title: title.trim(), baseCube });
       onClose();
-      navigate(`/semantic/views/${view.name}`);
+      navigate(`/semantic?view=${encodeURIComponent(view.name)}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не удалось создать view');
+      setError(err instanceof Error ? err.message : 'Не удалось создать представление');
     }
   };
 
@@ -57,9 +57,9 @@ export function SemanticNewViewDialog({ open, onClose, cubes }: SemanticNewViewD
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
       <Card className="w-full max-w-lg rounded-b-none sm:rounded-b-lg">
         <CardHeader className="pb-2">
-          <CardTitle>Новый view</CardTitle>
+          <CardTitle>Новое представление</CardTitle>
           <p className="m-0 text-[13px] text-muted-foreground">
-            View — curated dataset поверх join paths между кубами
+            Представление — набор полей поверх связей между кубами
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

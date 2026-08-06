@@ -44,7 +44,7 @@ function MenuItemContent({ icon: Icon, children }: Pick<MenuItemProps, 'icon' | 
   return (
     <>
       {Icon ? <Icon className="menu-item__icon" strokeWidth={1.75} /> : null}
-      {children}
+      <span className="menu-item__label">{children}</span>
     </>
   );
 }

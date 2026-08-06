@@ -1,6 +1,8 @@
 import { Building2, ChevronDown, Loader2, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { OrgLogo } from '@/components/user-avatar';
+
 import { Dropdown, DropdownDivider, DropdownMenu, DropdownTrigger } from '@/components/ui/dropdown';
 import { MenuItem } from '@/components/ui/menu-item';
 import { useMe } from '@/hooks/use-me';
@@ -45,7 +47,17 @@ export function OrgSwitcher() {
     <Dropdown block>
       <DropdownTrigger className="workspace-switcher" disabled={switchOrg.isPending}>
         <span className="workspace-switcher__icon">
-          <Building2 className="size-[18px]" strokeWidth={1.75} />
+          {activeOrg.logo ? (
+            <OrgLogo
+              name={activeOrg.name}
+              logo={activeOrg.logo}
+              cacheKey={activeOrg.id}
+              className="size-[18px] rounded-[4px]"
+              fallbackClassName="workspace-switcher__icon-fallback"
+            />
+          ) : (
+            <Building2 className="size-[18px]" strokeWidth={1.75} />
+          )}
         </span>
         <span className="workspace-switcher__body">
           <span className="workspace-switcher__name">{activeOrg.name}</span>

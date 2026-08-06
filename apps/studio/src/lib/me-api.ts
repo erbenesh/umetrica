@@ -8,6 +8,7 @@ export interface MeResponse {
     name: string;
     email: string;
     emailVerified: boolean;
+    image?: string | null;
   };
   session: {
     id: string;
@@ -17,6 +18,7 @@ export interface MeResponse {
   organization?: {
     id: string;
     name: string;
+    logo?: string | null;
   };
   dataMode?: OrgDataMode;
   trustCapabilities?: TrustCapabilities;

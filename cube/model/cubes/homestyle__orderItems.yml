@@ -1,0 +1,59 @@
+cubes:
+  - name: OrderItems
+    title: "Позиции заказов"
+    shortTitle: "Позиции"
+    sql: "SELECT * FROM public.order_items"
+    joins:
+      - name: Orders
+        relationship: belongsTo
+        sql: "${OrderItems}.order_id = ${Orders}.id"
+      - name: Products
+        relationship: belongsTo
+        sql: "${OrderItems}.product_id = ${Products}.id"
+    measures:
+      - name: count
+        title: "Строки"
+        shortTitle: "Строки"
+        meta:
+          sellerpool:
+            title: "Количество строк"
+        type: count
+      - name: quantity
+        title: "Единицы"
+        shortTitle: "Единицы"
+        meta:
+          sellerpool:
+            title: "Количество единиц"
+        sql: quantity
+        type: sum
+      - name: lineRevenue
+        title: "Выручка"
+        shortTitle: "Выручка"
+        meta:
+          sellerpool:
+            title: "Выручка по строкам"
+        sql: amount
+        type: sum
+        format: currency
+    dimensions:
+      - name: id
+        title: ID
+        sql: id
+        type: string
+        primary_key: true
+      - name: orderId
+        title: "Заказ"
+        sql: order_id
+        type: string
+      - name: productId
+        title: "Товар"
+        sql: product_id
+        type: string
+      - name: createdAt
+        title: "Дата"
+        sql: created_at
+        type: time
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string

@@ -36,6 +36,7 @@ import { registerAuthRoutes } from './routes/register.js';
 import { registerAuditRoutes } from './routes/audit.js';
 import { registerEnterpriseLlmRoutes } from './routes/enterprise-llm.js';
 import { registerSemanticRoutes } from './routes/semantic.js';
+import { registerProfileRoutes } from './routes/profile.js';
 import { registerSsoRoutes } from './routes/sso.js';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -193,7 +194,7 @@ app.get('/api/me', async (request, reply) => {
   const activeOrganizationId = await resolveActiveOrganizationId(request);
 
   let role: string | undefined;
-  let activeOrganization: { id: string; name: string } | undefined;
+  let activeOrganization: { id: string; name: string; logo: string | null } | undefined;
   let dataMode: OrgDataMode | undefined;
   let trustCapabilities: TrustCapabilities | undefined;
 
@@ -202,6 +203,7 @@ app.get('/api/me', async (request, reply) => {
       .select({
         role: member.role,
         name: organization.name,
+        logo: organization.logo,
       })
       .from(member)
       .innerJoin(organization, eq(member.organizationId, organization.id))
@@ -215,6 +217,7 @@ app.get('/api/me', async (request, reply) => {
       activeOrganization = {
         id: activeOrganizationId,
         name: membership.name,
+        logo: membership.logo,
       };
 
       const policy = await getOrgPolicyContext(activeOrganizationId);
@@ -246,6 +249,7 @@ await registerPrivacyRoutes(app);
 await registerSemanticRoutes(app);
 await registerAuditRoutes(app);
 await registerSsoRoutes(app);
+await registerProfileRoutes(app);
 await registerEnterpriseLlmRoutes(app);
 
 try {

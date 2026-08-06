@@ -7,9 +7,10 @@ import { useApplySemanticCubeYaml, useSemanticCubeYaml } from '@/hooks/use-seman
 interface SemanticYamlPanelProps {
   cubeName: string;
   canWrite: boolean;
+  embedded?: boolean;
 }
 
-export function SemanticYamlPanel({ cubeName, canWrite }: SemanticYamlPanelProps) {
+export function SemanticYamlPanel({ cubeName, canWrite, embedded = false }: SemanticYamlPanelProps) {
   const { data, isLoading } = useSemanticCubeYaml(cubeName, 'draft', true);
   const applyYaml = useApplySemanticCubeYaml(cubeName);
   const [value, setValue] = useState('');
@@ -49,10 +50,10 @@ export function SemanticYamlPanel({ cubeName, canWrite }: SemanticYamlPanelProps
   }
 
   return (
-    <div className="semantic-yaml-panel">
+    <div className={embedded ? 'semantic-yaml-panel semantic-yaml-panel--embedded' : 'semantic-yaml-panel'} data-tour="cube-yaml-panel">
       <div className="semantic-yaml-panel__toolbar">
         <Button variant="outline" size="sm" type="button" onClick={handleCopy}>
-          Copy
+          Копировать
         </Button>
         {canWrite ? (
           <Button variant="outline" size="sm" type="button" onClick={handleReset}>

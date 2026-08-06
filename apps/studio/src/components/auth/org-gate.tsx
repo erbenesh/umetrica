@@ -3,10 +3,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { organizationsQueryKey, useOrganizations } from '@/hooks/use-organizations';
-import { meQueryKey } from '@/hooks/use-me';
+import { useOrganizations } from '@/hooks/use-organizations';
 import { useUserInvitations } from '@/hooks/use-team';
-import { completeFounderSetup } from '@/lib/register-api';
+import { runFounderAutoSetup } from '@/lib/founder-flow';
 
 const ORG_OPTIONAL_PATHS = ['/onboarding', '/team', '/verify-email'];
 
@@ -18,13 +17,7 @@ export function OrgGate() {
   useEffect(() => {
     let active = true;
 
-    void completeFounderSetup()
-      .then(() =>
-        Promise.all([
-          queryClient.invalidateQueries({ queryKey: organizationsQueryKey }),
-          queryClient.invalidateQueries({ queryKey: meQueryKey }),
-        ]),
-      )
+    void runFounderAutoSetup(queryClient)
       .finally(() => {
         if (active) setFounderSetupReady(true);
       });

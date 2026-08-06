@@ -14,6 +14,7 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         password: z.string().min(8),
         name: z.string().min(2),
         companyName: z.string().min(2).max(100),
+        marketCategory: z.string().min(1).max(120).optional(),
       })
       .safeParse(request.body);
 
@@ -32,17 +33,14 @@ export async function registerAuthRoutes(app: FastifyInstance) {
     const response = await auth.handler(signUpRequest);
 
     if (response.ok) {
-      await savePendingFounderCompany(body.email, body.companyName);
+      await savePendingFounderCompany(body.email, body.companyName, body.marketCategory);
     }
 
     return sendAuthResponse(reply, response);
   });
 
   app.post('/api/founder/complete-setup', async (request, reply) => {
-    const company = await completeFounderSetup(request);
-    if (!company) {
-      return reply.status(204).send();
-    }
-    return { company };
+    const result = await completeFounderSetup(request);
+    return reply.send(result);
   });
 }

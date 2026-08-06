@@ -103,10 +103,11 @@ export const invitation = pgTable('invitation', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-/** Company name saved at signup; applied after email verification + first login */
+/** Company name saved at signup; applied after email verification */
 export const pendingFounderCompany = pgTable('pending_founder_company', {
   email: text('email').primaryKey(),
   companyName: text('company_name').notNull(),
+  marketCategory: text('market_category'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

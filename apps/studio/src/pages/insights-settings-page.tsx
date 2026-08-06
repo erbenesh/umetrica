@@ -22,7 +22,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useInsightSettings, useUpdateInsightSettings } from '@/hooks/use-insights';
 import { useCanWriteDashboards, useMe } from '@/hooks/use-me';
 import { usePrivacySettings } from '@/hooks/use-privacy';
-import { BENCHMARK_WARMUP_DAYS, formatParticipationDate } from '@/lib/benchmark-participation';
+import { formatParticipationDate } from '@/lib/benchmark-participation';
 import type { InsightSettings } from '@sellerpool/core';
 
 export function InsightsSettingsPage() {
@@ -59,7 +59,7 @@ export function InsightsSettingsPage() {
   return (
     <DocPage
       title="Настройки AI-инсайтов"
-      lead="Автопроверки и метрики для мониторинга · owner/admin"
+      lead="Расписание проверок и источники для ленты"
       icon={Sparkles}
       back="auto"
       mobileTitle="Настройки AI"
@@ -83,7 +83,7 @@ export function InsightsSettingsPage() {
 
       {form ? (
         <>
-          <DocBlock title="Типы инсайтов">
+          <DocBlock title="Источники в ленте">
             <div className="space-y-2">
               <CheckboxRow>
                 <input
@@ -141,33 +141,22 @@ export function InsightsSettingsPage() {
                   }
                 />
                 <span>
-                  <InsightSourceBadge source="benchmark" /> — сравнение с пулом селлеров (при opt-in)
+                  <InsightSourceBadge source="benchmark" /> — сравнение с сегментом
                 </span>
               </CheckboxRow>
-              <p className="text-xs text-muted-foreground">
-                {!privacy?.benchmarkOptIn ? (
-                  <>
-                    Включите «Получать и делиться» в{' '}
-                    <Link to="/settings/privacy" className="text-primary hover:underline">
-                      конфиденциальности
-                    </Link>{' '}
-                    — без участия в пуле бенчмарки недоступны.
-                  </>
-                ) : !privacy.benchmarkReceiving && privacy.benchmarkWarmupEndsAt ? (
-                  <>
-                    Прогрев до {formatParticipationDate(privacy.benchmarkWarmupEndsAt)} (
-                    {BENCHMARK_WARMUP_DAYS} дн.) — агрегаты уже в пуле, инсайты скоро.
-                  </>
-                ) : (
-                  <>
-                    Источник синхронизирован с участием в{' '}
-                    <Link to="/settings/privacy" className="text-primary hover:underline">
-                      бенчмарк-пуле
-                    </Link>
-                    .
-                  </>
-                )}
-              </p>
+              {!privacy?.benchmarkOptIn ? (
+                <p className="text-xs text-muted-foreground">
+                  Бенчмарки: включите в{' '}
+                  <Link to="/settings/privacy" className="text-primary hover:underline">
+                    настройках данных
+                  </Link>
+                  .
+                </p>
+              ) : !privacy.benchmarkReceiving && privacy.benchmarkWarmupEndsAt ? (
+                <p className="text-xs text-muted-foreground">
+                  Прогрев бенчмарков до {formatParticipationDate(privacy.benchmarkWarmupEndsAt)}.
+                </p>
+              ) : null}
             </div>
           </DocBlock>
 
@@ -246,15 +235,6 @@ export function InsightsSettingsPage() {
                 </Button>
               </Link>
             </FormActions>
-            <p className="mt-3 text-[13px] text-muted-foreground">
-              <Link to="/insights/history" className="text-primary hover:underline">
-                История прогонов →
-              </Link>{' '}
-              ·{' '}
-              <Link to="/settings/billing" className="text-primary hover:underline">
-                AI-кредиты
-              </Link>
-            </p>
           </DocBlock>
         </>
       ) : null}

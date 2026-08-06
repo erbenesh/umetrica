@@ -5,6 +5,7 @@ export interface OrganizationItem {
   name: string;
   slug: string;
   role: string;
+  logo?: string | null;
 }
 
 export interface OrganizationsResponse {

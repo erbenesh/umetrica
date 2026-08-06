@@ -47,8 +47,6 @@ export function InsightFeedItem({ insight }: { insight: Insight }) {
             hour: '2-digit',
             minute: '2-digit',
           })}
-          {' · '}
-          {severityLabels[anomaly.severity]} значимость
         </p>
       </div>
       <div className="flex flex-wrap gap-1.5 self-start">

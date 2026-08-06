@@ -1,0 +1,100 @@
+cubes:
+  - name: Orders
+    title: "Заказы"
+    sql: "SELECT * FROM public.orders"
+    joins:
+      - name: Customers
+        relationship: belongsTo
+        sql: "${Orders}.customer_id = ${Customers}.id"
+    measures:
+      - name: revenue
+        title: "Выручка"
+        shortTitle: "Выручка"
+        meta:
+          sellerpool:
+            title: "Выручка по заказам"
+        sql: amount
+        type: sum
+        format: currency
+      - name: count
+        title: "Заказы"
+        shortTitle: "Заказы"
+        meta:
+          sellerpool:
+            title: "Количество заказов"
+        type: count
+      - name: avgOrder
+        title: "Ср. чек"
+        shortTitle: "Ср. чек"
+        meta:
+          sellerpool:
+            title: "Средний чек"
+        sql: amount
+        type: avg
+        format: currency
+    dimensions:
+      - name: id
+        title: ID
+        sql: id
+        type: string
+        primary_key: true
+      - name: status
+        title: "Статус"
+        shortTitle: "Статус"
+        meta:
+          sellerpool:
+            title: "Статус заказа"
+        sql: status
+        type: string
+      - name: createdAt
+        title: "Дата"
+        shortTitle: "Дата"
+        meta:
+          sellerpool:
+            title: "Дата заказа"
+        sql: created_at
+        type: time
+      - name: customerId
+        title: "Клиент"
+        sql: customer_id
+        type: string
+      - name: tenantId
+        title: tenantId
+        sql: tenant_id
+        type: string
+    segments:
+      - name: completed
+        title: "Завершённые"
+        shortTitle: "Завершённые"
+        meta:
+          sellerpool:
+            title: "Завершённые заказы"
+        sql: "status = 'completed'"
+      - name: pending
+        title: "В обработке"
+        shortTitle: "В обработке"
+        meta:
+          sellerpool:
+            title: "Заказы в обработке"
+        sql: "status = 'pending'"
+    hierarchies:
+      - name: status_time
+        title: "Статус → дата"
+        shortTitle: "Статус → дата"
+        meta:
+          sellerpool:
+            title: "Статус и дата заказа"
+        levels:
+          - status
+          - createdAt
+    pre_aggregations:
+      - name: orders_by_day
+        measures:
+          - count
+          - revenue
+        dimensions:
+          - status
+        time_dimension: createdAt
+        granularity: day
+        refresh_key:
+          every: "1 hour"

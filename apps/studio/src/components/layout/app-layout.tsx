@@ -1,8 +1,9 @@
-import { Home, LayoutDashboard, LogOut, Settings, Sparkles, Users } from 'lucide-react';
+import { Home, Layers, LayoutDashboard, LogOut, Settings, Sparkles, Users } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
 import { EmailVerificationBanner } from '@/components/auth/email-verification-banner';
 import { OrgSwitcher } from '@/components/layout/org-switcher';
+import { UserAvatar } from '@/components/user-avatar';
 import { useMe } from '@/hooks/use-me';
 import { signOut } from '@/lib/auth-client';
 import { BRAND_MARK, BRAND_NAME } from '@/lib/brand';
@@ -19,18 +20,16 @@ const navItems = [
   { to: '/', label: 'Главная', icon: Home, end: true },
   { to: '/insights', label: 'AI-инсайты', icon: Sparkles },
   { to: '/dashboards', label: 'Дашборды', icon: LayoutDashboard },
+  { to: '/semantic', label: 'Семантика', icon: Layers },
   { to: '/team', label: 'Команда', icon: Users },
   { to: '/settings', label: 'Настройки', icon: Settings },
 ];
 
+const tabNavItems = navItems.filter((item) => item.to !== '/settings');
+
 function roleLabel(role?: string) {
   if (!role) return 'Участник';
   return ROLE_LABELS[role] ?? role;
-}
-
-function userInitial(name?: string, email?: string) {
-  const source = name?.trim() || email?.trim() || '?';
-  return source.charAt(0).toUpperCase();
 }
 
 function SidebarNavItem({
@@ -82,7 +81,14 @@ export function DesktopSidebar() {
 
       <div className="sidebar__footer">
         <div className="sidebar-user">
-          <span className="sidebar-user__avatar">{userInitial(userName, userEmail)}</span>
+          <UserAvatar
+            name={userName}
+            email={userEmail}
+            image={me?.user?.image}
+            cacheKey={me?.user?.id}
+            className="sidebar-user__avatar"
+            fallbackClassName="sidebar-user__avatar"
+          />
           <div className="sidebar-user__meta">
             <span className="sidebar-user__name">{userName}</span>
             <span className="sidebar-user__role">{roleLabel(me?.role)}</span>
@@ -105,7 +111,7 @@ export function MobileNav() {
   return (
     <nav className="tabbar" aria-label="Основная навигация">
       <div className="tabbar__inner">
-        {navItems.map((item) => (
+        {tabNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

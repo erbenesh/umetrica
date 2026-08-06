@@ -66,7 +66,7 @@ export function connectionHomeLead(items: Connection[]) {
   const api = items.find((item) => item.method === 'api' && item.kind === 'marketplace');
   const source = csv ?? api;
 
-  if (!source) return 'Продажи за последние 30 дней · данные из Cube.js';
+  if (!source) return 'Продажи за последние 30 дней · демо-данные';
 
   const provider = connectionProviderLabel(source.provider);
   const method = source.method === 'api' ? 'API' : 'CSV';

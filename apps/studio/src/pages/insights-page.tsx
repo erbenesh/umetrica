@@ -8,16 +8,12 @@ import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
 import { InsightFeedFilters } from '@/components/doc/insight-feed-filters';
 import { InsightFeedItem } from '@/components/insights/insight-feed-item';
-import { WorkspaceStatusCard } from '@/components/workspace/workspace-status-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useBilling } from '@/hooks/use-billing';
-import { useConnections } from '@/hooks/use-connections';
 import { useGenerateInsight, useInsights } from '@/hooks/use-insights';
 import { useCanWriteDashboards, useMe } from '@/hooks/use-me';
-import { usePrivacySettings } from '@/hooks/use-privacy';
-import { connectionCabinetLabel } from '@/lib/connection-format';
-import { buildWorkspaceStatusItems } from '@/lib/workspace-status';
+import { buildInsightsDocProps } from '@/lib/workspace-status';
 
 function FeedEmptyState({
   title,
@@ -44,8 +40,6 @@ function FeedEmptyState({
 export function InsightsPage() {
   const { data: me } = useMe();
   const canManage = useCanWriteDashboards();
-  const { data: connections } = useConnections();
-  const { data: privacy } = usePrivacySettings();
   const { data: billing } = useBilling();
   const { data, isLoading, error } = useInsights();
   const generate = useGenerateInsight();
@@ -53,26 +47,21 @@ export function InsightsPage() {
   const [sourceFilter, setSourceFilter] = useState<'all' | InsightSource>('all');
   const isDemo = me?.dataMode !== 'live';
 
-  const statusItems = useMemo(
-    () =>
-      buildWorkspaceStatusItems({
-        dataMode: me?.dataMode,
-        connections,
-        privacy,
-        billing: billing ?? null,
-        capabilities: me?.trustCapabilities,
-        canManage,
-      }),
-    [me?.dataMode, me?.trustCapabilities, connections, privacy, billing, canManage]
-  );
-
-  const orgName = me?.organization?.name ?? '—';
   const allItems = data?.items ?? [];
   const filteredItems =
     sourceFilter === 'all'
       ? allItems
       : allItems.filter((insight) => (insight.source ?? 'tenant') === sourceFilter);
-  const newCount = allItems.length;
+
+  const docProps = useMemo(
+    () =>
+      buildInsightsDocProps({
+        itemCount: allItems.length,
+        billing: billing ?? null,
+        canManage,
+      }),
+    [allItems.length, billing, canManage]
+  );
 
   const handleGenerate = async () => {
     setStatusMessage(null);
@@ -83,10 +72,10 @@ export function InsightsPage() {
         return;
       }
       if (result.generated && result.count) {
-        setStatusMessage(`Создано инсайтов: ${result.count}`);
+        setStatusMessage(`Добавлено инсайтов: ${result.count}`);
       }
     } catch (err) {
-      setStatusMessage(err instanceof Error ? err.message : 'Не удалось сгенерировать инсайт');
+      setStatusMessage(err instanceof Error ? err.message : 'Не удалось обновить ленту');
     }
   };
 
@@ -96,7 +85,7 @@ export function InsightsPage() {
         <Link to="/insights/settings">
           <Button variant="ghost" size="sm" type="button">
             <SlidersHorizontal className="size-3.5" />
-            Настройки AI
+            Настройки
           </Button>
         </Link>
       ) : null}
@@ -106,7 +95,7 @@ export function InsightsPage() {
         ) : (
           <RefreshCw className="size-3.5" />
         )}
-        Проверить
+        Обновить
       </Button>
     </>
   );
@@ -114,7 +103,7 @@ export function InsightsPage() {
   const mobileActions = (
     <>
       {canManage ? (
-        <Link to="/insights/settings" aria-label="Настройки AI">
+        <Link to="/insights/settings" aria-label="Настройки инсайтов">
           <Button variant="ghost" size="icon-sm" type="button">
             <SlidersHorizontal size={16} />
           </Button>
@@ -133,30 +122,17 @@ export function InsightsPage() {
   return (
     <DocPage
       title="AI-инсайты"
-      lead="Ваши данные, рынок и бенчмарки — в одной ленте"
+      lead="Заметные изменения в продажах и тренды вашей категории"
       icon={Sparkles}
       actions={desktopActions}
       mobileActions={mobileActions}
-      props={[
-        { label: 'Компания', value: orgName },
-        { label: 'Новых', value: String(newCount) },
-        {
-          label: 'AI-кредиты',
-          value: billing ? `${billing.creditsUsed} / ${billing.creditsTotal}` : '— / —',
-        },
-        { label: 'Кабинет', value: connectionCabinetLabel(connections?.items ?? []) },
-        { label: 'История', value: '→', href: '/insights/history' },
-      ]}
+      props={docProps}
     >
-      <DocBlock title="Статус">
-        <WorkspaceStatusCard items={statusItems} />
-      </DocBlock>
-
-      {isDemo && canManage ? (
+      {isDemo && canManage && filteredItems.length === 0 && !isLoading ? (
         <DocCallout variant="info">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="m-0">
-              Инсайты по кабинету требуют своих данных. Рыночные сигналы доступны уже сейчас.
+            <p className="m-0 text-sm">
+              Рыночные сигналы уже доступны. Для инсайтов по кабинету подключите данные.
             </p>
             <Link to="/onboarding/connect">
               <Button size="sm" type="button">
@@ -167,26 +143,8 @@ export function InsightsPage() {
         </DocCallout>
       ) : null}
 
-      <DocCallout>
-        Рыночные инсайты — без API. Бенчмарки — при подключении своих данных и участии в пуле:{' '}
-        <Link to="/settings/privacy" className="font-medium text-primary hover:underline">
-          получать и делиться
-        </Link>
-        .
-        {canManage ? (
-          <>
-            {' '}
-            <Link to="/settings/billing" className="font-medium text-primary hover:underline">
-              Биллинг →
-            </Link>
-          </>
-        ) : null}
-      </DocCallout>
-
       <DocBlock>
         <InsightFeedFilters value={sourceFilter} onChange={setSourceFilter} />
-
-        <h2 className="m-0 mb-1 text-sm font-semibold text-foreground">Лента</h2>
 
         {statusMessage ? (
           <Card className="mb-3 border-border">
@@ -198,7 +156,7 @@ export function InsightsPage() {
           <Card className="mb-3 border-border">
             <CardContent className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" />
-              Загрузка инсайтов...
+              Загрузка...
             </CardContent>
           </Card>
         ) : null}
@@ -217,26 +175,24 @@ export function InsightsPage() {
               <FeedEmptyState
                 title={
                   sourceFilter === 'market'
-                    ? 'Пока нет рыночных инсайтов'
+                    ? 'Рыночных инсайтов пока нет'
                     : sourceFilter === 'benchmark'
-                      ? 'Пока нет бенчмарков'
-                      : 'Пока нет инсайтов по вашим данным'
+                      ? 'Бенчмарков пока нет'
+                      : 'Инсайтов пока нет'
                 }
                 body={
                   sourceFilter === 'market'
-                    ? 'Нажмите «Проверить» — система добавит сигнал по выбранной категории (без API и без кредитов).'
+                    ? 'Нажмите «Обновить» — появится сигнал по вашей категории.'
                     : sourceFilter === 'benchmark'
-                      ? 'Включите участие в бенчмарк-пуле в настройках конфиденциальности и дождитесь окончания прогрева — затем нажмите «Проверить».'
-                      : 'Нажмите «Проверить» — система сравнит выручку и число заказов за 7 дней с предыдущим периодом.'
+                      ? 'Включите бенчмарки в настройках и нажмите «Обновить».'
+                      : 'Нажмите «Обновить» — проверим продажи за последнюю неделю.'
                 }
                 action={
                   sourceFilter === 'benchmark'
-                    ? { label: 'Бенчмарк-пул', href: '/settings/privacy' }
-                    : sourceFilter === 'market'
-                      ? { label: 'Категория для рынка', href: '/settings/privacy' }
-                      : canManage
-                        ? { label: 'Подключить данные', href: '/onboarding/connect' }
-                        : undefined
+                    ? { label: 'Настройки бенчмарков', href: '/settings/privacy' }
+                    : sourceFilter === 'tenant' && canManage && isDemo
+                      ? { label: 'Подключить данные', href: '/onboarding/connect' }
+                      : undefined
                 }
               />
             </div>
@@ -245,6 +201,14 @@ export function InsightsPage() {
             <InsightFeedItem key={insight.id} insight={insight} />
           ))}
         </div>
+
+        {allItems.length > 0 ? (
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            <Link to="/insights/history" className="text-primary hover:underline">
+              История инсайтов
+            </Link>
+          </p>
+        ) : null}
       </DocBlock>
     </DocPage>
   );

@@ -1,0 +1,21 @@
+views:
+  - name: SalesOverview
+    title: "Обзор продаж"
+    shortTitle: "Продажи"
+    description: "Позиции заказов с мерами заказов и товаров."
+    cubes:
+      - join_path: OrderItems
+        includes:
+          - count
+          - quantity
+          - lineRevenue
+          - createdAt
+      - join_path: "OrderItems.Orders"
+        includes:
+          - status
+          - revenue
+      - join_path: "OrderItems.Products"
+        includes:
+          - category
+          - name
+          - avgPrice

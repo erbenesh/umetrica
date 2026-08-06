@@ -1,9 +1,43 @@
-import type { SemanticCubeListItem, SemanticViewListItem, SemanticWorkspaceLayout } from '@sellerpool/core';
-import { semanticCubeLabel } from '@sellerpool/core';
+import type {
+  SemanticCubeDefinition,
+  SemanticCubeListItem,
+  SemanticGraphLayout,
+  SemanticViewDefinition,
+  SemanticViewListItem,
+  SemanticWorkspaceLayout,
+} from '@sellerpool/core';
+import { semanticCubeLabel, semanticCubeNodeId, semanticMemberLabel } from '@sellerpool/core';
 import { computeWorkspaceBounds } from '@sellerpool/core';
-import { Box, Eye, Loader2, Maximize2, Minus, Monitor, Plus, Search } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Box, Eye, FileCode2, Filter, GitBranch, Hash, Layers, Link2, Loader2, Maximize2, Minus, Monitor, Plus, Search, Text } from 'lucide-react';
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  forwardRef,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
+import {
+  buildCanvasAuxNodes,
+  CANVAS_LAYER_COLUMN_LABELS,
+  computeAuxNodePositions,
+  computeExpandedMemberBounds,
+  computeExpandedMemberPositions,
+  computeLayerBounds,
+  type CanvasAuxNode,
+  type CubeCanvasLayer,
+  MEMBER_CHIP_H,
+  MEMBER_CHIP_W,
+  MEMBER_COLUMN_GAP,
+  MEMBER_HEADER_H,
+  MEMBER_OFFSET_X,
+  WORKSPACE_CARD_H,
+  WORKSPACE_CARD_W,
+} from '@/lib/semantic-cube-draft';
+import type { SemanticCubeEditorTab } from '@/components/semantic/semantic-cube-editor-header';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,11 +50,13 @@ import {
   toggleSetMember,
   type CanvasRect,
 } from '@/lib/canvas-graph-utils';
+import { useFixedMenuPosition } from '@/lib/context-menu-position';
 import { cn } from '@/lib/utils';
 import { useCubeJoinContext, useUpdateSemanticWorkspace } from '@/hooks/use-semantic';
+import { joinIdForTargetCube } from '@/lib/semantic-cube-selection';
 
-const CARD_W = 220;
-const CARD_H = 100;
+const CARD_W = WORKSPACE_CARD_W;
+const CARD_H = WORKSPACE_CARD_H;
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 1.5;
 
@@ -35,28 +71,80 @@ function parseWorkspaceCardKey(key: WorkspaceCardKey) {
   return { kind, name };
 }
 
+function auxNodeIcon(kind: CanvasAuxNode['kind']) {
+  switch (kind) {
+    case 'join':
+      return Link2;
+    case 'segment':
+      return Filter;
+    case 'hierarchy':
+      return GitBranch;
+    case 'rollup':
+      return Layers;
+    case 'yaml':
+      return FileCode2;
+    default:
+      return Box;
+  }
+}
+
 function clampZoom(value: number) {
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(value.toFixed(2))));
 }
 
-interface SemanticWorkspaceCanvasProps {
+export type SemanticUnifiedCanvasHandle = {
+  centerTourTarget: (selector: string) => Promise<void>;
+};
+
+interface SemanticUnifiedCanvasProps {
   tab: 'cubes' | 'views';
   cubes: SemanticCubeListItem[];
   views: SemanticViewListItem[];
   layout: SemanticWorkspaceLayout;
   canWrite: boolean;
+  focusCube?: string;
+  focusView?: string;
+  cubeEditorTab?: SemanticCubeEditorTab;
+  expandedCubeDraft?: SemanticCubeDefinition;
+  expandedCubeLayout?: SemanticGraphLayout;
+  inspectorNodeId?: string;
+  onInspectorNodeId?: (id: string) => void;
+  onFocusCube: (name: string) => void;
+  onFocusView: (name: string) => void;
+  onOpenRelationships?: (cubeName: string) => void;
   onJoinCubes?: (sourceCube: string, targetCube: string) => void;
+  viewDraft?: SemanticViewDefinition;
+  viewCubeDefs?: SemanticCubeDefinition[];
+  onToggleViewMember?: (joinPath: string, memberName: string) => void;
+  onClearFocus?: () => void;
 }
 
-export function SemanticWorkspaceCanvas({
-  tab,
-  cubes,
-  views,
-  layout,
-  canWrite,
-  onJoinCubes,
-}: SemanticWorkspaceCanvasProps) {
-  const navigate = useNavigate();
+export const SemanticUnifiedCanvas = forwardRef<SemanticUnifiedCanvasHandle, SemanticUnifiedCanvasProps>(
+  function SemanticUnifiedCanvas(
+    {
+      tab,
+      cubes,
+      views,
+      layout,
+      canWrite,
+      focusCube,
+      focusView,
+      cubeEditorTab = 'visual',
+      expandedCubeDraft,
+      expandedCubeLayout,
+      inspectorNodeId,
+      onInspectorNodeId,
+      onFocusCube,
+      onFocusView,
+      onOpenRelationships,
+      onJoinCubes,
+      viewDraft,
+      viewCubeDefs,
+      onToggleViewMember,
+      onClearFocus,
+    },
+    ref
+  ) {
   const updateWorkspace = useUpdateSemanticWorkspace();
   const { data: joinContext } = useCubeJoinContext();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -87,7 +175,7 @@ export function SemanticWorkspaceCanvas({
     startY: number;
     moved: boolean;
     origins: Map<WorkspaceCardKey, { x: number; y: number }>;
-    openPath: string | null;
+    openTarget: { kind: 'cube' | 'view'; name: string } | null;
     selectionOnly: boolean;
   } | null>(null);
   const skipOpenRef = useRef(false);
@@ -109,13 +197,17 @@ export function SemanticWorkspaceCanvas({
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (focusCube || focusView) {
+          onClearFocus?.();
+          return;
+        }
         setSelectedCards(new Set());
         setContextMenu(null);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [focusCube, focusView, onClearFocus]);
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -150,10 +242,126 @@ export function SemanticWorkspaceCanvas({
 
   const cubeNames = cubes.map((cube) => cube.name);
   const viewNames = views.map((view) => view.name);
-  const bounds = useMemo(
+  const baseBounds = useMemo(
     () => computeWorkspaceBounds(localLayout, cubeNames, viewNames),
     [localLayout, cubeNames, viewNames]
   );
+
+  const canvasLayer: CubeCanvasLayer = cubeEditorTab;
+
+  const expandedMemberPositions = useMemo(() => {
+    if (!focusCube || !expandedCubeDraft || canvasLayer !== 'visual') return {};
+    const cubePos = localLayout.cubes[focusCube] ?? { x: 48, y: 48 };
+    return computeExpandedMemberPositions(cubePos, expandedCubeDraft);
+  }, [canvasLayer, expandedCubeDraft, focusCube, localLayout.cubes]);
+
+  const joinTargetNames = useMemo(() => {
+    if (!expandedCubeDraft || canvasLayer !== 'relationships') return new Set<string>();
+    return new Set((expandedCubeDraft.joins ?? []).map((join) => join.targetCube));
+  }, [canvasLayer, expandedCubeDraft]);
+
+  const auxNodes = useMemo(() => {
+    if (!expandedCubeDraft || !focusCube || canvasLayer === 'visual' || canvasLayer === 'relationships') {
+      return [] as CanvasAuxNode[];
+    }
+    return buildCanvasAuxNodes(expandedCubeDraft, canvasLayer);
+  }, [canvasLayer, expandedCubeDraft, focusCube]);
+
+  const auxPositions = useMemo(() => {
+    if (!focusCube || auxNodes.length === 0) return {};
+    const cubePos = localLayout.cubes[focusCube] ?? { x: 48, y: 48 };
+    return computeAuxNodePositions(cubePos, auxNodes);
+  }, [auxNodes, focusCube, localLayout.cubes]);
+
+  const bounds = useMemo(() => {
+    if (!focusCube || !expandedCubeDraft) return baseBounds;
+
+    const cubePos = localLayout.cubes[focusCube] ?? { x: 48, y: 48 };
+    const layerBox = computeLayerBounds(
+      cubePos,
+      expandedCubeDraft,
+      canvasLayer,
+      localLayout.cubes,
+      canvasLayer === 'visual' ? expandedMemberPositions : auxPositions
+    );
+
+    const pad = 0;
+    return {
+      originX: layerBox.minX - pad,
+      originY: layerBox.minY - pad,
+      width: layerBox.maxX - layerBox.minX + pad * 2,
+      height: layerBox.maxY - layerBox.minY + pad * 2,
+    };
+  }, [
+    auxPositions,
+    baseBounds,
+    canvasLayer,
+    expandedCubeDraft,
+    expandedMemberPositions,
+    focusCube,
+    localLayout.cubes,
+  ]);
+
+  const centerTourTarget = useCallback(async (selector: string) => {
+    const canvas = canvasRef.current;
+    const target = canvas?.querySelector(selector) ?? document.querySelector(selector);
+    if (!(target instanceof HTMLElement) || !canvas) {
+      target?.scrollIntoView({ block: 'center', inline: 'nearest' });
+      return;
+    }
+    const canvasRect = canvas.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const deltaX = canvasRect.left + canvasRect.width / 2 - (targetRect.left + targetRect.width / 2);
+    const deltaY = canvasRect.top + canvasRect.height / 2 - (targetRect.top + targetRect.height / 2);
+    if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+      setPan((prev) => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
+    }
+  }, []);
+
+  useImperativeHandle(ref, () => ({ centerTourTarget }), [centerTourTarget]);
+
+  const lastAutoFocusRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!focusCube || !expandedCubeDraft) {
+      lastAutoFocusRef.current = null;
+      return;
+    }
+    const focusKey = `${focusCube}:${canvasLayer}`;
+    if (lastAutoFocusRef.current === focusKey) return;
+    lastAutoFocusRef.current = focusKey;
+    const cubePos = localLayout.cubes[focusCube];
+    if (!cubePos) return;
+    const box = computeLayerBounds(
+      cubePos,
+      expandedCubeDraft,
+      canvasLayer,
+      localLayout.cubes,
+      canvasLayer === 'visual' ? expandedMemberPositions : auxPositions
+    );
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const contentW = box.maxX - box.minX;
+    const contentH = box.maxY - box.minY;
+    const fitZoom = clampZoom(Math.min(rect.width / contentW, rect.height / contentH, 1) * 0.9);
+    const centerX = (box.minX + box.maxX) / 2 - bounds.originX;
+    const centerY = (box.minY + box.maxY) / 2 - bounds.originY;
+    setZoom(fitZoom);
+    setPan({
+      x: rect.width / 2 - centerX * fitZoom,
+      y: rect.height / 2 - centerY * fitZoom,
+    });
+  }, [
+    auxPositions,
+    bounds.originX,
+    bounds.originY,
+    canvasLayer,
+    expandedCubeDraft,
+    expandedMemberPositions,
+    focusCube,
+    localLayout.cubes,
+  ]);
 
   const visibleCardItems = useMemo(() => {
     if (tab === 'cubes') {
@@ -173,6 +381,94 @@ export function SemanticWorkspaceCanvas({
       view,
     }));
   }, [tab, filteredCubes, filteredViews, localLayout]);
+
+  const memberEdges = useMemo(() => {
+    if (!focusCube || !expandedCubeDraft || canvasLayer !== 'visual') return [];
+    const cubePos = localLayout.cubes[focusCube] ?? { x: 48, y: 48 };
+    const fromX = cubePos.x - bounds.originX + CARD_W;
+    const fromY = cubePos.y - bounds.originY + CARD_H / 2;
+    return Object.entries(expandedMemberPositions).map(([id, pos]) => {
+      const toX = pos.x - bounds.originX;
+      const toY = pos.y - bounds.originY + MEMBER_CHIP_H / 2;
+      return {
+        id,
+        d: `M ${fromX} ${fromY} C ${fromX + 36} ${fromY}, ${toX - 36} ${toY}, ${toX} ${toY}`,
+      };
+    });
+  }, [bounds.originX, bounds.originY, canvasLayer, expandedCubeDraft, expandedMemberPositions, focusCube, localLayout.cubes]);
+
+  const auxEdges = useMemo(() => {
+    if (!focusCube || auxNodes.length === 0) return [];
+    const cubePos = localLayout.cubes[focusCube] ?? { x: 48, y: 48 };
+    const fromX = cubePos.x - bounds.originX + CARD_W;
+    const fromY = cubePos.y - bounds.originY + CARD_H / 2;
+    return auxNodes
+      .map((node) => {
+        const pos = auxPositions[node.id];
+        if (!pos) return null;
+        const toX = pos.x - bounds.originX;
+        const toY = pos.y - bounds.originY + MEMBER_CHIP_H / 2;
+        return {
+          id: node.id,
+          d: `M ${fromX} ${fromY} C ${fromX + 36} ${fromY}, ${toX - 36} ${toY}, ${toX} ${toY}`,
+        };
+      })
+      .filter((edge): edge is { id: string; d: string } => edge !== null);
+  }, [auxNodes, auxPositions, bounds.originX, bounds.originY, focusCube, localLayout.cubes]);
+
+  const focusJoinEdges = useMemo(() => {
+    if (!focusCube || !expandedCubeDraft || canvasLayer !== 'relationships') return [];
+    const from = localLayout.cubes[focusCube];
+    if (!from) return [];
+
+    return (expandedCubeDraft.joins ?? [])
+      .map((join) => {
+        const to = localLayout.cubes[join.targetCube];
+        if (!to) return null;
+        const x1 = from.x - bounds.originX + CARD_W;
+        const y1 = from.y - bounds.originY + CARD_H / 2;
+        const x2 = to.x - bounds.originX;
+        const y2 = to.y - bounds.originY + CARD_H / 2;
+        return {
+          id: join.id,
+          d: `M ${x1} ${y1} C ${x1 + 48} ${y1}, ${x2 - 48} ${y2}, ${x2} ${y2}`,
+        };
+      })
+      .filter((edge): edge is { id: string; d: string } => edge !== null);
+  }, [bounds.originX, bounds.originY, canvasLayer, expandedCubeDraft, focusCube, localLayout.cubes]);
+
+  const viewEdges = useMemo(() => {
+    if (!focusView || !viewDraft) return [];
+    const viewPos = localLayout.views[focusView];
+    if (!viewPos) return [];
+    const toX = viewPos.x - bounds.originX;
+    const toY = viewPos.y - bounds.originY + CARD_H / 2;
+    const seen = new Set<string>();
+    const edges: Array<{ id: string; d: string }> = [];
+    for (const cubePath of viewDraft.cubes) {
+      const cubeName = cubePath.joinPath.split('.')[0] ?? '';
+      if (!cubeName || seen.has(cubeName)) continue;
+      seen.add(cubeName);
+      const cubePos = localLayout.cubes[cubeName];
+      if (!cubePos) continue;
+      const fromX = cubePos.x - bounds.originX + CARD_W;
+      const fromY = cubePos.y - bounds.originY + CARD_H / 2;
+      edges.push({
+        id: `${cubeName}->${focusView}`,
+        d: `M ${fromX} ${fromY} C ${fromX + 48} ${fromY}, ${toX - 48} ${toY}, ${toX} ${toY}`,
+      });
+    }
+    return edges;
+  }, [bounds.originX, bounds.originY, focusView, localLayout.cubes, localLayout.views, viewDraft]);
+
+  const participatingCubeNames = useMemo(() => {
+    if (!viewDraft) return new Set<string>();
+    return new Set(
+      viewDraft.cubes
+        .map((item) => item.joinPath.split('.')[0] ?? '')
+        .filter((name) => name.length > 0)
+    );
+  }, [viewDraft]);
 
   const joinEdges = useMemo(() => {
     const defs = joinContext?.cubes ?? [];
@@ -259,7 +555,7 @@ export function SemanticWorkspaceCanvas({
     if (event.button !== 0) return;
 
     const target = event.target as HTMLElement;
-    if (target.closest('.workspace-card')) return;
+    if (target.closest('.workspace-card') || target.closest('.workspace-member')) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -372,8 +668,8 @@ export function SemanticWorkspaceCanvas({
           return next;
         });
       }
-      if (!drag.moved && drag.openPath && !drag.selectionOnly && !skipOpenRef.current) {
-        navigate(drag.openPath);
+      if (!drag.moved && drag.openTarget && !drag.selectionOnly && !skipOpenRef.current) {
+        openCardTarget(drag.openTarget);
       }
       skipOpenRef.current = false;
       return;
@@ -394,7 +690,7 @@ export function SemanticWorkspaceCanvas({
 
   const beginCardPointer = (
     key: WorkspaceCardKey,
-    openPath: string,
+    openTarget: { kind: 'cube' | 'view'; name: string },
     event: PointerEvent<HTMLElement>
   ) => {
     if (event.button !== 0) return;
@@ -437,7 +733,7 @@ export function SemanticWorkspaceCanvas({
       startY: event.clientY,
       moved: false,
       origins,
-      openPath: selectionOnly ? null : openPath,
+      openTarget: selectionOnly ? null : openTarget,
       selectionOnly,
     };
 
@@ -448,9 +744,26 @@ export function SemanticWorkspaceCanvas({
     canvasRef.current?.setPointerCapture(event.pointerId);
   };
 
-  const openCardPath = (path: string) => {
+  const openCardTarget = (target: { kind: 'cube' | 'view'; name: string }) => {
     setContextMenu(null);
-    navigate(path);
+    if (target.kind === 'cube') {
+      if (
+        focusCube &&
+        canvasLayer === 'relationships' &&
+        joinTargetNames.has(target.name) &&
+        expandedCubeDraft
+      ) {
+        const joinId = joinIdForTargetCube(expandedCubeDraft, target.name);
+        if (joinId) {
+          onInspectorNodeId?.(joinId);
+          return;
+        }
+      }
+      onFocusCube(target.name);
+      onInspectorNodeId?.(semanticCubeNodeId(target.name));
+    } else {
+      onFocusView(target.name);
+    }
   };
 
   const handleCardContextMenu = (key: WorkspaceCardKey, event: MouseEvent<HTMLElement>) => {
@@ -518,8 +831,11 @@ export function SemanticWorkspaceCanvas({
     top: y - bounds.originY,
   });
 
-  const cardPointerProps = (key: WorkspaceCardKey, openPath: string) => ({
-    onPointerDown: (event: PointerEvent<HTMLElement>) => beginCardPointer(key, openPath, event),
+  const cardPointerProps = (
+    key: WorkspaceCardKey,
+    openTarget: { kind: 'cube' | 'view'; name: string }
+  ) => ({
+    onPointerDown: (event: PointerEvent<HTMLElement>) => beginCardPointer(key, openTarget, event),
     onContextMenu: (event: MouseEvent<HTMLElement>) => handleCardContextMenu(key, event),
   });
 
@@ -528,18 +844,13 @@ export function SemanticWorkspaceCanvas({
 
     const { keys, anchorKey } = contextMenu;
     const { kind: anchorKind, name: anchorName } = parseWorkspaceCardKey(anchorKey);
-    const anchorPath =
-      anchorKind === 'cube'
-        ? `/semantic/cubes/${encodeURIComponent(anchorName)}`
-        : `/semantic/views/${encodeURIComponent(anchorName)}`;
     const selectedCubeNames = [...keys]
       .filter((key) => key.startsWith('cube:'))
       .map((key) => parseWorkspaceCardKey(key).name);
 
     return {
-      anchorPath,
-      anchorName,
       anchorKind,
+      anchorName,
       selectionCount: keys.size,
       canJoin:
         canWrite &&
@@ -551,6 +862,11 @@ export function SemanticWorkspaceCanvas({
   }, [canWrite, contextMenu, onJoinCubes, tab]);
 
   const selectionCount = selectedCards.size;
+  const contextMenuPosition = useFixedMenuPosition(
+    contextMenu?.x ?? 0,
+    contextMenu?.y ?? 0,
+    Boolean(contextMenu)
+  );
 
   return (
     <div className="semantic-workspace">
@@ -558,7 +874,7 @@ export function SemanticWorkspaceCanvas({
         <div className="node-canvas-mobile">
           <Monitor className="size-5 shrink-0" strokeWidth={1.75} />
           <span>
-            ЛКМ — открыть · Ctrl+ЛКМ — выделить · Shift+drag — рамка · ПКМ — действия · Esc — сброс
+            ЛКМ — выбрать · Куб — показатели и разрезы на графе · Инспектор справа
           </span>
         </div>
 
@@ -567,7 +883,7 @@ export function SemanticWorkspaceCanvas({
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="h-8 pl-8"
-              placeholder={tab === 'cubes' ? 'Поиск кубов…' : 'Поиск views…'}
+              placeholder={tab === 'cubes' ? 'Поиск кубов…' : 'Поиск представлений…'}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
@@ -654,13 +970,27 @@ export function SemanticWorkspaceCanvas({
               transformOrigin: 'top left',
             }}
           >
-            {tab === 'cubes' ? (
-              <svg className="node-edges" aria-hidden="true" width={bounds.width} height={bounds.height}>
-                {joinEdges.map((edge) => (
-                  <path key={edge.id} d={edge.d} />
-                ))}
-              </svg>
-            ) : null}
+            <svg className="node-edges" aria-hidden="true" width={bounds.width} height={bounds.height}>
+              {tab === 'cubes' && !focusCube
+                ? joinEdges.map((edge) => <path key={edge.id} d={edge.d} />)
+                : null}
+              {focusJoinEdges.map((edge) => (
+                <path
+                  key={edge.id}
+                  d={edge.d}
+                  className={cn('is-join-edge', inspectorNodeId === edge.id && 'is-active')}
+                />
+              ))}
+              {memberEdges.map((edge) => (
+                <path key={edge.id} d={edge.d} className="is-member-edge" />
+              ))}
+              {auxEdges.map((edge) => (
+                <path key={edge.id} d={edge.d} className="is-aux-edge" />
+              ))}
+              {focusView
+                ? viewEdges.map((edge) => <path key={edge.id} d={edge.d} className="is-view-edge" />)
+                : null}
+            </svg>
 
             {marqueeRect ? (
               <div
@@ -677,17 +1007,36 @@ export function SemanticWorkspaceCanvas({
             {tab === 'cubes'
               ? filteredCubes.map((cube) => {
                   const key = workspaceCardKey('cube', cube.name);
-                  const openPath = `/semantic/cubes/${encodeURIComponent(cube.name)}`;
+                  const openTarget = { kind: 'cube' as const, name: cube.name };
                   const pos = localLayout.cubes[cube.name] ?? { x: 48, y: 48 };
                   const stagePos = toStagePos(pos.x, pos.y);
+                  const isFocused = focusCube === cube.name;
+                  const isRelatedCube = joinTargetNames.has(cube.name);
+                  const activeJoinId =
+                    inspectorNodeId?.startsWith('join:') &&
+                    expandedCubeDraft?.joins?.some(
+                      (join) => join.id === inspectorNodeId && join.targetCube === cube.name
+                    );
+                  const isViewParticipant =
+                    Boolean(focusView) && participatingCubeNames.has(cube.name);
+                  const isDimmed =
+                    (Boolean(focusCube) &&
+                      !isFocused &&
+                      !(canvasLayer === 'relationships' && isRelatedCube)) ||
+                    (Boolean(focusView) && !isViewParticipant);
 
                   return (
                     <article
                       key={cube.name}
+                      data-tour={isFocused ? 'cube-cube' : undefined}
                       className={cn(
                         'workspace-card workspace-card--cube',
                         canWrite && 'is-draggable',
                         selectedCards.has(key) && 'is-canvas-selected',
+                        isFocused && 'is-workspace-active',
+                        isRelatedCube && canvasLayer === 'relationships' && 'is-workspace-linked',
+                        activeJoinId && 'is-workspace-active',
+                        isDimmed && 'is-workspace-dimmed',
                         draggingKeys.has(key) && 'is-dragging'
                       )}
                       style={stagePos}
@@ -695,10 +1044,10 @@ export function SemanticWorkspaceCanvas({
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                           event.preventDefault();
-                          openCardPath(openPath);
+                          openCardTarget(openTarget);
                         }
                       }}
-                      {...cardPointerProps(key, openPath)}
+                      {...cardPointerProps(key, openTarget)}
                     >
                       <header className="workspace-card__head">
                         <span className="workspace-card__icon">
@@ -720,9 +1069,11 @@ export function SemanticWorkspaceCanvas({
             {tab === 'views'
               ? filteredViews.map((view) => {
                   const key = workspaceCardKey('view', view.name);
-                  const openPath = `/semantic/views/${encodeURIComponent(view.name)}`;
+                  const openTarget = { kind: 'view' as const, name: view.name };
                   const pos = localLayout.views[view.name] ?? { x: 48, y: 400 };
                   const stagePos = toStagePos(pos.x, pos.y);
+                  const isFocused = focusView === view.name;
+                  const isDimmed = Boolean(focusView && focusView !== view.name);
 
                   return (
                     <article
@@ -731,6 +1082,8 @@ export function SemanticWorkspaceCanvas({
                         'workspace-card workspace-card--view',
                         canWrite && 'is-draggable',
                         selectedCards.has(key) && 'is-canvas-selected',
+                        isFocused && 'is-workspace-active',
+                        isDimmed && 'is-workspace-dimmed',
                         draggingKeys.has(key) && 'is-dragging'
                       )}
                       style={stagePos}
@@ -738,10 +1091,10 @@ export function SemanticWorkspaceCanvas({
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                           event.preventDefault();
-                          openCardPath(openPath);
+                          openCardTarget(openTarget);
                         }
                       }}
-                      {...cardPointerProps(key, openPath)}
+                      {...cardPointerProps(key, openTarget)}
                     >
                       <header className="workspace-card__head">
                         <span className="workspace-card__icon">
@@ -753,20 +1106,229 @@ export function SemanticWorkspaceCanvas({
                         </div>
                       </header>
                       <p className="workspace-card__stats">
-                        {view.cubePathCount} путей · {view.memberCount} members
+                        {view.cubePathCount} путей · {view.memberCount} полей
                       </p>
                     </article>
                   );
                 })
               : null}
+
+            {tab === 'views' && focusView
+              ? filteredCubes
+                  .filter((cube) => participatingCubeNames.has(cube.name))
+                  .map((cube) => {
+                    const key = workspaceCardKey('cube', cube.name);
+                    const pos = localLayout.cubes[cube.name] ?? { x: 48, y: 48 };
+                    const stagePos = toStagePos(pos.x, pos.y);
+                    return (
+                      <article
+                        key={`view-cube-${cube.name}`}
+                        className={cn(
+                          'workspace-card workspace-card--cube workspace-card--view-linked',
+                          canWrite && 'is-draggable',
+                          draggingKeys.has(key) && 'is-dragging'
+                        )}
+                        style={stagePos}
+                        {...cardPointerProps(key, { kind: 'cube', name: cube.name })}
+                      >
+                        <header className="workspace-card__head">
+                          <span className="workspace-card__icon">
+                            <Box size={14} />
+                          </span>
+                          <div>
+                            <h3 className="workspace-card__title">{semanticCubeLabel(cube)}</h3>
+                            <p className="workspace-card__meta">Куб в представлении</p>
+                          </div>
+                        </header>
+                      </article>
+                    );
+                  })
+              : null}
+
+            {focusCube && expandedCubeDraft && canvasLayer === 'visual' ? (
+              <>
+                {(() => {
+                  const cubePos = localLayout.cubes[focusCube] ?? { x: 48, y: 48 };
+                  const measureLabelPos = toStagePos(
+                    cubePos.x + CARD_W + MEMBER_OFFSET_X,
+                    cubePos.y
+                  );
+                  const dimLabelPos = toStagePos(
+                    cubePos.x + CARD_W + MEMBER_OFFSET_X + MEMBER_CHIP_W + MEMBER_COLUMN_GAP,
+                    cubePos.y
+                  );
+                  return (
+                    <>
+                      <div className="workspace-member-col-label" style={measureLabelPos}>
+                        Показатели
+                      </div>
+                      <div className="workspace-member-col-label" style={dimLabelPos}>
+                        Разрезы
+                      </div>
+                    </>
+                  );
+                })()}
+                {expandedCubeDraft.measures.map((measure, measureIndex) => {
+                  const pos = expandedMemberPositions[measure.id];
+                  if (!pos) return null;
+                  const stagePos = toStagePos(pos.x, pos.y);
+                  return (
+                    <article
+                      key={measure.id}
+                      data-tour={measureIndex === 0 ? 'cube-measure' : undefined}
+                      className={cn(
+                        'workspace-member workspace-member--measure',
+                        inspectorNodeId === measure.id && 'is-workspace-active'
+                      )}
+                      style={stagePos}
+                      role="button"
+                      tabIndex={0}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onInspectorNodeId?.(measure.id);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          onInspectorNodeId?.(measure.id);
+                        }
+                      }}
+                    >
+                      <Hash size={12} />
+                      <span>{semanticMemberLabel(measure)}</span>
+                    </article>
+                  );
+                })}
+                {expandedCubeDraft.dimensions.map((dimension) => {
+                  const pos = expandedMemberPositions[dimension.id];
+                  if (!pos) return null;
+                  const stagePos = toStagePos(pos.x, pos.y);
+                  return (
+                    <article
+                      key={dimension.id}
+                      className={cn(
+                        'workspace-member workspace-member--dimension',
+                        inspectorNodeId === dimension.id && 'is-workspace-active'
+                      )}
+                      style={stagePos}
+                      role="button"
+                      tabIndex={0}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onInspectorNodeId?.(dimension.id);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          onInspectorNodeId?.(dimension.id);
+                        }
+                      }}
+                    >
+                      <Text size={12} />
+                      <span>{semanticMemberLabel(dimension)}</span>
+                    </article>
+                  );
+                })}
+              </>
+            ) : null}
+
+            {focusCube && expandedCubeDraft && canvasLayer === 'relationships' && focusJoinEdges.length === 0 ? (
+              <div
+                className="workspace-canvas-hint"
+                style={toStagePos(
+                  (localLayout.cubes[focusCube]?.x ?? 48) + CARD_W + MEMBER_OFFSET_X,
+                  (localLayout.cubes[focusCube]?.y ?? 48) + MEMBER_HEADER_H
+                )}
+              >
+                Нет связей — добавьте в панели справа
+              </div>
+            ) : null}
+
+            {focusCube &&
+            expandedCubeDraft &&
+            (canvasLayer === 'segments' ||
+              canvasLayer === 'hierarchies' ||
+              canvasLayer === 'rollups') &&
+            auxNodes.length === 0 ? (
+              <div
+                className="workspace-canvas-hint"
+                style={toStagePos(
+                  (localLayout.cubes[focusCube]?.x ?? 48) + CARD_W + MEMBER_OFFSET_X,
+                  (localLayout.cubes[focusCube]?.y ?? 48) + MEMBER_HEADER_H
+                )}
+              >
+                {canvasLayer === 'segments'
+                  ? 'Нет сегментов — добавьте в панели справа'
+                  : canvasLayer === 'hierarchies'
+                    ? 'Нет иерархий — добавьте в панели справа'
+                    : 'Нет предагрегаций — добавьте в панели справа'}
+              </div>
+            ) : null}
+
+            {focusCube && expandedCubeDraft && auxNodes.length > 0 ? (
+              <>
+                {canvasLayer !== 'yaml' ? (
+                  <div
+                    className="workspace-member-col-label"
+                    style={toStagePos(
+                      (localLayout.cubes[focusCube]?.x ?? 48) + CARD_W + MEMBER_OFFSET_X,
+                      (localLayout.cubes[focusCube]?.y ?? 48)
+                    )}
+                  >
+                    {CANVAS_LAYER_COLUMN_LABELS[canvasLayer as keyof typeof CANVAS_LAYER_COLUMN_LABELS]}
+                  </div>
+                ) : null}
+                {auxNodes.map((node) => {
+                  const pos = auxPositions[node.id];
+                  if (!pos) return null;
+                  const stagePos = toStagePos(pos.x, pos.y);
+                  const Icon = auxNodeIcon(node.kind);
+                  return (
+                    <article
+                      key={node.id}
+                      className={cn(
+                        'workspace-member',
+                        `workspace-member--${node.kind}`,
+                        inspectorNodeId === node.id && 'is-workspace-active'
+                      )}
+                      style={stagePos}
+                      role="button"
+                      tabIndex={0}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onInspectorNodeId?.(node.id);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          onInspectorNodeId?.(node.id);
+                        }
+                      }}
+                    >
+                      <Icon size={12} />
+                      <span className="workspace-member__stack">
+                        <span className="workspace-member__label">{node.label}</span>
+                        {node.subtitle ? (
+                          <small className="workspace-member__meta">{node.subtitle}</small>
+                        ) : null}
+                      </span>
+                    </article>
+                  );
+                })}
+              </>
+            ) : null}
           </div>
         </div>
       </div>
 
       {contextMenu && contextMenuActions ? (
         <div
+          ref={contextMenuPosition.ref}
           className="workspace-context-menu"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
+          style={contextMenuPosition.position}
           role="menu"
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -774,7 +1336,12 @@ export function SemanticWorkspaceCanvas({
             type="button"
             className="workspace-context-menu__item"
             role="menuitem"
-            onClick={() => openCardPath(contextMenuActions.anchorPath)}
+            onClick={() =>
+              openCardTarget({
+                kind: contextMenuActions.anchorKind,
+                name: contextMenuActions.anchorName,
+              })
+            }
           >
             {contextMenuActions.selectionCount > 1
               ? `Открыть «${contextMenuActions.anchorName}»`
@@ -787,12 +1354,10 @@ export function SemanticWorkspaceCanvas({
               role="menuitem"
               onClick={() => {
                 setContextMenu(null);
-                navigate(
-                  `/semantic/cubes/${encodeURIComponent(contextMenuActions.anchorName)}?tab=relationships`
-                );
+                onOpenRelationships?.(contextMenuActions.anchorName);
               }}
             >
-              Создать join…
+              Создать связь…
             </button>
           ) : null}
           {contextMenuActions.selectionCount > 1 ? (
@@ -815,4 +1380,6 @@ export function SemanticWorkspaceCanvas({
       ) : null}
     </div>
   );
-}
+});
+
+export { SemanticUnifiedCanvas as SemanticWorkspaceCanvas };

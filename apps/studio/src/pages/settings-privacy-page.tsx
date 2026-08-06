@@ -6,23 +6,19 @@ import { DocBlock } from '@/components/doc/doc-block';
 import { DocCallout } from '@/components/doc/doc-callout';
 import { DocPage } from '@/components/doc/doc-page';
 import { FormActions, FormField } from '@/components/doc/form-field';
-import { InsightSourceBadge } from '@/components/doc/insight-source-badge';
 import { ServicePolicyPillars } from '@/components/doc/service-policy-pillars';
 import { SettingsGroup, SettingsRow } from '@/components/doc/settings-row';
 import { TrustFaq } from '@/components/doc/trust-faq';
 import { Button } from '@/components/ui/button';
 import {
-  BENCHMARK_MIN_POOL_PARTICIPANTS,
   BENCHMARK_POOL_CONTRIBUTION_LABEL,
   formatBenchmarkPoolThresholdHint,
 } from '@sellerpool/core';
 import {
-  BENCHMARK_OPT_OUT_COOLDOWN_DAYS,
   BENCHMARK_WARMUP_DAYS,
   formatParticipationDate,
 } from '@/lib/benchmark-participation';
 import { MARKET_CATEGORIES, DEFAULT_MARKET_CATEGORY } from '@/lib/market-categories';
-import { capabilityStatusLines } from '@/lib/trust-policy-ui';
 import { useCanWriteDashboards } from '@/hooks/use-me';
 import { usePrivacySettings, useUpdatePrivacySettings } from '@/hooks/use-privacy';
 
@@ -62,88 +58,46 @@ export function SettingsPrivacyPage() {
   };
 
   const warmupLabel = formatParticipationDate(data?.benchmarkWarmupEndsAt);
-  const contributionEndsLabel = formatParticipationDate(data?.benchmarkContributionEndsAt);
   const savedOptIn = data?.benchmarkOptIn ?? false;
   const isDraft = data !== undefined && benchmarkOptIn !== savedOptIn;
   const poolCount = data?.benchmarkPoolParticipants;
-  const capabilityLines = data && trust ? capabilityStatusLines(data, trust) : [];
 
   return (
     <DocPage
       title="Данные и бенчмарки"
-      lead="Вы сами выбираете, что подключать. Бенчмарки — отдельное согласие и только обезличенные сводки."
+      lead="Категория для рыночных сигналов и участие в сравнении с сегментом."
       icon={Shield}
       back="auto"
       mobileTitle="Конфиденциальность"
     >
       {trust ? (
-        <DocBlock title="Ваш режим данных">
-          <p className="m-0 mb-3 text-[13px] text-muted-foreground">{trust.contributionHint}</p>
-          <p className="m-0 mb-3 text-xs font-medium text-foreground">
-            Сейчас: {trust.contributionLabel}
-          </p>
-          {capabilityLines.length > 0 ? (
-            <ul className="m-0 mb-4 grid gap-1.5 p-0 list-none sm:grid-cols-2">
-              {capabilityLines.map((line) => {
-                const Icon = line.icon;
-                return (
-                  <li
-                    key={line.label}
-                    className={`flex items-center gap-2 text-[13px] ${line.on ? 'text-foreground' : 'text-muted-foreground/60'}`}
-                  >
-                    <Icon className="size-3.5 shrink-0" />
-                    {line.label}
-                    <span className="text-xs">{line.on ? '· вкл.' : '· выкл.'}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
+        <DocBlock title="Сейчас у вас">
+          <p className="m-0 mb-3 text-sm text-foreground">{trust.contributionLabel}</p>
+          <p className="m-0 mb-4 text-[13px] text-muted-foreground">{trust.contributionHint}</p>
           <ServicePolicyPillars pillars={trust.pillars} />
         </DocBlock>
       ) : null}
 
-      <DocBlock title="Типы инсайтов">
-        <SettingsGroup>
-          <SettingsRow label="">
-            <div>
-              <InsightSourceBadge source="tenant" className="mb-1" />
-              <div className="text-xs text-muted-foreground">
-                Только ваша компания · нужен файл, API или БД
-              </div>
-            </div>
-          </SettingsRow>
-          <SettingsRow label="">
-            <div>
-              <InsightSourceBadge source="market" className="mb-1" />
-              <div className="text-xs text-muted-foreground">
-                Тренды категории · без вашего кабинета · публичные и обезличенные данные
-              </div>
-            </div>
-          </SettingsRow>
-          <SettingsRow label="">
-            <div>
-              <InsightSourceBadge source="benchmark" className="mb-1" />
-              <div className="text-xs text-muted-foreground">
-                Сравнение с сегментом · отдельный переключатель: получаете и отдаёте в пул
-              </div>
-            </div>
-          </SettingsRow>
-        </SettingsGroup>
-      </DocBlock>
-
       <DocBlock title="Бенчмарк-пул">
         <DocCallout variant="info" className="mb-3">
-          {formatBenchmarkPoolThresholdHint(category, poolCount)}
-          {' '}
-          В пул уходит только: {BENCHMARK_POOL_CONTRIBUTION_LABEL}. SKU, артикулы и строки заказов не
-          передаются. Бенчмарк-инсайты — от {BENCHMARK_MIN_POOL_PARTICIPANTS} участников в категории.
+          {formatBenchmarkPoolThresholdHint(category, poolCount)}. В пул попадают только агрегаты:{' '}
+          {BENCHMARK_POOL_CONTRIBUTION_LABEL}. Детали — в блоке ниже.
         </DocCallout>
 
         <SettingsGroup>
           <SettingsRow
-            label="Получать и делиться"
-            hint={`В пул категории «${category}»: ${BENCHMARK_POOL_CONTRIBUTION_LABEL}. SKU и строки заказов не передаются.`}
+            label="Сравнение с сегментом"
+            hint={
+              benchmarkOptIn
+                ? isDraft
+                  ? `После сохранения — категория «${category}», прогрев ${BENCHMARK_WARMUP_DAYS} дн.`
+                  : data?.benchmarkReceiving
+                    ? `Включено · категория «${category}»`
+                    : warmupLabel
+                      ? `Прогрев до ${warmupLabel}`
+                      : `Включено · категория «${category}»`
+                : 'Выключено — бенчмарк-инсайты недоступны'
+            }
             action={
               <input
                 type="checkbox"
@@ -173,48 +127,6 @@ export function SettingsPrivacyPage() {
             )}
           </DocCallout>
         ) : null}
-
-        <DocCallout variant="info" className="mt-3">
-          {benchmarkOptIn ? (
-            isDraft ? (
-              <>
-                После сохранения участие начнётся по категории «{category}»
-                {typeof poolCount === 'number' ? ` · сейчас в пуле ${poolCount} селлеров` : ''}.{' '}
-                Начнётся {BENCHMARK_WARMUP_DAYS}-дневный прогрев — агрегаты сразу пойдут в пул,
-                просмотр бенчмарков откроется после него.
-              </>
-            ) : (
-              <>
-                Участие включено по категории «{category}»
-                {typeof poolCount === 'number' ? ` · в пуле ${poolCount} селлеров` : ''}.{' '}
-                {data?.benchmarkReceiving ? (
-                  <>Бенчмарк-инсайты доступны.</>
-                ) : warmupLabel ? (
-                  <>
-                    Период прогрева до {warmupLabel} — агрегаты уже идут в пул, просмотр откроется
-                    через {BENCHMARK_WARMUP_DAYS} дн.
-                  </>
-                ) : (
-                  <>
-                    Идёт {BENCHMARK_WARMUP_DAYS}-дневный прогрев — агрегаты уже в пуле, просмотр
-                    скоро откроется.
-                  </>
-                )}
-              </>
-            )
-          ) : data?.benchmarkContributing && contributionEndsLabel ? (
-            <>
-              Просмотр бенчмарков выключен, но ваши агрегаты ещё в пуле до {contributionEndsLabel}{' '}
-              ({BENCHMARK_OPT_OUT_COOLDOWN_DAYS} дн. охлаждения). Так нельзя «подглядеть и сразу
-              выйти» — сообщество получает честную выборку.
-            </>
-          ) : (
-            <>
-              Выключено. Без участия бенчмарк-инсайты недоступны — включите переключатель, чтобы
-              видеть сравнение с сегментом и помогать формировать пул для других.
-            </>
-          )}
-        </DocCallout>
 
         {notice ? (
           <DocCallout variant="info" className="mt-3">

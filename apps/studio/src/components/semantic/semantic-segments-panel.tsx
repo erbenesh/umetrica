@@ -6,11 +6,16 @@ import { DocCallout } from '@/components/doc/doc-callout';
 import { FormField } from '@/components/doc/form-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TOUR_DEMO_SEGMENT_ID } from '@/lib/semantic-cube-tour-demo';
+import { cn } from '@/lib/utils';
 
 interface SemanticSegmentsPanelProps {
   draft: SemanticCubeDefinition;
   canWrite: boolean;
+  selected?: string;
+  embedded?: boolean;
   onDraftChange: (draft: SemanticCubeDefinition) => void;
+  onSelect?: (id: string) => void;
 }
 
 function nextSegmentName(existing: string[]) {
@@ -24,7 +29,10 @@ function nextSegmentName(existing: string[]) {
 export function SemanticSegmentsPanel({
   draft,
   canWrite,
+  selected,
+  embedded = false,
   onDraftChange,
+  onSelect,
 }: SemanticSegmentsPanelProps) {
   const segments = draft.segments ?? [];
 
@@ -44,6 +52,7 @@ export function SemanticSegmentsPanel({
       sql: '1 = 1',
     };
     onDraftChange({ ...draft, segments: [...segments, nextSegment] });
+    onSelect?.(nextSegment.id);
   };
 
   const removeSegment = (id: string) => {
@@ -54,19 +63,23 @@ export function SemanticSegmentsPanel({
   };
 
   return (
-    <div className="semantic-relationships-page">
-      <div className="semantic-panel max-w-3xl">
-        <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Сегменты</h2>
-          <p className="semantic-panel__desc">
-            Именованные фильтры куба. Используются в запросах как{' '}
-            <code className="text-xs">{draft.name}.segmentName</code>.
+    <div className={cn('semantic-relationships-page', embedded && 'semantic-relationships-page--embedded')}>
+      <div className="semantic-panel" data-tour="cube-segments-panel">
+        {!embedded ? (
+          <div className="semantic-panel__head">
+            <h2 className="semantic-panel__title">Сегменты</h2>
+            <p className="semantic-panel__desc">
+              Готовые фильтры: «только оплаченные», «только B2B». На старте обычно хватает фильтров в дашборде.
+            </p>
+          </div>
+        ) : (
+          <p className="semantic-panel__desc semantic-panel__desc--compact">
+            Готовые фильтры данных. Выберите сегмент на графе или добавьте ниже.
           </p>
-        </div>
+        )}
 
-        <DocCallout variant="info">
-          Сегменты публикуются в Cube.js YAML и доступны в Playground и виджетах через{' '}
-          <code className="text-xs">segments</code> в query.
+        <DocCallout variant="info" className={embedded ? 'semantic-panel__callout--compact' : undefined}>
+          Сегмент сужает данные куба заранее. Если не уверены — пока можно не настраивать.
         </DocCallout>
 
         {segments.length === 0 ? (
@@ -74,7 +87,20 @@ export function SemanticSegmentsPanel({
         ) : (
           <div className="form-fields max-w-none">
             {segments.map((segment) => (
-              <div key={segment.id} className="rounded-lg border border-border p-4">
+              <div
+                key={segment.id}
+                data-canvas-entity={segment.id}
+                className={cn(
+                  'semantic-panel-entity rounded-lg border border-border p-4',
+                  selected === segment.id && 'is-active'
+                )}
+                data-tour={segment.id === TOUR_DEMO_SEGMENT_ID ? 'cube-segments-demo' : undefined}
+                onClick={(event) => {
+                  const target = event.target as HTMLElement;
+                  if (target.closest('button, input, select, textarea, summary, a, label')) return;
+                  onSelect?.(segment.id);
+                }}
+              >
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="text-sm font-medium">{semanticMemberLabel({ ...segment, title: segment.title ?? segment.name })}</span>
                   {canWrite ? (

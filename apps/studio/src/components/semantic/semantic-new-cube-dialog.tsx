@@ -73,7 +73,7 @@ export function SemanticNewCubeDialog({ open, onClose }: SemanticNewCubeDialogPr
     try {
       const cube = await createCube.mutateAsync(payload);
       onClose();
-      navigate(`/semantic/cubes/${cube.name}`);
+      navigate(`/semantic?cube=${encodeURIComponent(cube.name)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось создать куб');
     }
@@ -86,8 +86,8 @@ export function SemanticNewCubeDialog({ open, onClose }: SemanticNewCubeDialogPr
         <CardHeader className="pb-2">
           <CardTitle>Новый куб</CardTitle>
           <p className="m-0 text-[13px] text-muted-foreground">
-            Выберите таблицу PostgreSQL — меры и измерения создадутся автоматически. После создания
-            опубликуйте куб, чтобы он появился в виджетах.
+            Выберите таблицу — показатели и разрезы создадутся сами. Переименуйте их под свой бизнес
+            и нажмите «Опубликовать», чтобы добавить в дашборд.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -124,7 +124,7 @@ export function SemanticNewCubeDialog({ open, onClose }: SemanticNewCubeDialogPr
             {tablesLoading ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Loader2 className="size-3.5 animate-spin" />
-                Читаем schema...
+                Читаем схему…
               </div>
             ) : (
               <select

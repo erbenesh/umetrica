@@ -6,11 +6,16 @@ import { DocCallout } from '@/components/doc/doc-callout';
 import { FormField } from '@/components/doc/form-field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TOUR_DEMO_HIERARCHY_ID } from '@/lib/semantic-cube-tour-demo';
+import { cn } from '@/lib/utils';
 
 interface SemanticHierarchiesPanelProps {
   draft: SemanticCubeDefinition;
   canWrite: boolean;
+  selected?: string;
+  embedded?: boolean;
   onDraftChange: (draft: SemanticCubeDefinition) => void;
+  onSelect?: (id: string) => void;
 }
 
 function nextHierarchyName(existing: string[]) {
@@ -32,7 +37,10 @@ function moveLevel(levels: string[], index: number, direction: -1 | 1) {
 export function SemanticHierarchiesPanel({
   draft,
   canWrite,
+  selected,
+  embedded = false,
   onDraftChange,
+  onSelect,
 }: SemanticHierarchiesPanelProps) {
   const hierarchies = draft.hierarchies ?? [];
   const dimensionNames = draft.dimensions.map((dimension) => dimension.name);
@@ -59,6 +67,7 @@ export function SemanticHierarchiesPanel({
       levels,
     };
     onDraftChange({ ...draft, hierarchies: [...hierarchies, nextHierarchy] });
+    onSelect?.(nextHierarchy.id);
   };
 
   const removeHierarchy = (id: string) => {
@@ -97,23 +106,28 @@ export function SemanticHierarchiesPanel({
   };
 
   return (
-    <div className="semantic-relationships-page">
-      <div className="semantic-panel max-w-3xl">
-        <div className="semantic-panel__head">
-          <h2 className="semantic-panel__title">Иерархии</h2>
-          <p className="semantic-panel__desc">
-            Drill-down пути по измерениям куба — от общего к детальному.
+    <div className={cn('semantic-relationships-page', embedded && 'semantic-relationships-page--embedded')}>
+      <div className="semantic-panel" data-tour="cube-hierarchies-panel">
+        {!embedded ? (
+          <div className="semantic-panel__head">
+            <h2 className="semantic-panel__title">Иерархии</h2>
+            <p className="semantic-panel__desc">
+              Уровни вложенности: год → квартал → месяц. Для детализации в отчётах, не обязательно на старте.
+            </p>
+          </div>
+        ) : (
+          <p className="semantic-panel__desc semantic-panel__desc--compact">
+            Уровни вложенности разрезов. Выберите иерархию на графе или добавьте ниже.
           </p>
-        </div>
+        )}
 
-        <DocCallout variant="info">
-          Уровни идут слева направо: наименее детальный → наиболее детальный. В Cube.js query
-          используйте <code className="text-xs">dimensions</code> из иерархии для drill-down.
+        <DocCallout variant="info" className={embedded ? 'semantic-panel__callout--compact' : undefined}>
+          Пример: «Регион → Город → Магазин». Нужно, когда в отчёте кликают от общего к частному.
         </DocCallout>
 
         {!canAddHierarchy ? (
           <p className="text-sm text-muted-foreground">
-            Для иерархии нужно минимум 2 измерения в кубе.
+            Для иерархии нужно минимум 2 разреза в кубе.
           </p>
         ) : null}
 
@@ -122,7 +136,20 @@ export function SemanticHierarchiesPanel({
         ) : (
           <div className="form-fields max-w-none">
             {hierarchies.map((hierarchy) => (
-              <div key={hierarchy.id} className="rounded-lg border border-border p-4">
+              <div
+                key={hierarchy.id}
+                data-canvas-entity={hierarchy.id}
+                className={cn(
+                  'semantic-panel-entity rounded-lg border border-border p-4',
+                  selected === hierarchy.id && 'is-active'
+                )}
+                data-tour={hierarchy.id === TOUR_DEMO_HIERARCHY_ID ? 'cube-hierarchies-demo' : undefined}
+                onClick={(event) => {
+                  const target = event.target as HTMLElement;
+                  if (target.closest('button, input, select, textarea, summary, a, label')) return;
+                  onSelect?.(hierarchy.id);
+                }}
+              >
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="text-sm font-medium">
                     {semanticMemberLabel({ ...hierarchy, title: hierarchy.title ?? hierarchy.name })}
